@@ -59,7 +59,6 @@ jobs:
         context: .
         file: ./GamifyMe.Api/Dockerfile # Chemin vers notre Dockerfile
         push: true
-        # --- CORRIGÉ AVEC VOTRE NOM ---
         tags: ghcr.io/frogames/gamifyme-api:latest
 
     - name: 4. Déployer sur le VPS Hostinger (via SSH)
@@ -67,17 +66,16 @@ jobs:
       with:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
-        password: ${{ secrets.VPS_PASSWORD }} # On utilise le mot de passe
+        password: ${{ secrets.VPS_PASSWORD }}
         port: 22
         script: |
           # Se placer dans le bon dossier sur le VPS
           cd /home/gamifyme
           
-          # Injecter le secret de la BDD dans l'environnement du VPS
+          # Injecter les secrets dans l'environnement du VPS
           export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
+          export JWT_KEY="${{ secrets.JWT_KEY }}" # <-- LIGNE AJOUTÉE
           
           # Lancer Docker Compose
-          # 1. 'pull' télécharge la nouvelle image que l'on vient de pousser
           docker-compose pull
-          # 2. 'up -d' redémarre le service avec la nouvelle image
           docker-compose up -d --remove-orphans

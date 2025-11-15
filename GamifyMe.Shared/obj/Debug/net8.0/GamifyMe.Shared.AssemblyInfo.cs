@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GamifyMe.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+310d7d95c4da6f22128fac40732013adfab05a04")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+29ee130cba001b0ca7ab5482c03ef70b33e274f2")]
 [assembly: System.Reflection.AssemblyProductAttribute("GamifyMe.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GamifyMe.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
