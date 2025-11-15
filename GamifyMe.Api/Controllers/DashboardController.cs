@@ -4,7 +4,7 @@ using GamifyMe.Shared.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims; // INDISPENSABLE pour FindFirstValue
+using System.Security.Claims;
 
 namespace GamifyMe.Api.Controllers
 {
@@ -26,7 +26,7 @@ namespace GamifyMe.Api.Controllers
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
             var logs = new List<DashboardLogDto>();
 
-            // 1. Récupérer les derniers SCANS (Validations)
+            // 1. Récupérer les derniers SCANS
             var recentScans = await _context.Validations
                 .Include(v => v.Objective)
                 .Where(v => v.EstablishmentId == establishmentId)
@@ -38,7 +38,7 @@ namespace GamifyMe.Api.Controllers
                     ActorName = "Gestionnaire",
                     ActionType = "Scan",
                     Details = $"Validation : {v.Objective.Title}",
-                    Icon = "QrCode", // String simple (clé de notre IconLibrary)
+                    Icon = "QrCode",
                     Color = "Success"
                 })
                 .ToListAsync();
@@ -46,22 +46,24 @@ namespace GamifyMe.Api.Controllers
 
             // 2. Récupérer les derniers OBJECTIFS créés
             var recentObjectives = await _context.Objectives
+                // CORRECTION : On ne peut pas inclure 'CreatedBy' car il n'existe pas sur le modèle
+                // .Include(o => o.CreatedBy) 
                 .Where(o => o.EstablishmentId == establishmentId)
                 .OrderByDescending(o => o.CreatedAt)
                 .Take(10)
                 .Select(o => new DashboardLogDto
                 {
                     Date = o.CreatedAt,
-                    ActorName = "Admin", // Simplification pour compiler
+                    ActorName = "Admin", // On met "Admin" en dur car on n'a pas la jointure
                     ActionType = "Création Objectif",
                     Details = o.Title,
-                    Icon = "Trophy", // String simple (clé de notre IconLibrary)
+                    Icon = "Trophy",
                     Color = "Warning"
                 })
                 .ToListAsync();
             logs.AddRange(recentObjectives);
 
-            // 3. Fusionner, Trier et Renvoyer les 20 derniers
+            // 3. Fusionner, Trier et Renvoyer
             var finalLogs = logs
                 .OrderByDescending(l => l.Date)
                 .Take(20)

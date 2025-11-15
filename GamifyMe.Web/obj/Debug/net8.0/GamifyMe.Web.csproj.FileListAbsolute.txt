@@ -67,3 +67,15 @@ D:\GamifyMe\GamifyMe.Web\GamifyMe.Web\obj\Debug\net8.0\refint\GamifyMe.Web.dll
 D:\GamifyMe\GamifyMe.Web\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.pdb
 D:\GamifyMe\GamifyMe.Web\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.genruntimeconfig.cache
 D:\GamifyMe\GamifyMe.Web\GamifyMe.Web\obj\Debug\net8.0\ref\GamifyMe.Web.dll
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.csproj.AssemblyReference.cache
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.GeneratedMSBuildEditorConfig.editorconfig
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.AssemblyInfoInputs.cache
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.AssemblyInfo.cs
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.csproj.CoreCompileInputs.cache
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.MvcApplicationPartsAssemblyInfo.cs
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.MvcApplicationPartsAssemblyInfo.cache
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.sourcelink.json
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.dll
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\refint\GamifyMe.Web.dll
+D:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.pdb

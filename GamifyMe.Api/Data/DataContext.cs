@@ -22,27 +22,32 @@ namespace GamifyMe.Api.Data
         public DbSet<StoreItem> StoreItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
-        public DbSet<ObjectiveObjective> ObjectiveObjectives { get; set; } // Table de jointure
+        public DbSet<ObjectiveObjective> ObjectiveObjectives { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // --- Configuration Many-to-Many (Objectif -> Prérequis) ---
+            // --- CORRECTION : Configuration Many-to-Many (Objectif -> Prérequis) ---
+            // On dit à EF que Prerequisites est lié à IsPrerequisiteFor
+            // en utilisant la table de jointure ObjectiveObjective
             modelBuilder.Entity<Objective>()
                 .HasMany(o => o.Prerequisites)
-                .WithMany()
+                .WithMany(o => o.IsPrerequisiteFor) // <-- LA CORRECTION CLÉ
                 .UsingEntity<ObjectiveObjective>(
+                    // L'entité de droite (Prerequisites)
                     j => j
                         .HasOne(oo => oo.PrerequisiteObjective)
-                        .WithMany()
+                        .WithMany() // Pas besoin de navigation retour sur la jointure
                         .HasForeignKey(oo => oo.PrerequisitesId)
-                        .OnDelete(DeleteBehavior.Cascade), // Si on supprime un prérequis, la liaison tombe
+                        .OnDelete(DeleteBehavior.Cascade),
+                    // L'entité de gauche (IsPrerequisiteFor)
                     j => j
                         .HasOne(oo => oo.IsPrerequisiteForObjective)
-                        .WithMany()
+                        .WithMany() // Pas besoin de navigation retour sur la jointure
                         .HasForeignKey(oo => oo.IsPrerequisiteForId)
-                        .OnDelete(DeleteBehavior.Cascade), // Si on supprime l'objectif, la liaison tombe
+                        .OnDelete(DeleteBehavior.Cascade),
+                    // Configuration de la table de jointure
                     j =>
                     {
                         j.HasKey(oo => new { oo.IsPrerequisiteForId, oo.PrerequisitesId });
@@ -61,7 +66,6 @@ namespace GamifyMe.Api.Data
                 var establishmentIdClaim = user.FindFirstValue("EstablishmentId");
                 if (Guid.TryParse(establishmentIdClaim, out var establishmentId))
                 {
-                    // Appliquer le filtre à toutes les entités qui implémentent IEstablishmentScoped
                     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
                     {
                         if (typeof(IEstablishmentScoped).IsAssignableFrom(entityType.ClrType))
@@ -74,7 +78,6 @@ namespace GamifyMe.Api.Data
             }
         }
 
-        // Helper pour convertir l'expression lambda au bon type
         private static System.Linq.Expressions.LambdaExpression Convert(Guid id, Type type)
         {
             var parameter = System.Linq.Expressions.Expression.Parameter(type, "e");
