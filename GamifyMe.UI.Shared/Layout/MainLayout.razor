@@ -1,0 +1,103 @@
+﻿@inherits LayoutComponentBase
+@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthStateProvider
+
+@* --- LES PROVIDERS --- *@
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+
+        <MudText Typo="Typo.h6" Class="ml-3">GamifyMe <span style="font-size:0.7em; vertical-align:top; opacity:0.8;">BETA</span></MudText>
+
+        <MudSpacer />
+
+        @* --- NOUVEAU : STATS JOUEUR (Caché sur très petit mobile) --- *@
+        @if (userStats != null)
+        {
+            <MudHidden Breakpoint="Breakpoint.Xs">
+                <div class="d-flex align-center gap-2 mr-4">
+                    @* Niveau *@
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents">
+                        Lvl @userStats.Level
+                    </MudChip>
+
+                    @* XP *@
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Bolt">
+                        @userStats.CurrentXp XP
+                    </MudChip>
+
+                    @* Monnaie *@
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MonetizationOn">
+                        @userStats.CurrencyBalance
+                    </MudChip>
+                </div>
+            </MudHidden>
+        }
+
+        @* BOUTON PROFIL *@
+        <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" Href="profile" />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+    private UserProfileDetailsDto? userStats;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    // On utilise OnParametersSetAsync car il est appelé quand l'état de l'auth change
+    // ou quand on navigue, ce qui permet de rafraîchir les stats plus souvent.
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadUserStats();
+    }
+
+    private async Task LoadUserStats()
+    {
+        try
+        {
+            // 1. Vérifier si on est connecté
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                // 2. Charger les infos
+                // Note : Pour une V1, on appelle l'API à chaque navigation majeure.
+                // Pour une V2 optimisée, on utilisera un "StateService" pour éviter trop d'appels.
+                userStats = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+            }
+            else
+            {
+                userStats = null;
+            }
+        }
+        catch
+        {
+            // Si erreur (ex: réseau), on ignore silencieusement pour ne pas casser toute l'app
+            // Les stats ne s'afficheront juste pas.
+        }
+    }
+}

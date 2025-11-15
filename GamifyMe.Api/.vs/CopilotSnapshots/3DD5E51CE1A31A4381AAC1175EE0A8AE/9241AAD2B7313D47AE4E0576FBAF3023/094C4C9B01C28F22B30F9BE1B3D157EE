@@ -1,0 +1,100 @@
+﻿@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<div class="modal-backdrop @(IsOpen ? "show" : "")"></div>
+<div class="modal @(IsOpen ? "show" : "")" tabindex="-1" style="display: @(IsOpen ? "block" : "none")">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Valider l'Objectif : <strong>@objectiveToScan?.Title</strong></h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                @if (!string.IsNullOrEmpty(scanMessage))
+                {
+                    <div class="alert @(isScanError ? "alert-danger" : "alert-success")">
+                        @scanMessage
+                    </div>
+                }
+
+                @if (IsOpen)
+                {
+                    <p>Scannez le QR code de l'utilisateur :</p>
+                    <QrCodeScanner OnScanSuccess="HandleScanResult" />
+                }
+                else
+                {
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsOpen = false;
+    private ObjectiveDto? objectiveToScan;
+    private string? scanMessage;
+    private bool isScanError = false;
+
+    // 1. Méthode publique pour que le Dashboard puisse ouvrir ce modal
+    public void Show(ObjectiveDto objective)
+    {
+        objectiveToScan = objective;
+        scanMessage = null;
+        isScanError = false;
+        IsOpen = true;
+        StateHasChanged(); // Force le rafraîchissement
+    }
+
+    // 2. Méthode pour fermer
+    public void Close()
+    {
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    // 3. Appelé par le <QrCodeScanner>
+    private async Task HandleScanResult(string qrCode)
+    {
+        if (objectiveToScan == null) return;
+
+        scanMessage = "Validation en cours...";
+        isScanError = false;
+
+        // On crée le DTO que l'API attend
+        var request = new CreateValidationDto
+        {
+            ObjectiveId = objectiveToScan.Id,
+            ScannedQrCodeContent = qrCode
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/validations", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ValidationResponseDto>(); // On va devoir créer ça
+                scanMessage = $"{result?.Message} (Nouvel XP: {result?.NewXpBalance})";
+                isScanError = false;
+            }
+            else
+            {
+                scanMessage = await response.Content.ReadAsStringAsync();
+                isScanError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            scanMessage = $"Erreur : {ex.Message}";
+            isScanError = true;
+        }
+
+        StateHasChanged(); // Affiche le message de succès/erreur
+    }
+}

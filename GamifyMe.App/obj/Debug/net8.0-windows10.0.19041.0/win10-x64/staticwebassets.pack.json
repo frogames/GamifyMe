@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.App\\obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\scopedcss\\bundle\\GamifyMe.App.styles.css",
+      "PackagePath": "staticwebassets\\GamifyMe.App.styles.css"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.App\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.App\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.App\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.GamifyMe.App.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.build.GamifyMe.App.props",
+      "PackagePath": "build\\GamifyMe.App.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.buildMultiTargeting.GamifyMe.App.props",
+      "PackagePath": "buildMultiTargeting\\GamifyMe.App.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.buildTransitive.GamifyMe.App.props",
+      "PackagePath": "buildTransitive\\GamifyMe.App.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

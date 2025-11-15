@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\GamifyMe.Web.Client.props" />
+</Project>

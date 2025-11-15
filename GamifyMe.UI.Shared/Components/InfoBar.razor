@@ -1,0 +1,64 @@
+﻿@using GamifyMe.UI.Shared.Services
+@using GamifyMe.Shared.Dtos
+
+@inject AuthenticationStateProvider AuthStateProvider
+
+@implements IDisposable
+
+<div class="info-bar">
+    @if (userInfo is not null)
+    {
+        <div class="info-establishment">@userInfo.EstablishmentName</div>
+        <div class="info-stats">
+            <div class="info-level">
+                <span class="label">Niveau</span>
+                <span class="value">@userInfo.Level</span>
+            </div>
+
+            @if (userInfo.OtherWallets.Any())
+            {
+                <div class="info-currency">
+                    <span class="label">@userInfo.OtherWallets.First().CurrencyCode</span>
+                    <span class="value">@userInfo.OtherWallets.First().Balance</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private InfoBarDto? userInfo;
+
+    // On récupère notre service
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private ApiAuthenticationStateProvider GetApiProvider()
+    {
+        return (ApiAuthenticationStateProvider)AuthStateProvider;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // On s'abonne aux changements d'état
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+        // On charge les infos initiales
+        var authState = await AuthState;
+        userInfo = GetApiProvider().CurrentUserInfo;
+    }
+
+    // Cette méthode est appelée quand l'utilisateur se connecte/déconnecte
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        userInfo = GetApiProvider().CurrentUserInfo;
+        await InvokeAsync(StateHasChanged); // Force le rafraîchissement de l'UI
+    }
+
+    // N'oublie pas de se désabonner
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

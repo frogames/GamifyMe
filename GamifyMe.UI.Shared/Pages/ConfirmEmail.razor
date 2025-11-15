@@ -1,0 +1,93 @@
+﻿@page "/confirm-email"
+
+@using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Services
+
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+<PageTitle>Validation de l'email</PageTitle>
+
+<div class="login-container">
+    <div class="login-form" style="text-align: center;">
+
+        @if (string.IsNullOrEmpty(message))
+        {
+            <h1 style="color: var(--text-muted-color);">Validation en cours...</h1>
+            <p>Veuillez patienter pendant que nous vérifions votre lien.</p>
+        }
+        else
+        {
+            <h1 style="@(isSuccess ? "color: var(--success-color);" : "color: var(--danger-color);")">
+                @headerMessage
+            </h1>
+            <p style="margin-top: 1.5rem;">@message</p>
+
+            @if (isSuccess)
+            {
+                <button class="submit-btn" @onclick="GoToLogin">Aller à la page de connexion</button>
+            }
+        }
+
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private string headerMessage = "Erreur";
+    private bool isSuccess = false;
+
+    // 1. On lit les paramètres depuis l'URL (ex: ?userId=...&token=...)
+    [SupplyParameterFromQuery(Name = "userId")]
+    public Guid? UserId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    // 2. On exécute la logique au chargement de la page
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId == null || string.IsNullOrEmpty(Token))
+        {
+            isSuccess = false;
+            headerMessage = "Lien invalide";
+            message = "Le lien de confirmation est incomplet. Veuillez vérifier le lien dans votre email.";
+            return;
+        }
+
+        try
+        {
+            // 3. On appelle notre nouvel endpoint API
+            var requestUrl = $"api/Auth/confirm-email?userId={UserId}&token={Token}";
+            var response = await Http.GetAsync(requestUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Succès !
+                isSuccess = true;
+                headerMessage = "Compte validé !";
+                message = "Votre email a été confirmé avec succès. Vous pouvez maintenant vous connecter.";
+            }
+            else
+            {
+                // Erreur (token invalide, utilisateur non trouvé, etc.)
+                isSuccess = false;
+                headerMessage = "Échec de la validation";
+                message = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            headerMessage = "Erreur de connexion";
+            message = $"Impossible de contacter le serveur d'authentification : {ex.Message}";
+        }
+
+        StateHasChanged(); // On rafraîchit l'interface
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

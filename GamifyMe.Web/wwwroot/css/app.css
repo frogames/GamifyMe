@@ -1,0 +1,7 @@
+/* GamifyMe Custom Styles */
+
+.hover-elevation:hover {
+    transform: translateY(-4px);
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0 8px 12px -4px rgba(0,0,0,0.2) !important;
+}

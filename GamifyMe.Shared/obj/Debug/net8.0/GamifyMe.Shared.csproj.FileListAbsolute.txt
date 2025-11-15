@@ -1,0 +1,12 @@
+D:\GamifyMe\GamifyMe.Shared\bin\Debug\net8.0\GamifyMe.Shared.deps.json
+D:\GamifyMe\GamifyMe.Shared\bin\Debug\net8.0\GamifyMe.Shared.dll
+D:\GamifyMe\GamifyMe.Shared\bin\Debug\net8.0\GamifyMe.Shared.pdb
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.GeneratedMSBuildEditorConfig.editorconfig
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.AssemblyInfoInputs.cache
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.AssemblyInfo.cs
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.csproj.CoreCompileInputs.cache
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.sourcelink.json
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.dll
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\refint\GamifyMe.Shared.dll
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\GamifyMe.Shared.pdb
+D:\GamifyMe\GamifyMe.Shared\obj\Debug\net8.0\ref\GamifyMe.Shared.dll

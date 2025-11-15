@@ -1,0 +1,166 @@
+﻿@page "/register"
+
+@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Services
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Inscription</PageTitle>
+
+<div class="login-container">
+    <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="login-form">
+        <DataAnnotationsValidator />
+
+        <h1 class="page-title" style="color: var(--text-color-on-light); margin-top:0;">Créer un compte</h1>
+
+        <h3 id="establishment-name" style="text-align:center; margin-bottom:1rem;">
+            @establishmentName
+        </h3>
+
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <InputText id="username" class="form-control"
+                       Value="registerModel.Username"
+                       ValueChanged="@( (string v) => registerModel.Username = v )"
+                       ValueExpression="@(() => registerModel.Username)" />
+            <ValidationMessage For="@(() => registerModel.Username)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" type="email" class="form-control"
+                       Value="registerModel.Email"
+                       ValueChanged="@( (string v) => registerModel.Email = v )"
+                       ValueExpression="@(() => registerModel.Email)" />
+            <ValidationMessage For="@(() => registerModel.Email)" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <InputText id="password" type="password" class="form-control"
+                       Value="registerModel.Password"
+                       ValueChanged="@( (string v) => registerModel.Password = v )"
+                       ValueExpression="@(() => registerModel.Password)" />
+            <ValidationMessage For="@(() => registerModel.Password)" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">@errorMessage</div>
+        }
+
+        <!-- Debug info to help diagnose why button is disabled -->
+        <div style="margin-top:0.5rem; font-size:0.9rem; color:var(--text-muted-color);">
+            <div>Debug: isPageInvalid = @isPageInvalid</div>
+            <div>Debug: isBusy = @isBusy</div>
+            <div>Debug: EstablishmentId = @registerModel.EstablishmentId</div>
+        </div>
+
+        <button type="submit" class="submit-btn" disabled="@isBusy || isPageInvalid">
+            @if (isBusy)
+            {
+                <span>Création en cours...</span>
+            }
+            else
+            {
+                <span>S'inscrire</span>
+            }
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    private RegisterDto registerModel = new();
+    private string? errorMessage;
+    private bool isBusy = false;
+    private bool isPageInvalid = false; // Pour bloquer le formulaire si l'URL est mauvaise
+    private string establishmentName = "Chargement..."; // Pour afficher le nom
+
+    //3. MODIFICATION: C'est la "magie" de Blazor
+    // Cet attribut va automatiquement lire l'URL "?est_id="...
+    // et remplir la propriété EstablishmentId
+    [SupplyParameterFromQuery(Name = "est_id")]
+    public Guid? EstablishmentId { get; set; }
+
+    //4. MODIFICATION: On vérifie l'ID au chargement des paramètres de la page
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Console.WriteLine($"Register: OnParametersSetAsync called. EstablishmentId={EstablishmentId}");
+
+        if (EstablishmentId == null || EstablishmentId == Guid.Empty)
+        {
+            establishmentName = "Erreur";
+            errorMessage = "Lien d'inscription invalide. L'ID de l'établissement est manquant.";
+            isPageInvalid = true;
+            StateHasChanged();
+            return;
+        }
+
+        registerModel.EstablishmentId = EstablishmentId.Value;
+        var requestUrl = $"api/Public/establishments/{EstablishmentId.Value}";
+        Console.WriteLine($"Register: calling {requestUrl}");
+
+        try
+        {
+            var httpRes = await Http.GetAsync(requestUrl);
+            Console.WriteLine($"Register: HTTP {(int)httpRes.StatusCode}");
+
+            if (httpRes.IsSuccessStatusCode)
+            {
+                var dto = await httpRes.Content.ReadFromJsonAsync<EstablishmentNameDto>();
+                establishmentName = dto?.Name ?? "(aucun nom)";
+                errorMessage = null;
+                isPageInvalid = false;
+            }
+            else
+            {
+                establishmentName = $"Erreur API ({(int)httpRes.StatusCode})";
+                errorMessage = $"Impossible de récupérer l'établissement (code {(int)httpRes.StatusCode}).";
+                isPageInvalid = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            establishmentName = "Erreur";
+            errorMessage = "Impossible de charger l'établissement : " + ex.Message;
+            isPageInvalid = true;
+            Console.WriteLine($"Register: fetch error: {ex}");
+        }
+
+        // Ensure UI updates after we change isPageInvalid
+        StateHasChanged();
+    }
+
+    private async Task HandleRegister()
+    {
+        if (isPageInvalid)
+        {
+            // protége côté logique si l'établissement n'est pas valide
+            errorMessage = "Lien d'inscription invalide. Impossible d'envoyer le formulaire.";
+            return;
+        }
+
+        isBusy = true;
+        errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Auth/register", registerModel);
+            if (response.IsSuccessStatusCode) Navigation.NavigateTo("/register-success");
+            else errorMessage = await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+            StateHasChanged();
+        }
+    }
+}

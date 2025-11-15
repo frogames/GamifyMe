@@ -1,0 +1,40 @@
+﻿@using GamifyMe.Shared.Dtos
+
+<div class="objective-card @(Objective.IsUnique && Objective.IsAlreadyCompleted ? "completed" : "")">
+
+    <div class="objective-icon">
+        <i class="@(string.IsNullOrWhiteSpace(Objective.IconName) ? "fas fa-star" : Objective.IconName)"></i>
+    </div>
+
+    <div class="objective-content">
+        <h4 class="objective-title">@Objective.Title</h4>
+        <p class="objective-description">@Objective.Description</p>
+    </div>
+
+    <div class="objective-rewards">
+        <div class="reward-xp">
+            @Objective.XpReward XP
+        </div>
+
+        @if (Objective.DocPointsReward > 0)
+        {
+            <div class="reward-currency">
+                @Objective.DocPointsReward <i class="fas fa-coins"></i>
+            </div>
+        }
+    </div>
+
+    @if (Objective.IsUnique && Objective.IsAlreadyCompleted)
+    {
+        <div class="objective-completed-badge">
+            Terminé
+        </div>
+    }
+</div>
+
+@code {
+    // C'est le paramètre d'entrée.
+    // La page "Objectives" va nous "passer" l'objectif à afficher.
+    [Parameter]
+    public ObjectiveDto Objective { get; set; } = new();
+}

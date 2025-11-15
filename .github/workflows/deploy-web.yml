@@ -1,0 +1,83 @@
+# Nom du workflow
+name: 🚀 Déployer la Beta Web (Frontend FTP + Backend Docker)
+
+# Déclencheur : se lance à chaque push sur la branche 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  # --- JOB 1: DÉPLOYER LE FRONTEND (BLAZOR WASM) PAR FTP ---
+  build-and-deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 1. Récupérer le code
+      uses: actions/checkout@v4
+
+    - name: 2. Installer .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: 3. Publier le projet Client (Blazor WASM)
+      # On compile le projet client en mode Release et on place les fichiers dans /publish-client
+      run: dotnet publish GamifyMe.Web.Client -c Release -o ./publish-client
+
+    - name: 4. Déployer par FTP sur Hostinger
+      # On utilise une action FTP populaire
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        # On envoie le contenu du dossier wwwroot (le Blazor compilé)
+        local-dir: ./publish-client/wwwroot/
+        # On déploie à la racine du FTP. Change '.' pour 'public_html' si Hostinger le demande
+        server-dir: ./ 
+        protocol: ftps # Utilise FTPS si Hostinger le supporte (plus sécurisé), sinon 'ftp'
+        port: 21 # Port FTP standard
+
+  # --- JOB 2: DÉPLOYER LE BACKEND (API) SUR LE VPS ---
+  build-and-deploy-backend:
+    runs-on: ubuntu-latest
+    # Ce job ne commence que si le frontend a réussi
+    needs: build-and-deploy-frontend 
+    steps:
+    - name: 1. Récupérer le code
+      uses: actions/checkout@v4
+
+    - name: 2. Se connecter au Registre Docker de GitHub
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }} # Secret géré par GitHub
+
+    - name: 3. Construire et Pousser l'image Docker de l'API
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./GamifyMe.Api/Dockerfile # Chemin vers notre Dockerfile
+        push: true
+        # --- CORRIGÉ AVEC VOTRE NOM ---
+        tags: ghcr.io/frogames/gamifyme-api:latest
+
+    - name: 4. Déployer sur le VPS Hostinger (via SSH)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        password: ${{ secrets.VPS_PASSWORD }} # On utilise le mot de passe
+        port: 22
+        script: |
+          # Se placer dans le bon dossier sur le VPS
+          cd /home/gamifyme
+          
+          # Injecter le secret de la BDD dans l'environnement du VPS
+          export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
+          
+          # Lancer Docker Compose
+          # 1. 'pull' télécharge la nouvelle image que l'on vient de pousser
+          docker-compose pull
+          # 2. 'up -d' redémarre le service avec la nouvelle image
+          docker-compose up -d --remove-orphans

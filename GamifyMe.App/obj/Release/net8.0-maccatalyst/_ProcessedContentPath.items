@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Content Include="Resources\Raw\AboutAssets.txt" />
+    <Content Include="C:\Users\chris\.nuget\packages\mudblazor\7.0.0\staticwebassets\MudBlazor.min.css" />
+    <Content Include="C:\Users\chris\.nuget\packages\mudblazor\7.0.0\staticwebassets\MudBlazor.min.js" />
+    <Content Include="D:\GamifyMe\GamifyMe.App\obj\Release\net8.0-maccatalyst\scopedcss\bundle\GamifyMe.App.styles.css" />
+    <Content Include="D:\GamifyMe\GamifyMe.App\obj\Release\net8.0-maccatalyst\scopedcss\projectbundle\GamifyMe.App.bundle.scp.css" />
+    <Content Include="D:\GamifyMe\GamifyMe.App\wwwroot\css\app.css" />
+    <Content Include="D:\GamifyMe\GamifyMe.App\wwwroot\favicon.png" />
+    <Content Include="D:\GamifyMe\GamifyMe.App\wwwroot\index.html" />
+    <Content Include="D:\GamifyMe\GamifyMe.UI.Shared\wwwroot\background.png" />
+    <Content Include="D:\GamifyMe\GamifyMe.UI.Shared\wwwroot\exampleJsInterop.js" />
+  </ItemGroup>
+</Project>

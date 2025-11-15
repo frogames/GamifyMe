@@ -1,0 +1,126 @@
+﻿@page "/store"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using GamifyMe.UI.Shared.Helpers
+@using System.Net.Http.Json @* CORRECTION : Indispensable pour GetFromJsonAsync *@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Boutique</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <MudText Typo="Typo.h4" Color="Color.Primary">Boutique</MudText>
+    </div>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
+    }
+    else if (storeItems == null || !storeItems.Any())
+    {
+        <MudAlert Severity="Severity.Info">La boutique est vide pour le moment.</MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var item in storeItems)
+            {
+                <MudItem xs="6" sm="4" md="3">
+                    <MudCard Elevation="3" Class="h-100 d-flex flex-column hover-elevation">
+                        @* ZONE IMAGE / ICÔNE *@
+                        <div class="d-flex justify-center align-center pa-6" style="background-color: var(--mud-palette-background-grey);">
+                            <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;" Color="Color.Primary" />
+                        </div>
+
+                        <MudCardContent Class="flex-grow-1 pt-4">
+                            <MudText Typo="Typo.subtitle1" Align="Align.Center"><b>@item.Name</b></MudText>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
+                                @(string.IsNullOrEmpty(item.Description) ? "Aucune description" : item.Description)
+                            </MudText>
+                        </MudCardContent>
+
+                        <MudCardActions Class="d-flex justify-center pb-4 px-4">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Secondary"
+                                       FullWidth="true"
+                                       OnClick="() => PurchaseItem(item)"
+                                       Disabled="@isPurchasing">
+                                @if (isPurchasing)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-center gap-1">
+                                        <span>Acheter</span>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Surface" Variant="Variant.Text" Class="ml-2">@item.Price Pts</MudChip>
+                                    </div>
+                                }
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<StoreItemDto> storeItems = new();
+    private bool isLoading = true;
+    private bool isPurchasing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStoreItems();
+    }
+
+    private async Task LoadStoreItems()
+    {
+        isLoading = true;
+        try
+        {
+            storeItems = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active") ?? new List<StoreItemDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PurchaseItem(StoreItemDto item)
+    {
+        if (isPurchasing) return;
+        isPurchasing = true;
+
+        try
+        {
+            var response = await Http.PostAsync($"api/store/purchase/{item.Id}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Vous avez acheté : {item.Name} !", Severity.Success);
+                // Optionnel : Recharger pour mettre à jour le stock si besoin
+                // await LoadStoreItems();
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Achat impossible : {errorMsg}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur technique : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isPurchasing = false;
+        }
+    }
+}

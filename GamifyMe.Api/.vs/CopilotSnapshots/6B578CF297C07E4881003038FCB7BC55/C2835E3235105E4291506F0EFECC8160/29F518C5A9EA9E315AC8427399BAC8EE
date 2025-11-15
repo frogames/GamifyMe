@@ -1,0 +1,112 @@
+﻿@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div id="@scannerId" style="width:100%; max-width:500px; border:1px solid #ddd;">
+
+ <p style="text-align: center; color: var(--text-muted-color); padding:1rem;">
+ Veuillez autoriser l'accès à la caméra
+ </p>
+
+</div>
+
+@code {
+ // ID unique pour le 'div'
+ private string scannerId = $"qr-scanner-{Guid.NewGuid()}";
+ 
+ // Référence .NET pour JS
+ private DotNetObjectReference<QrCodeScanner>? dotnetObjectReference;
+ 
+ // État
+ private bool started = false;
+ private bool disposed = false;
+ 
+ // Événement vers le parent
+ [Parameter]
+ public EventCallback<string> OnScanSuccess { get; set; }
+ 
+ // NOTE: Nous n'appelons plus automatiquement JS dans OnAfterRenderAsync.
+ // Le parent doit appeler StartAsync() pour démarrer le scanner.
+ 
+ // Méthode publique pour démarrer le scanner depuis le parent
+ public async Task StartAsync()
+ {
+ if (disposed) throw new ObjectDisposedException(nameof(QrCodeScanner));
+ if (started) return;
+ 
+ try
+ {
+ dotnetObjectReference = DotNetObjectReference.Create(this);
+ await JSRuntime.InvokeVoidAsync("qrScanner.start", scannerId, dotnetObjectReference);
+ started = true;
+ Console.WriteLine($"QrCodeScanner: démarré (elementId={scannerId}).");
+ }
+ catch (JSException jsEx)
+ {
+ Console.WriteLine($"QrCodeScanner JS error on Start: {jsEx.Message}");
+ started = false;
+ }
+ catch (Exception ex)
+ {
+ Console.WriteLine($"QrCodeScanner unexpected error on Start: {ex.Message}");
+ started = false;
+ }
+ }
+ 
+ // Méthode publique pour arrêter le scanner depuis le parent
+ public async Task StopAsync()
+ {
+ if (!started) return;
+ try
+ {
+ await JSRuntime.InvokeVoidAsync("qrScanner.stop", scannerId);
+ Console.WriteLine($"QrCodeScanner: stop demandé (elementId={scannerId}).");
+ }
+ catch (JSException jsEx)
+ {
+ Console.WriteLine($"QrCodeScanner stop JS error: {jsEx.Message}");
+ }
+ catch (Exception ex)
+ {
+ Console.WriteLine($"QrCodeScanner stop unexpected error: {ex.Message}");
+ }
+ finally
+ {
+ started = false;
+ }
+ }
+ 
+ // Méthode appelée par JS
+ [JSInvokable]
+ public async Task HandleScanResult(string decodedText)
+ {
+ try
+ {
+ await OnScanSuccess.InvokeAsync(decodedText);
+ }
+ catch (Exception ex)
+ {
+ Console.WriteLine($"QrCodeScanner.HandleScanResult error: {ex.Message}");
+ }
+ }
+ 
+ public async ValueTask DisposeAsync()
+ {
+ if (disposed) return;
+ disposed = true;
+ 
+ try
+ {
+ if (started)
+ {
+ try { await JSRuntime.InvokeVoidAsync("qrScanner.stop", scannerId); }
+ catch (Exception ex) { Console.WriteLine($"QrCodeScanner Dispose stop error: {ex.Message}"); }
+ }
+ }
+ finally
+ {
+ dotnetObjectReference?.Dispose();
+ dotnetObjectReference = null;
+ started = false;
+ }
+ }
+}

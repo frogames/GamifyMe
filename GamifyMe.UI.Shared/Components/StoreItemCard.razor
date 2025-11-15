@@ -1,0 +1,48 @@
+﻿@using GamifyMe.Shared.Dtos
+
+<div class="store-item-card">
+    <div class="store-item-icon">
+        <i class="@(string.IsNullOrWhiteSpace(Item.IconName) ? "fas fa-gem" : Item.IconName)"></i>
+    </div>
+
+    <div class="store-item-content">
+        <h4 class="store-item-title">@Item.Name</h4>
+        <p class="store-item-description">@Item.Description</p>
+    </div>
+
+    <div class="store-item-action">
+        <div class="store-item-price">
+            @Item.Price <i class="fas fa-coins"></i>
+        </div>
+
+        <button class="store-item-buy-btn" @onclick="HandleInternalClick" disabled="@(Item.Stock <= 0)">
+
+            @if (Item.Stock <= 0)
+            {
+                <span>Épuisé</span>
+            }
+            else
+            {
+                <span>Acheter</span>
+            }
+        </button>
+        <small class="store-item-stock">@Item.Stock en stock</small>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public StoreItemDto Item { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<Guid> OnPurchaseClicked { get; set; }
+
+    // C'est la nouvelle méthode "pont"
+    private async Task HandleInternalClick()
+    {
+        // 1. Le bouton est cliqué, cette méthode est appelée.
+        // 2. On appelle "l'événement parent" (OnPurchaseClicked)
+        //    en lui passant l'ID de l'objet actuel.
+        await OnPurchaseClicked.InvokeAsync(Item.Id);
+    }
+}

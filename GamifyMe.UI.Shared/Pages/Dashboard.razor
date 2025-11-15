@@ -1,0 +1,828 @@
+﻿@page "/dashboard"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur")]
+
+@using MudBlazor
+
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+@using System.Net.Http.Headers
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.UI.Shared.Helpers
+
+
+@inject IDialogService DialogService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Dashboard Gestionnaire</PageTitle>
+
+@if (isPageLoading)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="my-2">Chargement du tableau de bord...</MudAlert>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+
+        @* TITRE *@
+        <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Dashboard Gestionnaire</MudText>
+
+        @* --- SECTION 1 : SCANNER DE PROFIL --- *@
+        <MudCard Elevation="3" Class="mb-8">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Scanner un profil utilisateur</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner" Color="Color.Default" />
+                </CardHeaderActions>
+            </MudCardHeader>
+
+            <MudCardContent>
+                @if (!string.IsNullOrEmpty(scanMessage))
+                {
+                    <MudAlert Severity="@(isScanError ? Severity.Error : Severity.Success)" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="(() => scanMessage = null)">
+                        @scanMessage
+                    </MudAlert>
+                }
+
+                @if (scanResultDto == null)
+                {
+                    @if (!isScannerActive)
+                    {
+                        <div class="d-flex justify-center pa-4">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="StartScanner">
+                                Activer le scanner
+                            </MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="mb-2">Dirigez la caméra vers le QR code.</MudText>
+                        <MudPaper Class="pa-2 mb-4 mx-auto" Outlined="true" MaxWidth="400px">
+                            <QrCodeScanner @ref="qrScannerComponent" OnScanSuccess="HandleScanResult" />
+                        </MudPaper>
+                        <div class="d-flex justify-center">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="StopScanner">Annuler le scan</MudButton>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @* RÉSULTAT DU SCAN *@
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5" Color="Color.Primary">@scanResultDto.UserProfile?.Username</MudText>
+                            <MudText Typo="Typo.body2">@scanResultDto.UserProfile?.Email</MudText>
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mt-2">@scanResultDto.UserProfile?.EstablishmentName</MudChip>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                            <MudText Typo="Typo.h6" GutterBottom="true">Commandes en attente</MudText>
+
+                            @if (scanResultDto.PendingOrders.Any())
+                            {
+                                <MudList T="string" Dense="true">
+                                    @foreach (var order in scanResultDto.PendingOrders)
+                                    {
+                                        <MudListItem>
+                                            <div class="d-flex justify-space-between align-center width-100">
+                                                <MudText>@order.ItemName</MudText>
+                                                <div>
+                                                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" Class="mr-2" OnClick="() => CompleteOrder(order.OrderId)">Valider</MudButton>
+                                                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="() => CancelOrder(order.OrderId)">Annuler</MudButton>
+                                                </div>
+                                            </div>
+                                        </MudListItem>
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info" Variant="Variant.Text">Aucune commande physique en attente.</MudAlert>
+                            }
+                        </MudItem>
+                    </MudGrid>
+
+                    <div class="d-flex justify-center mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ResetScanner">Scanner un autre profil</MudButton>
+                    </div>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudDivider Class="my-8" />
+
+        @* --- SECTION 2 : GESTION DES OBJECTIFS --- *@
+        <MudText Typo="Typo.h4" Class="mb-4">Gestion des Objectifs</MudText>
+
+        <MudGrid>
+        @* ============================================================== *@
+        @* SECTION 1 : FORMULAIRE OBJECTIFS             *@
+        @* ============================================================== *@
+        <MudItem xs="12" md="12" lg="5">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@(editingObjectiveId == null ? "Créer un nouvel objectif" : "Modifier l'objectif")</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <EditForm Model="newObjective" OnValidSubmit="@(editingObjectiveId == null ? HandleCreateObjective : HandleUpdateObjective)">
+                        <DataAnnotationsValidator />
+
+                        @* T="string" OBLIGATOIRE *@
+                        <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                        
+                        <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
+
+                        @* SÉLECTEUR D'ICÔNE *@
+                        <div class="d-flex justify-center mb-4">
+                            <MudTooltip Text="Cliquez pour changer l'icône">
+                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                    </MudPaper>
+                                </MudBadge>
+                            </MudTooltip>
+                        </div>
+                        <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newObjective.IconName</MudText>
+
+                        <MudTextField T="string" Label="Lieu" @bind-Value="newObjective.Location" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+
+
+                            <div class="d-flex gap-4 mb-3 align-center">
+                                @* Date Début *@
+                                <MudDatePicker T="DateTime?" Label="Date Événement" @bind-Date="newObjective.EventDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+
+                                @* Heure Début (Natif) *@
+                                <MudField Label="Heure" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 120px; padding-top: 10px;">
+                                    <input type="time"
+                                           value="@(eventTime?.ToString(@"hh\:mm"))"
+                                           @onchange="@((ChangeEventArgs e) => eventTime = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()))"
+                                           style="width:100%; border:none; outline:none; background:transparent;" />
+                                </MudField>
+                            </div>
+
+                            <div class="d-flex gap-4 mb-3 align-center">
+                                @* Date Fin *@
+                                <MudDatePicker T="DateTime?" Label="Date Fin/Expiration" @bind-Date="newObjective.EndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+
+                                @* Heure Fin (Natif) *@
+                                <MudField Label="Heure" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 120px; padding-top: 10px;">
+                                    <input type="time"
+                                           value="@(endTime?.ToString(@"hh\:mm"))"
+                                           @onchange="@((ChangeEventArgs e) => endTime = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()))"
+                                           style="width:100%; border:none; outline:none; background:transparent;" />
+                                </MudField>
+                            </div>
+
+                        <MudText Typo="Typo.subtitle2" Class="mt-2">Prérequis (facultatif)</MudText>
+                        <MudPaper Class="pa-2 mb-3" Outlined="true" MaxHeight="150px" Style="overflow-y: auto;">
+                            @if (allObjectivesList.Any())
+                            {
+                                @foreach (var objective in allObjectivesList)
+                                {
+                                    @* CHECKBOX AVEC T="bool" *@
+                                    <MudCheckBox T="bool" Value="@newObjective.PrerequisiteObjectiveIds.Contains(objective.Id)" ValueChanged="@((bool v) => TogglePrerequisite(objective.Id))" Label="@objective.Title" Dense="true" Color="Color.Primary" />
+                                }
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption">Aucun autre objectif disponible.</MudText>
+                            }
+                        </MudPaper>
+
+                        <div class="d-flex gap-4 mb-3">
+                            @* NUMERIC FIELD AVEC T="int" *@
+                            <MudNumericField T="int" Label="XP" @bind-Value="newObjective.XpReward" For="@(() => newObjective.XpReward)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudNumericField T="int" Label="Monnaie" @bind-Value="newObjective.DocPointsReward" For="@(() => newObjective.DocPointsReward)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+
+                        <div class="d-flex gap-4 mb-4">
+                            <MudCheckBox T="bool" @bind-Value="newObjective.IsUnique" Label="Unique" Color="Color.Secondary" Dense="true" />
+                            <MudCheckBox T="bool" @bind-Value="newObjective.IsActive" Label="Actif" Color="Color.Success" Dense="true" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(successMessageObjective)) { <MudAlert Severity="Severity.Success" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => successMessageObjective = null">@successMessageObjective</MudAlert> }
+                        @if (!string.IsNullOrEmpty(errorMessageObjective)) { <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => errorMessageObjective = null">@errorMessageObjective</MudAlert> }
+
+                        <div class="d-flex align-center">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusyObjective">
+                                @(isBusyObjective ? "Traitement..." : (editingObjectiveId == null ? "Créer" : "Mettre à jour"))
+                            </MudButton>
+                            @if (editingObjectiveId != null)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="ml-2" OnClick="CancelEditObjective">Annuler</MudButton>
+                            }
+                        </div>
+                    </EditForm>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        @* LISTE OBJECTIFS *@
+        <MudItem xs="12" md="12" lg="7">
+            <MudTable Items="@allObjectivesFullList" Hover="true" Elevation="3" Dense="true" Striped="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Objectifs Existants</MudText>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Titre</MudTh>
+                    <MudTh>Récompenses</MudTh>
+                    <MudTh>État</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Titre">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Class="mr-2" />
+                            <MudText Typo="Typo.body2"><b>@context.Title</b></MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Récompenses">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@context.XpReward XP</MudChip>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@context.DocPointsReward Pts</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="État">
+                        <MudChip T="string" Size="Size.Small" Color="@(context.IsActive ? Color.Success : Color.Default)">@(context.IsActive ? "Actif" : "Inactif")</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudTooltip Text="Scanner">
+                            <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Small" Color="Color.Info" OnClick="async () => await scanModal.ShowAsync(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Éditer">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="() => StartEditObjective(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Supprimer">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteObjective(context)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+
+    <MudDivider Class="my-8" />
+
+    <MudText Typo="Typo.h4" Class="mb-4">Gestion de la Boutique</MudText>
+
+    <MudGrid Class="mb-16">
+        @* ============================================================== *@
+        @* SECTION 2 : FORMULAIRE BOUTIQUE              *@
+        @* ============================================================== *@
+        <MudItem xs="12" md="12" lg="5">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@(editingStoreItemId == null ? "Créer un objet" : "Modifier l'objet")</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <EditForm Model="newStoreItem" OnValidSubmit="@(editingStoreItemId == null ? HandleCreateStoreItem : HandleUpdateStoreItem)">
+                        <DataAnnotationsValidator />
+
+                        <MudTextField T="string" Label="Nom" @bind-Value="newStoreItem.Name" For="@(() => newStoreItem.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                        <MudTextField T="string" Label="Description" @bind-Value="newStoreItem.Description" Variant="Variant.Outlined" Lines="2" Margin="Margin.Dense" Class="mb-3" />
+
+                        @* SELECT AVEC T="Enum" *@
+                        <MudSelect T="StoreItemType" Label="Type" @bind-Value="newStoreItem.ItemType" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (StoreItemType type in Enum.GetValues(typeof(StoreItemType)))
+                            {
+                                <MudSelectItem Value="@type">@type</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <div class="d-flex gap-4 mb-3">
+                            <MudNumericField T="int" Label="Prix" @bind-Value="newStoreItem.Price" For="@(() => newStoreItem.Price)" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
+                            <MudNumericField T="int" Label="Stock" @bind-Value="newStoreItem.Stock" For="@(() => newStoreItem.Stock)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+
+                        @if (newStoreItem.ItemType == StoreItemType.Digital)
+                        {
+                            <MudTextField T="string" Label="Code Action" @bind-Value="newStoreItem.DigitalActionCode" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                        }
+
+                        @* SÉLECTEUR D'ICÔNE BOUTIQUE *@
+                        <div class="d-flex justify-center mb-4">
+                            <MudTooltip Text="Cliquez pour changer l'icône">
+                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="font-size: 3rem;" Color="Color.Secondary" />
+                                    </MudPaper>
+                                </MudBadge>
+                            </MudTooltip>
+                        </div>
+                        <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
+
+                        <MudCheckBox T="bool" @bind-Value="newStoreItem.IsActive" Label="Actif (Visible)" Color="Color.Success" Dense="true" Class="mb-3" />
+
+                        @if (!string.IsNullOrEmpty(successMessageStore)) { <MudAlert Severity="Severity.Success" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => successMessageStore = null">@successMessageStore</MudAlert> }
+                        @if (!string.IsNullOrEmpty(errorMessageStore)) { <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => errorMessageStore = null">@errorMessageStore</MudAlert> }
+
+                        <div class="d-flex align-center">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusyStore">
+                                @(isBusyStore ? "Traitement..." : (editingStoreItemId == null ? "Créer" : "Mettre à jour"))
+                            </MudButton>
+                            @if (editingStoreItemId != null)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="ml-2" OnClick="CancelEditStoreItem">Annuler</MudButton>
+                            }
+                        </div>
+                    </EditForm>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        @* LISTE BOUTIQUE *@
+        <MudItem xs="12" md="12" lg="7">
+            <MudTable Items="@allStoreItemsList" Hover="true" Elevation="3" Dense="true" Striped="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Objets Existants</MudText>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Nom</MudTh>
+                    <MudTh>Prix / Stock</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nom">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Class="mr-2" />
+                            <MudText Typo="Typo.body2"><b>@context.Name</b></MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Prix / Stock">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@context.Price pts</MudChip>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.Stock == 0 ? Color.Error : Color.Default)" Variant="Variant.Text">
+                            @(context.Stock == 0 ? "Épuisé" : $"x {context.Stock}")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudText Typo="Typo.caption">@context.ItemType</MudText>
+                        @if (!context.IsActive) { <MudChip T="string" Size="Size.Small" Color="Color.Default" Class="ml-2">Inactif</MudChip> }
+                    </MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudTooltip Text="Éditer">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="() => StartEditStoreItem(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Supprimer">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(context)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+
+
+        <MudDivider Class="my-8" />
+
+        @* --- SECTION 4 : JOURNAL D'ACTIVITÉ --- *@
+        <MudText Typo="Typo.h4" Class="mb-4">Journal d'Activité</MudText>
+
+        <MudTable Items="@dashboardLogs" Hover="true" Dense="true" Striped="true" Elevation="3" Class="mb-16">
+            <HeaderContent>
+                <MudTh>Date / Heure</MudTh>
+                <MudTh>Action</MudTh>
+                <MudTh>Détails</MudTh>
+                <MudTh>Auteur</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Date">@context.Date.ToLocalTime().ToString("g")</MudTd>
+                <MudTd DataLabel="Action">
+                    <div class="d-flex align-center">
+                        @{
+                            // Petite conversion string -> Color enum
+                            var color = context.Color switch
+                            {
+                                "Success" => Color.Success,
+                                "Warning" => Color.Warning,
+                                "Info" => Color.Info,
+                                _ => Color.Default
+                            };
+                        }
+                        <MudIcon Icon="@context.Icon" Color="@color" Size="Size.Small" Class="mr-2" />
+                        <MudText Typo="Typo.body2">@context.ActionType</MudText>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Détails"><b>@context.Details</b></MudTd>
+                <MudTd DataLabel="Auteur"><MudChip T="string" Size="Size.Small" Variant="Variant.Text">@context.ActorName</MudChip></MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+
+    </MudContainer>
+
+    @* --- LE MODAL HORS DU CONTAINER --- *@
+    <ScanValidationModal @ref="scanModal" />
+}
+
+@code {
+    // --- Modèles pour les formulaires ---
+    private CreateObjectiveDto newObjective = new();
+    private TimeSpan? eventTime;
+    private TimeSpan? endTime;
+    private StoreItemDto newStoreItem = new();
+
+    // --- Listes pour l'affichage ---
+    private List<ObjectiveSimpleDto> allObjectivesList = new();
+    private List<ObjectiveDto> allObjectivesFullList = new();
+    private List<StoreItemDto> allStoreItemsList = new();
+
+    // --- Variables d'état (Scan) ---
+    private ProfileScanDto? scanResultDto;
+    private string? scanMessage;
+    private bool isScanError = false;
+    private bool isScannerActive = false;
+    private ObjectiveDto? objectiveToScan;
+
+    // --- Variables d'état (Formulaires) ---
+    private string? successMessageObjective;
+    private string? errorMessageObjective;
+    private bool isBusyObjective = false;
+    private string? successMessageStore;
+    private string? errorMessageStore;
+    private bool isBusyStore = false;
+
+    // --- Variable d'état de chargement de page ---
+    private bool isPageLoading = true;
+
+    private ScanValidationModal scanModal = default!;
+    private QrCodeScanner? qrScannerComponent;
+
+    // --- Logs ---
+    private List<DashboardLogDto> dashboardLogs = new();
+
+    // Variables pour gérer l'état d'édition
+    private Guid? editingObjectiveId = null;
+    private Guid? editingStoreItemId = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadAllDashboardData();
+            isPageLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAllDashboardData()
+    {
+        Console.WriteLine("TRACE: DASHBOARD - LoadAllDashboardData START");
+        try
+        {
+            var objectivesTask = Http.GetFromJsonAsync<List<ObjectiveSimpleDto>>("api/objectives/list-all");
+            var objectivesFullTask = Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/list-all-full");
+            var storeItemsTask = Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all");
+
+            // NOUVEAU : Tâche pour les logs
+            var logsTask = Http.GetFromJsonAsync<List<DashboardLogDto>>("api/dashboard/activity-logs");
+
+            await Task.WhenAll(objectivesTask, objectivesFullTask, storeItemsTask, logsTask);
+
+            allObjectivesList = objectivesTask.Result ?? new();
+            allObjectivesFullList = objectivesFullTask.Result ?? new();
+            allStoreItemsList = storeItemsTask.Result ?? new();
+            dashboardLogs = logsTask.Result ?? new(); // Récupération du résultat
+        }
+        catch (Exception ex)
+        {
+            errorMessageObjective = "Impossible de charger les données : " + ex.Message;
+        }
+    }
+
+    // --- SCANNER ---
+    private async Task StartScanner()
+    {
+        if (isScannerActive) return;
+        isScannerActive = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(100);
+
+        try
+        {
+            if (qrScannerComponent != null)
+            {
+                await qrScannerComponent.StartAsync();
+            }
+            else
+            {
+                scanMessage = "Scanner non initialisé.";
+                isScanError = true;
+                isScannerActive = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            scanMessage = "Erreur démarrage scanner: " + ex.Message;
+            isScanError = true;
+            isScannerActive = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void StopScanner()
+    {
+        isScannerActive = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleScanResult(string qrCode)
+    {
+        scanMessage = null;
+        isScanError = false;
+        try
+        {
+            StopScanner();
+            scanResultDto = await Http.GetFromJsonAsync<ProfileScanDto>($"api/Users/profile-scan/{qrCode}");
+            isScannerActive = false;
+        }
+        catch (Exception ex)
+        {
+            scanMessage = $"Erreur scan: {ex.Message}";
+            isScanError = true;
+            isScannerActive = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ResetScanner()
+    {
+        scanResultDto = null;
+        scanMessage = null;
+        StopScanner();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CompleteOrder(Guid orderId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/orders/{orderId}/complete", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                scanMessage = $"Erreur: {await response.Content.ReadAsStringAsync()}";
+                isScanError = true;
+            }
+            else
+            {
+                scanMessage = "Commande validée !";
+                isScanError = false;
+                await RefreshProfile();
+            }
+        }
+        catch (Exception ex) { scanMessage = ex.Message; isScanError = true; }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CancelOrder(Guid orderId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/orders/{orderId}/cancel", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                scanMessage = $"Erreur: {await response.Content.ReadAsStringAsync()}";
+                isScanError = true;
+            }
+            else
+            {
+                scanMessage = "Commande annulée.";
+                isScanError = false;
+                await RefreshProfile();
+            }
+        }
+        catch (Exception ex) { scanMessage = ex.Message; isScanError = true; }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshProfile()
+    {
+        if (scanResultDto?.UserProfile?.QrCode != null)
+        {
+            await HandleScanResult(scanResultDto.UserProfile.QrCode);
+        }
+    }
+
+    // --- OBJECTIFS ---
+    private void TogglePrerequisite(Guid objectiveId)
+    {
+        if (newObjective.PrerequisiteObjectiveIds.Contains(objectiveId)) newObjective.PrerequisiteObjectiveIds.Remove(objectiveId);
+        else newObjective.PrerequisiteObjectiveIds.Add(objectiveId);
+    }
+
+    private async Task HandleCreateObjective()
+    {
+        MergeDatesAndTimes();
+        isBusyObjective = true;
+        successMessageObjective = null;
+        errorMessageObjective = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/objectives", newObjective);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Objectif créé !";
+                newObjective = new CreateObjectiveDto();
+                await LoadAllDashboardData();
+            }
+            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
+        finally { isBusyObjective = false; }
+    }
+
+    private void StartEditObjective(ObjectiveDto objectiveToEdit)
+    {
+        editingObjectiveId = objectiveToEdit.Id;
+
+        // Extraction de l'heure pour les TimePickers
+        eventTime = objectiveToEdit.EventDate?.TimeOfDay;
+        endTime = objectiveToEdit.EndDate?.TimeOfDay;
+
+        newObjective = new CreateObjectiveDto
+        {
+            Title = objectiveToEdit.Title,
+            Description = objectiveToEdit.Description,
+            IconName = objectiveToEdit.IconName,
+            Location = objectiveToEdit.Location,
+            EventDate = objectiveToEdit.EventDate,
+            EndDate = objectiveToEdit.EndDate,
+            XpReward = objectiveToEdit.XpReward,
+            DocPointsReward = objectiveToEdit.DocPointsReward,
+            IsUnique = objectiveToEdit.IsUnique,
+            IsActive = objectiveToEdit.IsActive,
+            PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>()
+        };
+    }
+
+    private void CancelEditObjective()
+    {
+        editingObjectiveId = null;
+        newObjective = new CreateObjectiveDto();
+        eventTime = null; // Reset heure
+        endTime = null;   // Reset heure
+        errorMessageObjective = null;
+    }
+
+    private async Task HandleUpdateObjective()
+    {
+        if (editingObjectiveId == null) return;
+        MergeDatesAndTimes();
+
+        isBusyObjective = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/objectives/{editingObjectiveId.Value}", newObjective);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Mis à jour !";
+                CancelEditObjective();
+                await LoadAllDashboardData();
+            }
+            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
+        finally { isBusyObjective = false; }
+    }
+
+    private async Task DeleteObjective(ObjectiveDto objectiveToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{objectiveToDelete.Title}' ?");
+        if (!confirmed) return;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/objectives/{objectiveToDelete.Id}");
+            if (response.IsSuccessStatusCode) await LoadAllDashboardData();
+            else errorMessageObjective = "Erreur suppression.";
+        }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
+    }
+
+    // --- BOUTIQUE ---
+    private async Task HandleCreateStoreItem()
+    {
+        isBusyStore = true;
+        successMessageStore = null;
+        errorMessageStore = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/store", newStoreItem);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Objet créé !";
+                newStoreItem = new StoreItemDto();
+                await LoadAllDashboardData();
+            }
+            else { errorMessageStore = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = $"Erreur: {ex.Message}"; }
+        finally { isBusyStore = false; }
+    }
+
+    private void StartEditStoreItem(StoreItemDto itemToEdit)
+    {
+        editingStoreItemId = itemToEdit.Id;
+        newStoreItem = new StoreItemDto
+        {
+            Id = itemToEdit.Id,
+            Name = itemToEdit.Name,
+            Description = itemToEdit.Description,
+            Price = itemToEdit.Price,
+            IconName = itemToEdit.IconName,
+            ItemType = itemToEdit.ItemType,
+            DigitalActionCode = itemToEdit.DigitalActionCode,
+            Stock = itemToEdit.Stock,
+            IsActive = itemToEdit.IsActive
+        };
+    }
+
+    private void CancelEditStoreItem()
+    {
+        editingStoreItemId = null;
+        newStoreItem = new StoreItemDto();
+        errorMessageStore = null;
+    }
+
+    private async Task HandleUpdateStoreItem()
+    {
+        if (editingStoreItemId == null) return;
+        isBusyStore = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/store/{editingStoreItemId.Value}", newStoreItem);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Mis à jour !";
+                CancelEditStoreItem();
+                await LoadAllDashboardData();
+            }
+            else { errorMessageStore = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+        finally { isBusyStore = false; }
+    }
+
+    private async Task DeleteStoreItem(StoreItemDto itemToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{itemToDelete.Name}' ?");
+        if (!confirmed) return;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/store/{itemToDelete.Id}");
+            if (response.IsSuccessStatusCode) await LoadAllDashboardData();
+            else errorMessageStore = "Erreur suppression.";
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+    }
+
+    // --- SÉLECTEURS D'ICÔNES (CORRIGÉS) ---
+    private async Task OpenIconPickerForObjective()
+    {
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string iconName) newObjective.IconName = iconName;
+    }
+
+    private async Task OpenIconPickerForStore()
+    {
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string iconName) newStoreItem.IconName = iconName;
+    }
+
+    private void MergeDatesAndTimes()
+    {
+        // Fusionner Date Événement + Heure Événement
+        if (newObjective.EventDate.HasValue)
+        {
+            // On prend la date à minuit + le temps sélectionné (ou 00:00 par défaut)
+            newObjective.EventDate = newObjective.EventDate.Value.Date + (eventTime ?? TimeSpan.Zero);
+        }
+
+        // Fusionner Date Fin + Heure Fin
+        if (newObjective.EndDate.HasValue)
+        {
+            newObjective.EndDate = newObjective.EndDate.Value.Date + (endTime ?? new TimeSpan(23, 59, 59)); // Fin de journée par défaut si pas d'heure ? Ou minuit ? À vous de voir. Ici j'ai mis minuit par défaut via TimeSpan.Zero implicite si je ne mets rien, ou 23:59:59 pour une expiration. Disons TimeSpan.Zero pour rester simple.
+            // Correction : Restons simple :
+            newObjective.EndDate = newObjective.EndDate.Value.Date + (endTime ?? TimeSpan.Zero);
+        }
+    }
+}

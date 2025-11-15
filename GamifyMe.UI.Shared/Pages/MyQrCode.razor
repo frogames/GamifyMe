@@ -1,0 +1,118 @@
+﻿@page "/my-qrcode"
+@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Mon Pass</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16 d-flex flex-column align-center">
+
+    <MudText Typo="Typo.h4" Color="Color.Primary" Class="mb-2">Mon Pass</MudText>
+    <MudText Typo="Typo.body1" Class="mb-8 text-muted">Présentez ce code pour valider vos objectifs.</MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (profile != null)
+    {
+        <MudCard Elevation="4" Class="pa-8 d-flex flex-column align-center rounded-xl" Style="width: 100%; max-width: 350px;">
+
+            @* Avatar et Nom *@
+            <MudAvatar Style="width:64px; height:64px; font-size:1.5rem;" Color="Color.Primary" Class="mb-2">
+                @profile.Username.Substring(0, 1).ToUpper()
+            </MudAvatar>
+            <MudText Typo="Typo.h5" Align="Align.Center"><b>@profile.Username</b></MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">@profile.EstablishmentName</MudText>
+
+            @* LE QR CODE *@
+            @* On utilise l'API 'api.qrserver.com' pour générer l'image *@
+            <MudImage Src="@($"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={profile.QrCode}")"
+                      Alt="QR Code"
+                      Width="200"
+                      Height="200"
+                      Class="mb-6 border-2 pa-2" />
+
+            <MudDivider Style="width: 100%;" Class="mb-6" />
+
+            @* Actions *@
+            <div class="d-flex gap-2 width-100">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           OnClick="PrintCard"
+                           FullWidth="true">
+                    Imprimer
+                </MudButton>
+
+                @* Le partage natif ne marche bien que sur mobile/HTTPS, on le cache sinon ou on gère l'erreur *@
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Share"
+                           OnClick="ShareCard"
+                           FullWidth="true">
+                    Partager
+                </MudButton>
+            </div>
+
+        </MudCard>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Error">Impossible de charger votre pass.</MudAlert>
+    }
+
+</MudContainer>
+
+@code {
+    private UserProfileDetailsDto? profile;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // On réutilise l'endpoint profile-details car il contient le QrCode (string)
+            profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PrintCard()
+    {
+        // Appelle la fonction d'impression native du navigateur
+        await JSRuntime.InvokeVoidAsync("print");
+    }
+
+    private async Task ShareCard()
+    {
+        // Tente d'utiliser l'API de partage native (Mobile)
+        try
+        {
+            if (profile != null)
+            {
+                await JSRuntime.InvokeVoidAsync("navigator.share", new
+                {
+                    title = "Mon Pass GamifyMe",
+                    text = $"Voici mon code joueur pour {profile.Username}",
+                    url = NavigationManager.Uri // Ou autre lien
+                });
+            }
+        }
+        catch
+        {
+            // Fallback si l'API n'est pas supportée (ex: Desktop)
+            // On pourrait copier dans le presse-papier ici
+        }
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+}

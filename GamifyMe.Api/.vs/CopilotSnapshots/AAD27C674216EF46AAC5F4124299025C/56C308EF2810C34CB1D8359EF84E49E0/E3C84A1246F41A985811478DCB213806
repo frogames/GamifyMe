@@ -1,0 +1,123 @@
+﻿@page "/register"
+
+@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Services
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Inscription</PageTitle>
+
+<div class="login-container">
+    <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="login-form">
+        <DataAnnotationsValidator />
+
+        <h1 class="page-title" style="color: var(--text-color-on-light); margin-top:0;">Créer un compte</h1>
+
+        <h3 id="establishment-name" style="text-align:center; margin-bottom:1rem;">
+            @establishmentName
+        </h3>
+
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <InputText id="username" class="form-control" @bind-value="registerModel.Username" />
+            <ValidationMessage For="@(() => registerModel.Username)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" type="email" class="form-control" @bind-value="registerModel.Email" />
+            <ValidationMessage For="@(() => registerModel.Email)" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <InputText id="password" type="password" class="form-control" @bind-value="registerModel.Password" />
+            <ValidationMessage For="@(() => registerModel.Password)" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">@errorMessage</div>
+        }
+
+        <button type="submit" class="submit-btn" disabled="@isBusy || isPageInvalid">
+            @if (isBusy)
+            {
+                <span>Création en cours...</span>
+            }
+            else
+            {
+                <span>S'inscrire</span>
+            }
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    private RegisterDto registerModel = new();
+    private string? errorMessage;
+    private bool isBusy = false;
+    private bool isPageInvalid = false; // Pour bloquer le formulaire si l'URL est mauvaise
+    private string establishmentName = "Chargement..."; // Pour afficher le nom
+
+    //3. MODIFICATION: C'est la "magie" de Blazor
+    // Cet attribut va automatiquement lire l'URL "?est_id="...
+    // et remplir la propriété EstablishmentId
+    [SupplyParameterFromQuery(Name = "est_id")]
+    public Guid? EstablishmentId { get; set; }
+
+    //4. MODIFICATION: On vérifie l'ID au chargement des paramètres de la page
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (EstablishmentId == null || EstablishmentId == Guid.Empty)
+        {
+            // Pas d'ID dans l'URL, on bloque tout
+            errorMessage = "Lien d'inscription invalide. L'ID de l'établissement est manquant.";
+            establishmentName = "Erreur";
+            isPageInvalid = true; // Bloque le bouton "S'inscrire"
+        }
+        else
+        {
+            // On a un ID ! On le stocke dans notre modèle de formulaire
+            registerModel.EstablishmentId = EstablishmentId.Value;
+
+            // TODO: Étape3 - Appeler l'API pour récupérer le nom de l'établissement
+            // Pour l'instant, on met un placeholder
+            establishmentName = $"Inscription pour {EstablishmentId.Value}";
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        isBusy = true;
+        errorMessage = null;
+
+        try
+        {
+            // On appelle l'API (endpoint que nous avons déjà corrigé)
+            var response = await Http.PostAsJsonAsync("api/Auth/register", registerModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Si succès:
+                Navigation.NavigateTo("/register-success"); // On créera cette page
+            }
+            else
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}

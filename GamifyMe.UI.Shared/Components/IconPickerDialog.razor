@@ -1,0 +1,66 @@
+﻿@using MudBlazor
+@using GamifyMe.UI.Shared.Helpers
+
+<MudDialog>
+    <DialogContent>
+        @* Barre de recherche *@
+        <MudTextField @bind-Value="searchTerm"
+                      Placeholder="Rechercher une icône (ex: sport, star...)"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Class="mb-4" />
+
+        @* Grille d'icônes *@
+        <div style="height: 300px; overflow-y: auto;">
+            <MudGrid Spacing="1">
+                @foreach (var icon in FilteredIcons)
+                {
+                    <MudItem xs="3" sm="2">
+                        @* CORRECTION : On utilise @onclick sur un div conteneur *@
+                        <div @onclick="() => SelectIcon(icon.Key)" style="cursor: pointer;">
+                            <MudPaper Elevation="0" 
+                                      Class="d-flex flex-column align-center justify-center pa-2 hover-effect">
+                                
+                                <MudIcon Icon="@icon.Value" Size="Size.Large" Color="Color.Primary" />
+                                <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1" Style="font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;">
+                                    @icon.Key
+                                </MudText>
+
+                            </MudPaper>
+                        </div>
+                    </MudItem>
+                }
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .hover-effect:hover {
+        background-color: var(--mud-palette-action-hover);
+        border-radius: 4px;
+    }
+</style>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+
+    private string searchTerm = "";
+
+    // Filtre la liste en fonction de la recherche
+    private IEnumerable<KeyValuePair<string, string>> FilteredIcons =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? IconLibrary.IconsMap
+            : IconLibrary.IconsMap.Where(i => i.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    private void SelectIcon(string iconName)
+    {
+        MudDialog.Close(DialogResult.Ok(iconName));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

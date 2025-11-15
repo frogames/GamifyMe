@@ -1,0 +1,54 @@
+﻿@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div id="@scannerId" style="width: 100%; max-width: 500px; border: 1px solid #ddd;">
+
+    <p style="text-align: center; color: var(--text-muted-color); padding: 1rem;">
+        Veuillez autoriser l'accès à la caméra
+    </p>
+
+</div>
+
+@code {
+    // 2. Un ID unique pour le 'div'
+    private string scannerId = $"qr-scanner-{Guid.NewGuid()}";
+
+    // 3. Une référence à cet objet .NET pour que JS puisse nous appeler
+    private DotNetObjectReference<QrCodeScanner>? dotnetObjectReference;
+
+    // 4. L'événement qui renvoie le texte du QR code au parent
+    [Parameter]
+    public EventCallback<string> OnScanSuccess { get; set; }
+
+    // 5. Démarrer le scanner après l'affichage du composant
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Prépare l'objet .NET pour que JS puisse l'appeler
+            dotnetObjectReference = DotNetObjectReference.Create(this);
+
+            // Appelle la fonction "start" de notre fichier qrScanner.js
+            await JSRuntime.InvokeVoidAsync("qrScanner.start", scannerId, dotnetObjectReference);
+        }
+    }
+
+    // 6. MÉTHODE APPELÉE PAR JAVASCRIPT
+    [JSInvokable]
+    public async Task HandleScanResult(string decodedText)
+    {
+        // Le JS a trouvé un code ! On remonte l'événement au parent.
+        await OnScanSuccess.InvokeAsync(decodedText);
+    }
+
+    // 7. Arrêter la caméra quand le composant est détruit
+    public async ValueTask DisposeAsync()
+    {
+        if (dotnetObjectReference != null)
+        {
+            // Appelle la fonction "stop" de notre fichier qrScanner.js
+            await JSRuntime.InvokeVoidAsync("qrScanner.stop", scannerId);
+            dotnetObjectReference.Dispose();
+        }
+    }
+}

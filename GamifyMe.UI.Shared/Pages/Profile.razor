@@ -1,0 +1,138 @@
+﻿@page "/profile"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Services
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject TokenStorageService TokenService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Mon Profil</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-4 mb-16">
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center mt-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (profile == null)
+    {
+        <MudAlert Severity="Severity.Error">Impossible de charger le profil.</MudAlert>
+    }
+    else
+    {
+        @* 1. EN-TÊTE *@
+        <div class="d-flex flex-column align-center mb-6">
+            <MudAvatar Style="width:80px; height:80px; font-size:2rem;" Color="Color.Primary" Class="mb-2">
+                @profile.Username.Substring(0, 1).ToUpper()
+            </MudAvatar>
+            <MudText Typo="Typo.h5">@profile.Username</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.EstablishmentName</MudText>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-1">@profile.Role</MudChip>
+        </div>
+
+        @* 2. NIVEAU & PROGRESSION *@
+        <MudCard Elevation="3" Class="mb-6 pa-4">
+            <div class="d-flex justify-space-between align-end mb-2">
+                <MudText Typo="Typo.h6" Color="Color.Warning"><b>Niveau @profile.Level</b></MudText>
+                <MudText Typo="Typo.caption">@profile.CurrentXp / @profile.XpForNextLevel XP</MudText>
+            </div>
+            <MudProgressLinear Color="Color.Warning" Value="@profile.ProgressPercentage" Size="Size.Large" Rounded="true" Striped="true" Class="my-2" />
+            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
+                Encore @(profile.XpForNextLevel - profile.CurrentXp) XP pour le niveau suivant !
+            </MudText>
+        </MudCard>
+
+        @* 3. PORTEFEUILLE *@
+        <MudGrid Class="mb-6">
+            <MudItem xs="6">
+                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h5">@profile.CurrentXp</MudText>
+                    <MudText Typo="Typo.caption">XP Total</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6">
+                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h5">@profile.CurrencyBalance</MudText>
+                    <MudText Typo="Typo.caption">@profile.CurrencyName</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @* 4. HISTORIQUE RÉCENT *@
+        <MudText Typo="Typo.h6" Class="mb-3">Activité Récente</MudText>
+        @if (profile.RecentActivity.Any())
+        {
+            <MudList T="string" Dense="true" DisableGutters="true">
+                @foreach (var log in profile.RecentActivity)
+                {
+                    <MudListItem Icon="@IconLibrary.GetIcon(log.Icon)"
+                                 IconColor="@(log.AmountChange > 0 ? Color.Success : Color.Error)">
+                        <div class="d-flex justify-space-between align-center width-100">
+                            <div>
+                                <MudText Typo="Typo.body2"><b>@log.Description</b></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@log.Date.ToString("g")</MudText>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Color="@(log.AmountChange > 0 ? Color.Success : Color.Default)" Variant="Variant.Text">
+                                @(log.AmountChange > 0 ? "+" : "")@log.AmountChange
+                            </MudChip>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+                }
+            </MudList>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">Aucune activité récente.</MudText>
+        }
+
+        @* 5. DÉCONNEXION *@
+        <div class="mt-8 d-flex flex-column gap-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true">
+                Se déconnecter
+            </MudButton>
+
+            @* Zone de danger (Suppression) - À implémenter plus tard *@
+            @* <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default">Supprimer mon compte</MudButton> *@
+        </div>
+    }
+
+</MudContainer>
+
+@code {
+    private UserProfileDetailsDto? profile;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // On charge les détails complets
+            profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur chargement profil : {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task Logout()
+    {
+        // 1. Supprimer le token
+        await TokenService.RemoveTokenAsync();
+
+        // 2. Notifier le provider d'auth (si la méthode existe, sinon force reload)
+        // (Ici on fait un rechargement complet pour nettoyer l'état)
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

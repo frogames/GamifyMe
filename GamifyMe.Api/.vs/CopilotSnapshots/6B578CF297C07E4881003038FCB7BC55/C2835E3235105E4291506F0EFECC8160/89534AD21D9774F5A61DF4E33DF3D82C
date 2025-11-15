@@ -1,0 +1,612 @@
+﻿@page "/dashboard"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur")]
+
+@* On met tous les 'using' en haut *@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+@using System.Net.Http.Headers
+@using GamifyMe.UI.Shared.Components
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard Gestionnaire</PageTitle>
+
+<h1>Dashboard Gestionnaire</h1>
+
+@if (isPageLoading)
+{
+    <div class="alert alert-info">
+        Chargement du tableau de bord...
+    </div>
+}
+else
+{
+    <div class="card" style="max-width:800px; margin-top:2rem;">
+        <div class="card-header">
+            <h3>Scanner un profil utilisateur</h3>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(scanMessage))
+            {
+                <div class="alert @(isScanError ? "alert-danger" : "alert-success")">
+                    @scanMessage
+                </div>
+            }
+
+            @if (scanResultDto == null)
+            {
+                @if (!isScannerActive)
+                {
+                    <button class="btn btn-primary btn-lg" @onclick="StartScanner">
+                        <span class="bi bi-qr-code-scan" style="margin-right:8px;"></span>
+                        Activer le scanner de profil
+                    </button>
+                }
+                else
+                {
+                    <p>Dirigez la caméra vers le QR code de l'utilisateur.</p>
+                    <QrCodeScanner @ref="qrScannerComponent" OnScanSuccess="HandleScanResult" />
+                    <button class="btn btn-secondary mt-2" @onclick="StopScanner">
+                        Annuler le scan
+                    </button>
+                }
+            }
+            else
+            {
+                <h4>Profil de @scanResultDto.UserProfile?.Username</h4>
+                <p><strong>Email:</strong> @scanResultDto.UserProfile?.Email</p>
+                <p><strong>Établissement:</strong> @scanResultDto.UserProfile?.EstablishmentName</p>
+                <hr />
+                <h5>Commandes en attente</h5>
+                @if (scanResultDto.PendingOrders.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var order in scanResultDto.PendingOrders)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @order.ItemName
+                                <div>
+                                    <button class="btn btn-success btn-sm me-2" @onclick="() => CompleteOrder(order.OrderId)">Valider</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => CancelOrder(order.OrderId)">Annuler</button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+
+                    <p><em>Aucune commande physique en attente.</em></p>
+                }
+                <button class="btn btn-primary mt-3" @onclick="ResetScanner">Scanner un autre profil</button>
+            }
+        </div>
+    </div>
+    <hr class="my-5" />
+
+    <EditForm Model="newObjective" OnValidSubmit="HandleCreateObjective" FormName="createObjectiveForm">
+        <DataAnnotationsValidator />
+        <div class="card" style="max-width: 800px; margin-top: 2rem;">
+            <div class="card-header">
+                <h3>Créer un nouvel objectif</h3>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(successMessageObjective))
+                {
+                    <div class="alert alert-success">@successMessageObjective</div>
+                }
+                @if (!string.IsNullOrEmpty(errorMessageObjective))
+                {
+                    <div class="alert alert-danger">@errorMessageObjective</div>
+                }
+
+                <div class="form-group mb-3">
+                    <label for="title">Titre</label>
+                    <InputText id="title" class="form-control" @bind-Value="newObjective.Title" />
+                    <ValidationMessage For="@(() => newObjective.Title)" />
+                </div>
+                <div class="form-group mb-3">
+                    <label for="desc">Description (facultatif)</label>
+                    <InputTextArea id="desc" class="form-control" @bind-Value="newObjective.Description" />
+                    <ValidationMessage For="@(() => newObjective.Description)" />
+                </div>
+                <div class="form-group mb-3">
+                    <label for="icon">Icône (obligatoire)</label>
+                    <InputText id="icon" class="form-control" @bind-Value="newObjective.IconName" />
+                    <ValidationMessage For="@(() => newObjective.IconName)" />
+                    <small class="form-text text-muted">Ex: "fas fa-star", "fas fa-book-open"</small>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="location">Lieu (facultatif)</label>
+                    <InputText id="location" class="form-control" @bind-Value="newObjective.Location" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="event-date">Date/Heure de l'événement</label><InputDate id="event-date" class="form-control" @bind-Value="newObjective.EventDate" /></div></div>
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="end-date">Date/Heure de fin (expiration)</label><InputDate id="end-date" class="form-control" @bind-Value="newObjective.EndDate" /></div></div>
+                </div>
+                <div class="form-group mb-3">
+                    <label>Prérequis (facultatif)</label>
+                    <div class="prerequisite-list" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: var(--border-radius);">
+                        @if (allObjectivesList.Any())
+                        {
+                            @foreach (var objective in allObjectivesList)
+                            {
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="prereq-@objective.Id"
+                                           checked="@newObjective.PrerequisiteObjectiveIds.Contains(objective.Id)"
+                                           @onchange="() => TogglePrerequisite(objective.Id)" />
+                                    <label class="form-check-label" for="prereq-@objective.Id">@objective.Title</label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <small class="form-text text-muted">Aucun autre objectif n'a encore été créé.</small>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="xp">Récompense XP</label><InputNumber id="xp" class="form-control" @bind-Value="newObjective.XpReward" /><ValidationMessage For="@(() => newObjective.XpReward)" /></div></div>
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="points">Récompense Monnaie (ex: DOC)</label><InputNumber id="points" class="form-control" @bind-Value="newObjective.DocPointsReward" /><ValidationMessage For="@(() => newObjective.DocPointsReward)" /></div></div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-check"><InputCheckbox id="is-unique" class="form-check-input" @bind-Value="newObjective.IsUnique" /><label for="is-unique" class="form-check-label">Objectif Unique</label></div>
+                    <div class="form-check"><InputCheckbox id="is-active" class="form-check-input" @bind-Value="newObjective.IsActive" /><label for="is-active" class="form-check-label">Actif (visible par les joueurs)</label></div>
+                </div>
+                <button type="submit" class="submit-btn" disabled="@isBusyObjective">
+                    @if (isBusyObjective)
+                    {
+                        <span>Création en cours...</span>
+                    }
+                    else
+                    {
+
+                        <span>Créer l'objectif</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </EditForm>
+
+    <div class="card" style="max-width: 800px; margin-top: 1rem;">
+        <div class="card-header"><h5>Objectifs Existants</h5></div>
+        <ul class="list-group list-group-flush">
+            @if (!allObjectivesFullList.Any())
+            {
+                <li class="list-group-item">Aucun objectif créé.</li>
+            }
+            @foreach (var objective in allObjectivesFullList)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="@objective.IconName" style="margin-right: 8px;"></i><strong>@objective.Title</strong>
+                        @if (!objective.IsActive)
+                        {
+                            <span class="badge bg-secondary">Inactif</span>
+                        }
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-primary me-2">Éditer</button>
+                        <button class="btn btn-sm btn-info me-2" @onclick="() => scanModal.Show(objective)">Scanner</button>
+                        <button class="btn btn-sm btn-danger">Suppr.</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <hr class="my-5" />
+
+    <EditForm Model="newStoreItem" OnValidSubmit="HandleCreateStoreItem" FormName="createStoreItemForm">
+        <DataAnnotationsValidator />
+        <div class="card" style="max-width: 800px; margin-top: 2rem;">
+            <div class="card-header"><h3>Créer un objet de boutique</h3></div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(successMessageStore))
+                {
+                    <div class="alert alert-success">@successMessageStore</div>
+                }
+                @if (!string.IsNullOrEmpty(errorMessageStore))
+                {
+                    <div class="alert alert-danger">@errorMessageStore</div>
+                }
+
+                <div class="form-group mb-3"><label for="itemName">Nom de l'objet</label><InputText id="itemName" class="form-control" @bind-Value="newStoreItem.Name" /><ValidationMessage For="@(() => newStoreItem.Name)" /></div>
+                <div class="form-group mb-3"><label for="itemDesc">Description (facultatif)</label><InputTextArea id="itemDesc" class="form-control" @bind-Value="newStoreItem.Description" /></div>
+                <div class="form-group mb-3">
+                    <label for="itemType">Type d'objet</label>
+                    <InputSelect id="itemType" class="form-select" @bind-Value="newStoreItem.ItemType">
+                        @foreach (var type in Enum.GetValues(typeof(StoreItemType)))
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => newStoreItem.ItemType)" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="itemPrice">Prix (en monnaie)</label><InputNumber id="itemPrice" class="form-control" @bind-Value="newStoreItem.Price" /><ValidationMessage For="@(() => newStoreItem.Price)" /></div></div>
+                    <div class="col-md-6"><div class="form-group mb-3"><label for="itemStock">Stock</label><InputNumber id="itemStock" class="form-control" @bind-Value="newStoreItem.Stock" /><ValidationMessage For="@(() => newStoreItem.Stock)" /></div></div>
+                </div>
+                @if (newStoreItem.ItemType == StoreItemType.Digital)
+                {
+                    <div class="form-group mb-3"><label for="itemActionCode">Code d'action numérique (ex: "BOOST_XP_24H")</label><InputText id="itemActionCode" class="form-control" @bind-Value="newStoreItem.DigitalActionCode" /></div>
+                }
+                <div class="form-group mb-3"><div class="form-check"><InputCheckbox id="item-is-active" class="form-check-input" @bind-Value="newStoreItem.IsActive" /><label for="item-is-active" class="form-check-label">Actif (visible par les joueurs)</label></div></div>
+                <button type="submit" class="submit-btn" disabled="@isBusyStore">
+                    @if (isBusyStore)
+                    {
+                        <span>Création en cours...</span>
+                    }
+                    else
+                    {
+
+                        <span>Créer l'objet</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </EditForm>
+
+    <div class="card" style="max-width: 800px; margin-top: 1rem; margin-bottom: 5rem;">
+        <div class="card-header"><h5>Objets de Boutique Existants</h5></div>
+        <ul class="list-group list-group-flush">
+            @if (!allStoreItemsList.Any())
+            {
+                <li class="list-group-item">Aucun objet créé.</li>
+            }
+            @foreach (var item in allStoreItemsList)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="@item.IconName" style="margin-right: 8px;"></i><strong>@item.Name</strong><span class="text-muted">(@item.Price pts)</span>
+                        @if (!item.IsActive)
+                        {
+                            <span class="badge bg-secondary">Inactif</span>
+                        }
+                    </div>
+                    <div><button class="btn btn-sm btn-primary me-2">Éditer</button><button class="btn btn-sm btn-danger">Suppr.</button></div>
+                </li>
+            }
+        </ul>
+    </div>
+
+}
+<ScanValidationModal @ref="scanModal" />
+
+
+@code {
+    // --- Modèles pour les formulaires ---
+    private CreateObjectiveDto newObjective = new();
+    private StoreItemDto newStoreItem = new();
+
+    // --- Listes pour l'affichage ---
+    private List<ObjectiveSimpleDto> allObjectivesList = new(); // Pour les prérequis
+    private List<ObjectiveDto> allObjectivesFullList = new(); // Pour la liste de gestion
+    private List<StoreItemDto> allStoreItemsList = new(); // Pour la liste de gestion
+
+    // --- Variables d'état (Scan) ---
+    private ProfileScanDto? scanResultDto;
+    private string? scanMessage;
+    private bool isScanError = false;
+    private bool isScannerActive = false; // <-- L'ÉTAT QUI CORRIGE LE GEL
+
+    // --- Variables d'état (Formulaires) ---
+    private string? successMessageObjective;
+    private string? errorMessageObjective;
+    private bool isBusyObjective = false;
+    private string? successMessageStore;
+    private string? errorMessageStore;
+    private bool isBusyStore = false;
+
+    // --- Variable d'état de chargement de page ---
+    private bool isPageLoading = true;
+
+    private ScanValidationModal scanModal = default!;
+
+    // reference to the QR scanner component
+    private QrCodeScanner? qrScannerComponent;
+
+    // Start the scanner and mark state
+    private async Task StartScanner()
+    {
+        if (isScannerActive) return;
+        isScannerActive = true;
+        // Trigger render so the component is created
+        await InvokeAsync(StateHasChanged);
+
+        // Give the renderer a moment to instantiate the component
+        await Task.Delay(100);
+
+        try
+        {
+            if (qrScannerComponent != null)
+            {
+                await qrScannerComponent.StartAsync();
+            }
+            else
+            {
+                // If still null, show a friendly message
+                scanMessage = "Impossible d'initialiser le scanner (composant non prêt).";
+                isScanError = true;
+                isScannerActive = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            scanMessage = "Impossible de démarrer le scanner : " + ex.Message;
+            isScanError = true;
+            isScannerActive = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Stop the scanner and mark state
+    private async Task StopScanner()
+    {
+        if (!isScannerActive) return;
+        isScannerActive = false;
+        try
+        {
+            if (qrScannerComponent != null)
+            {
+                await qrScannerComponent.StopAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erreur StopScanner: " + ex.Message);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleScanResult(string qrCode)
+    {
+        scanMessage = null;
+        isScanError = false;
+
+        try
+        {
+            // Stop scanner immediately to avoid multiple scans
+            await StopScanner();
+
+            scanResultDto = await Http.GetFromJsonAsync<ProfileScanDto>($"api/Users/profile-scan/{qrCode}");
+            isScannerActive = false; // On cache le scanner
+        }
+        catch (Exception ex)
+        {
+            scanMessage = $"Erreur lors du scan : {ex.Message}";
+            isScanError = true;
+            isScannerActive = false; // On cache le scanner
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ResetScanner()
+    {
+        scanResultDto = null;
+        scanMessage = null;
+        // Ensure scanner stopped
+        await StopScanner();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadAllDashboardData()
+    {
+        try
+        {
+            // On charge la première liste et on ATTEND
+            allObjectivesList = await Http.GetFromJsonAsync<List<ObjectiveSimpleDto>>("api/objectives/list-all") ?? new List<ObjectiveSimpleDto>();
+            StateHasChanged(); // On rafraîchit l'UI (facultatif mais bien)
+
+            // On charge la deuxième liste et on ATTEND
+            allObjectivesFullList = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/list-all-full") ?? new List<ObjectiveDto>();
+            StateHasChanged(); // On rafraîchit l'UI
+
+            // On charge la troisième liste et on ATTEND
+            allStoreItemsList = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all") ?? new List<StoreItemDto>();
+            StateHasChanged(); // On rafraîchit l'UI
+        }
+        catch (Exception ex)
+        {
+            errorMessageObjective = "Impossible de charger les données du dashboard : " + ex.Message;
+            errorMessageStore = "Impossible de charger les données du dashboard : " + ex.Message;
+        }
+    }
+
+    // ==================================================
+    // LOGIQUE SCAN PROFIL (CORRIGÉE)
+    // ==================================================
+    private async Task StartScanner()
+    {
+        if (isScannerActive) return;
+        isScannerActive = true;
+        // Try to start the JS scanner explicitly
+        try
+        {
+            if (qrScannerComponent != null)
+            {
+                await qrScannerComponent.StartAsync();
+            }
+            else
+            {
+                scanMessage = "Impossible d'initialiser le scanner (composant non prêt).";
+                isScanError = true;
+                isScannerActive = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            scanMessage = "Impossible de démarrer le scanner : " + ex.Message;
+            isScanError = true;
+            isScannerActive = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task StopScanner()
+    {
+        if (!isScannerActive) return;
+        isScannerActive = false;
+        try
+        {
+            if (qrScannerComponent != null)
+            {
+                await qrScannerComponent.StopAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erreur StopScanner: " + ex.Message);
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleScanResult(string qrCode)
+    {
+        scanMessage = null;
+        isScanError = false;
+
+        try
+        {
+            // Stop scanner immediately to avoid multiple scans
+            await StopScanner();
+
+            scanResultDto = await Http.GetFromJsonAsync<ProfileScanDto>($"api/Users/profile-scan/{qrCode}");
+            isScannerActive = false; // On cache le scanner
+        }
+        catch (Exception ex)
+        {
+            scanMessage = $"Erreur lors du scan : {ex.Message}";
+            isScanError = true;
+            isScannerActive = false; // On cache le scanner
+        }
+        StateHasChanged();
+    }
+
+    private async Task CompleteOrder(Guid orderId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/orders/{orderId}/complete", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                scanMessage = $"Erreur : {await response.Content.ReadAsStringAsync()}";
+                isScanError = true;
+            }
+            else
+            {
+                scanMessage = "Commande validée !";
+                isScanError = false;
+                await RefreshProfile();
+            }
+        }
+        catch (Exception ex) { scanMessage = ex.Message; isScanError = true; }
+        StateHasChanged();
+    }
+
+    private async Task CancelOrder(Guid orderId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/orders/{orderId}/cancel", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                scanMessage = $"Erreur : {await response.Content.ReadAsStringAsync()}";
+                isScanError = true;
+            }
+            else
+            {
+                scanMessage = "Commande annulée et remboursée.";
+                isScanError = false;
+                await RefreshProfile();
+            }
+        }
+        catch (Exception ex) { scanMessage = ex.Message; isScanError = true; }
+        StateHasChanged();
+    }
+
+    private void ResetScanner()
+    {
+        scanResultDto = null;
+        scanMessage = null;
+        // Ensure scanner stopped
+        _ = StopScanner();
+        StateHasChanged();
+    }
+
+    private async Task RefreshProfile()
+    {
+        if (scanResultDto?.UserProfile?.QrCode != null)
+        {
+            await HandleScanResult(scanResultDto.UserProfile.QrCode);
+        }
+    }
+
+    // ==================================================
+    // LOGIQUE CRÉATION OBJECTIF
+    // ==================================================
+    private void TogglePrerequisite(Guid objectiveId)
+    {
+        if (newObjective.PrerequisiteObjectiveIds.Contains(objectiveId)) { newObjective.PrerequisiteObjectiveIds.Remove(objectiveId); }
+        else { newObjective.PrerequisiteObjectiveIds.Add(objectiveId); }
+    }
+
+    private async Task HandleCreateObjective()
+    {
+        isBusyObjective = true;
+        successMessageObjective = null;
+        errorMessageObjective = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/objectives", newObjective);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Objectif créé avec succès !";
+                newObjective = new();
+
+                // On recharge les listes
+                var objectivesTask = Http.GetFromJsonAsync<List<ObjectiveSimpleDto>>("api/objectives/list-all");
+                var objectivesFullTask = Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/list-all-full");
+                await Task.WhenAll(objectivesTask, objectivesFullTask);
+                allObjectivesList = objectivesTask.Result ?? new();
+                allObjectivesFullList = objectivesFullTask.Result ?? new();
+
+                StateHasChanged();
+            }
+            else { errorMessageObjective = $"Erreur : {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur : {ex.Message}"; }
+        finally { isBusyObjective = false; }
+    }
+
+    // ==================================================
+    // LOGIQUE CRÉATION BOUTIQUE
+    // ==================================================
+    private async Task HandleCreateStoreItem()
+    {
+        isBusyStore = true;
+        successMessageStore = null;
+        errorMessageStore = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/store", newStoreItem);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Objet créé avec succès !";
+                newStoreItem = new();
+
+                // On recharge la liste
+                allStoreItemsList = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all");
+
+                StateHasChanged();
+            }
+            else { errorMessageStore = $"Erreur : {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = $"Erreur : {ex.Message}"; }
+        finally { isBusyStore = false; }
+    }
+}

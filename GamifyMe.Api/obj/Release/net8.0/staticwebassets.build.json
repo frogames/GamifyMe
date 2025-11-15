@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "iASrmJffx+aiT3WopWcdBXvf9xHmn1yABhaBQ3UhvFI=",
+  "Source": "GamifyMe.Api",
+  "BasePath": "_content/GamifyMe.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

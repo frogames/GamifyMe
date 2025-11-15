@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\wwwroot\\js\\html5-qrcode.min.js",
+      "PackagePath": "staticwebassets\\js\\html5-qrcode.min.js"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\wwwroot\\js\\qrScanner.js",
+      "PackagePath": "staticwebassets\\js\\qrScanner.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.GamifyMe.Web.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.GamifyMe.Web.props",
+      "PackagePath": "build\\GamifyMe.Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.GamifyMe.Web.props",
+      "PackagePath": "buildMultiTargeting\\GamifyMe.Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.GamifyMe.Web.props",
+      "PackagePath": "buildTransitive\\GamifyMe.Web.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

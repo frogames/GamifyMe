@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.UI.Shared\\wwwroot\\background.png",
+      "PackagePath": "staticwebassets\\background.png"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.UI.Shared\\wwwroot\\exampleJsInterop.js",
+      "PackagePath": "staticwebassets\\exampleJsInterop.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.GamifyMe.UI.Shared.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.GamifyMe.UI.Shared.props",
+      "PackagePath": "build\\GamifyMe.UI.Shared.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.GamifyMe.UI.Shared.props",
+      "PackagePath": "buildMultiTargeting\\GamifyMe.UI.Shared.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.GamifyMe.UI.Shared.props",
+      "PackagePath": "buildTransitive\\GamifyMe.UI.Shared.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

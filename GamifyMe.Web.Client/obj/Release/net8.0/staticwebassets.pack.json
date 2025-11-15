@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\bin\\Release\\net8.0\\wwwroot\\_framework\\blazor.webassembly.js",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\obj\\Release\\net8.0\\compressed\\2dchco0z1j.gz",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js.gz"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\wwwroot\\appsettings.Development.json",
+      "PackagePath": "staticwebassets\\appsettings.Development.json"
+    },
+    {
+      "Id": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\wwwroot\\appsettings.json",
+      "PackagePath": "staticwebassets\\appsettings.json"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.GamifyMe.Web.Client.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.GamifyMe.Web.Client.props",
+      "PackagePath": "build\\GamifyMe.Web.Client.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.GamifyMe.Web.Client.props",
+      "PackagePath": "buildMultiTargeting\\GamifyMe.Web.Client.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.GamifyMe.Web.Client.props",
+      "PackagePath": "buildTransitive\\GamifyMe.Web.Client.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
