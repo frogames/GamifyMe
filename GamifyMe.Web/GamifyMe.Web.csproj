@@ -7,10 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 
+      C'EST LA LIGNE QUI MANQUAIT.
+      Elle ajoute toutes les fonctionnalités Blazor Web App (WASM) côté serveur.
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.21" />
+
     <PackageReference Include="MudBlazor" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Les références aux autres projets (c'était déjà correct) -->
     <ProjectReference Include="..\GamifyMe.Api\GamifyMe.Api.csproj" />
     <ProjectReference Include="..\GamifyMe.Web.Client\GamifyMe.Web.Client.csproj" />
     <ProjectReference Include="..\GamifyMe.UI.Shared\GamifyMe.UI.Shared.csproj" />

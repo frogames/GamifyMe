@@ -3,48 +3,32 @@
   "WorkspaceRootPath": "D:\\GamifyMe_V2\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\data\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\data\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DD8F0129-F144-4EDB-A9EA-52CD2D772AF7}|GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj|d:\\gamifyme_v2\\gamifyme.web.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DD8F0129-F144-4EDB-A9EA-52CD2D772AF7}|GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj|solutionrelative:gamifyme.web.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\controllers\\objectivescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\controllers\\objectivescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|d:\\gamifyme_v2\\gamifyme.ui.shared\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|solutionrelative:gamifyme.ui.shared\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\gamifyme.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\gamifyme.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\gamifyme.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\gamifyme.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|d:\\gamifyme_v2\\gamifyme.shared\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|solutionrelative:gamifyme.shared\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\services\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\services\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\services\\serversideauthstateprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\services\\serversideauthstateprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|d:\\gamifyme_v2\\gamifyme.shared\\dtos\\infobardto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|solutionrelative:gamifyme.shared\\dtos\\infobardto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|d:\\gamifyme_v2\\gamifyme.web\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5A9FE90E-40A9-4879-9DCF-2B4A3F4A8133}|GamifyMe.Web\\GamifyMe.Web.csproj|solutionrelative:gamifyme.web\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -63,137 +47,93 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "DashboardController.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAmwDoAAAAmAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\Program.cs",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\Program.cs",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\Program.cs",
+              "RelativeToolTip": "GamifyMe.Web\\Program.cs",
+              "ViewState": "AgIAACMAAAAAAAAAAAAUwDoAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T14:04:38.584Z",
+              "WhenOpened": "2025-11-15T15:41:23.006Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DataContext.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Data\\DataContext.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Data\\DataContext.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Data\\DataContext.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Data\\DataContext.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAkwFkAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T14:04:05.239Z",
+              "Title": "GamifyMe.Api",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
+              "RelativeDocumentMoniker": "GamifyMe.Api\\GamifyMe.Api.csproj",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
+              "RelativeToolTip": "GamifyMe.Api\\GamifyMe.Api.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-11-15T15:39:56.444Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\Program.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Web.Client\\Program.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\Program.cs",
-              "RelativeToolTip": "GamifyMe.Web.Client\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAABFAAAAAAAAAA==",
+              "Title": "GamifyMe.Web",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\GamifyMe.Web.csproj",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+              "RelativeToolTip": "GamifyMe.Web\\GamifyMe.Web.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-11-15T15:38:12.483Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ServerSideAuthStateProvider.cs",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\Services\\ServerSideAuthStateProvider.cs",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\Services\\ServerSideAuthStateProvider.cs",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\Services\\ServerSideAuthStateProvider.cs",
+              "RelativeToolTip": "GamifyMe.Web\\Services\\ServerSideAuthStateProvider.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T13:40:29.003Z",
+              "WhenOpened": "2025-11-15T15:37:01.035Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "GamifyMe.Api.csproj",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\GamifyMe.Api.csproj",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
-              "RelativeToolTip": "GamifyMe.Api\\GamifyMe.Api.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-11-15T10:57:33.048Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "_Imports.razor",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\_Imports.razor",
-              "RelativeDocumentMoniker": "GamifyMe.UI.Shared\\_Imports.razor",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\_Imports.razor",
-              "RelativeToolTip": "GamifyMe.UI.Shared\\_Imports.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAApAAAAAAAAAA==",
+              "Title": "Routes.razor",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\Components\\Routes.razor",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\Components\\Routes.razor",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\Components\\Routes.razor",
+              "RelativeToolTip": "GamifyMe.Web\\Components\\Routes.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-15T10:33:04.984Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ObjectivesController.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "ViewState": "AgIAAEIAAAAAAAAAAAAswEcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:23:24.829Z"
+              "WhenOpened": "2025-11-15T15:36:21.232Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "UsersController.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\UsersController.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Controllers\\UsersController.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\UsersController.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Controllers\\UsersController.cs",
-              "ViewState": "AgIAACcBAAAAAAAAAAAmwEQBAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:22:56.852Z"
+              "Title": "App.razor",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\Components\\App.razor",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\Components\\App.razor",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\Components\\App.razor",
+              "RelativeToolTip": "GamifyMe.Web\\Components\\App.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-15T15:35:56.542Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "IEmailService.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Services\\IEmailService.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Services\\IEmailService.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Services\\IEmailService.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Services\\IEmailService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:20:55.439Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "InfoBarDto.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Dtos\\InfoBarDto.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Shared\\Dtos\\InfoBarDto.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Dtos\\InfoBarDto.cs",
-              "RelativeToolTip": "GamifyMe.Shared\\Dtos\\InfoBarDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:20:29.551Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "User.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Models\\User.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Shared\\Models\\User.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Models\\User.cs",
-              "RelativeToolTip": "GamifyMe.Shared\\Models\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:20:02.066Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Dockerfile",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Dockerfile",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Dockerfile",
-              "RelativeToolTip": "GamifyMe.Api\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-15T09:46:14.938Z"
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web\\appsettings.json",
+              "RelativeDocumentMoniker": "GamifyMe.Web\\appsettings.json",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web\\appsettings.json",
+              "RelativeToolTip": "GamifyMe.Web\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-15T15:35:03.815Z",
+              "EditorCaption": ""
             }
           ]
         }

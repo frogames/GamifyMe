@@ -272,6 +272,7 @@ D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\staticwebassets.build.json
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\staticwebassets.development.json
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\GamifyMe.8BF4BF5C.Up2Date
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\GamifyMe.Api.dll
 D:\GamifyMe_V2\GamifyMe.Api\obj\Debug\net8.0\refint\GamifyMe.Api.dll
