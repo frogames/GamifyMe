@@ -90,3 +90,7 @@ build_metadata.AdditionalFiles.CssScope =
 [D:/GamifyMe_V2/GamifyMe.UI.Shared/Pages/Store.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
+
+[D:/GamifyMe_V2/GamifyMe.UI.Shared/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

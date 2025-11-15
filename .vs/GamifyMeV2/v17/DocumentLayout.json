@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\GamifyMe_V2\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{DD8F0129-F144-4EDB-A9EA-52CD2D772AF7}|GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj|d:\\gamifyme_v2\\gamifyme.web.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DD8F0129-F144-4EDB-A9EA-52CD2D772AF7}|GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj|solutionrelative:gamifyme.web.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|d:\\gamifyme_v2\\gamifyme.ui.shared\\gamifyme.ui.shared.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|solutionrelative:gamifyme.ui.shared\\gamifyme.ui.shared.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
@@ -23,6 +27,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\Program.cs",
+              "RelativeDocumentMoniker": "GamifyMe.Web.Client\\Program.cs",
+              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\Program.cs",
+              "RelativeToolTip": "GamifyMe.Web.Client\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-15T09:01:11.797Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "GamifyMe.UI.Shared.csproj",
               "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
               "RelativeDocumentMoniker": "GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
