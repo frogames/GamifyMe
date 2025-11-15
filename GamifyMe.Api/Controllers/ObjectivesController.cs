@@ -69,10 +69,11 @@ namespace GamifyMe.Api.Controllers
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var now = DateTime.UtcNow;
 
-            var allCompletedObjectiveIds = await _context.Validations
+            var allCompletedObjectiveIds = (await _context.Validations
                 .Where(v => v.UserId == userId)
                 .Select(v => v.ObjectiveId)
-                .ToHashSetAsync(); // <-- Cette ligne va maintenant compiler
+                .ToListAsync())
+                .ToHashSet();
 
             var allActiveObjectives = await _context.Objectives
                 .Include(o => o.Prerequisites)
