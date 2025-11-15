@@ -11,36 +11,24 @@ namespace GamifyMe.Web.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            // --- Enregistrement des services ---
-
-            // 1. HttpClient pour parler à l'API (on utilise l'adresse relative
-            //    car le projet Web va héberger le Client)
+            // --- 1. HttpClient (LA CORRECTION EST ICI) ---
+            // On ne peut plus utiliser l'adresse de base de l'hôte.
+            // On doit "en dur" pointer vers le sous-domaine de notre API.
             builder.Services.AddScoped(sp => new HttpClient
             {
-                BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+                // Le port :8080 est celui que nous avons défini dans le docker-compose.yml
+                BaseAddress = new Uri("http://api.gamifyme.fun:8080")
             });
 
-            // 2. Services MudBlazor
+            // --- 2. Services MudBlazor ---
             builder.Services.AddMudServices();
 
-            // 3. Services d'Authentification (les mêmes que dans MauiProgram)
+            // --- 3. Services d'Authentification ---
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<TokenStorageService>();
             builder.Services.AddScoped<ApiAuthenticationStateProvider>();
             builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
                 provider.GetRequiredService<ApiAuthenticationStateProvider>());
-
-            // On dit à Blazor de démarrer en utilisant notre composant App
-            // (qui se trouve dans GamifyMe.Web/Components/App.razor)
-            // Mais ici, on pointe vers le composant App du projet Client s'il existe,
-            // ou on suppose que le projet Web s'en charge.
-            // Pour un projet client "pur" hébergé, on définit le RootComponent.
-            // Dans notre cas (Blazor Web App), le projet Web s'en charge.
-            // Mais le fichier Program.cs doit exister.
-
-            // Correction : Dans un projet Blazor Web App, le Program.cs du client
-            // n'a pas besoin de "builder.RootComponents.Add".
-            // Il ne fait QUE enregistrer les services.
 
             await builder.Build().RunAsync();
         }
