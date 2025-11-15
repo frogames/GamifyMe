@@ -1,17 +1,110 @@
 {
   "format": 1,
   "restore": {
-    "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\GamifyMe.Web.csproj": {}
+    "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj": {}
   },
   "projects": {
-    "D:\\GamifyMe\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
+    "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GamifyMe\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
-        "projectName": "GamifyMe.Shared",
-        "projectPath": "D:\\GamifyMe\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
+        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
+        "projectName": "GamifyMe.Api",
+        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "D:\\GamifyMe\\GamifyMe.Shared\\obj\\",
+        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Api\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\chris\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.4.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
+        "projectName": "GamifyMe.Shared",
+        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
+        "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
+        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,7 +137,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -65,18 +159,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
+    "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
+        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
         "projectName": "GamifyMe.UI.Shared",
-        "projectPath": "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
+        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "D:\\GamifyMe\\GamifyMe.UI.Shared\\obj\\",
+        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -98,8 +192,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\GamifyMe\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
-                "projectPath": "D:\\GamifyMe\\GamifyMe.Shared\\GamifyMe.Shared.csproj"
+              "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj"
               }
             }
           }
@@ -113,7 +207,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -121,11 +216,11 @@
           "dependencies": {
             "Microsoft.AspNetCore.Components.Authorization": {
               "target": "Package",
-              "version": "[8.0.21, )"
+              "version": "[8.0.0, )"
             },
             "Microsoft.AspNetCore.Components.Web": {
               "target": "Package",
-              "version": "[8.0.21, )"
+              "version": "[8.0.0, )"
             },
             "MudBlazor": {
               "target": "Package",
@@ -148,18 +243,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
+    "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
+        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
         "projectName": "GamifyMe.Web.Client",
-        "projectPath": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
+        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\obj\\",
+        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -181,8 +276,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
-                "projectPath": "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
+              "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
               }
             }
           }
@@ -196,19 +291,24 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.AspNetCore.Components.Authorization": {
-              "target": "Package",
-              "version": "[8.0.21, )"
-            },
             "Microsoft.AspNetCore.Components.WebAssembly": {
               "target": "Package",
-              "version": "[8.0.21, )"
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.0, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
@@ -219,12 +319,8 @@
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.21, )",
+              "version": "[9.0.10, )",
               "autoReferenced": true
-            },
-            "MudBlazor": {
-              "target": "Package",
-              "version": "[7.0.0, )"
             }
           },
           "imports": [
@@ -243,7 +339,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
@@ -252,14 +348,14 @@
         }
       }
     },
-    "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\GamifyMe.Web.csproj": {
+    "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\GamifyMe.Web.csproj",
+        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
         "projectName": "GamifyMe.Web",
-        "projectPath": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\GamifyMe.Web.csproj",
+        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web\\obj\\",
+        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -281,11 +377,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
-                "projectPath": "D:\\GamifyMe\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
+              "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Api\\GamifyMe.Api.csproj"
               },
-              "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
-                "projectPath": "D:\\GamifyMe\\GamifyMe.Web\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj"
+              "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
+              },
+              "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
+                "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj"
               }
             }
           }
@@ -299,16 +398,13 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.AspNetCore.Components.WebAssembly.Server": {
-              "target": "Package",
-              "version": "[8.0.21, )"
-            },
             "MudBlazor": {
               "target": "Package",
               "version": "[7.0.0, )"
@@ -333,7 +429,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

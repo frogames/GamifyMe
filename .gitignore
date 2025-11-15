@@ -1,0 +1,22 @@
+# Fichiers de cache et de build Visual Studio
+## http://github.com/github/gitignore/blob/master/VisualStudio.gitignore
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vspscc
+
+# Fichiers de cache Roslyn / VS
+.vs/
+
+# Dossiers de build
+[Bb]in/
+[Oo]bj/
+
+# Fichiers de déploiement
+*.Publish.xml
+*.pubxml
+
+# Fichiers de cache de tests
+*.testresult
+TestResults/
