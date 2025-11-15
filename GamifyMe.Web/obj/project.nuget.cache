@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "SE5JF+XQ638=",
-  "success": true,
+  "dgSpecHash": "LoUt3iUBuPw=",
+  "success": false,
   "projectFilePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.21\\microsoft.aspnetcore.authentication.jwtbearer.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.21\\microsoft.aspnetcore.authorization.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.21\\microsoft.aspnetcore.components.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components.analyzers\\8.0.21\\microsoft.aspnetcore.components.analyzers.8.0.21.nupkg.sha512",
@@ -14,13 +14,13 @@
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\8.0.21\\microsoft.aspnetcore.components.webassembly.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.devserver\\8.0.21\\microsoft.aspnetcore.components.webassembly.devserver.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.metadata\\8.0.21\\microsoft.aspnetcore.metadata.8.0.21.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.0\\microsoft.entityframeworkcore.8.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.0\\microsoft.entityframeworkcore.abstractions.8.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.0\\microsoft.entityframeworkcore.analyzers.8.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\8.0.0\\microsoft.entityframeworkcore.relational.8.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.21\\microsoft.entityframeworkcore.8.0.21.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.21\\microsoft.entityframeworkcore.abstractions.8.0.21.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.21\\microsoft.entityframeworkcore.analyzers.8.0.21.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.0\\microsoft.entityframeworkcore.relational.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.0\\microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.0\\microsoft.extensions.caching.abstractions.9.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.0\\microsoft.extensions.caching.memory.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.0\\microsoft.extensions.configuration.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.0\\microsoft.extensions.configuration.abstractions.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.configuration.binder\\9.0.0\\microsoft.extensions.configuration.binder.9.0.0.nupkg.sha512",
@@ -41,25 +41,27 @@
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.options\\9.0.0\\microsoft.extensions.options.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\9.0.0\\microsoft.extensions.options.configurationextensions.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.0\\microsoft.extensions.primitives.9.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.0.3\\microsoft.identitymodel.abstractions.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.0.3\\microsoft.identitymodel.jsonwebtokens.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.logging\\7.0.3\\microsoft.identitymodel.logging.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.0.3\\microsoft.identitymodel.protocols.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.0.3\\microsoft.identitymodel.protocols.openidconnect.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.0.3\\microsoft.identitymodel.tokens.7.0.3.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.1.2\\microsoft.identitymodel.abstractions.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.1.2\\microsoft.identitymodel.jsonwebtokens.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.logging\\7.1.2\\microsoft.identitymodel.logging.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.1.2\\microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.1.2\\microsoft.identitymodel.tokens.7.1.2.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.jsinterop\\8.0.21\\microsoft.jsinterop.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.jsinterop.webassembly\\8.0.21\\microsoft.jsinterop.webassembly.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\mudblazor\\7.0.0\\mudblazor.7.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\npgsql\\8.0.0\\npgsql.8.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.0\\npgsql.entityframeworkcore.postgresql.8.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\npgsql\\9.0.0\\npgsql.9.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.0\\npgsql.entityframeworkcore.postgresql.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\swashbuckle.aspnetcore\\6.4.0\\swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.4.0\\swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.4.0\\swashbuckle.aspnetcore.swaggergen.6.4.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.4.0\\swashbuckle.aspnetcore.swaggerui.6.4.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.0\\system.diagnostics.diagnosticsource.9.0.0.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.0.3\\system.identitymodel.tokens.jwt.7.0.3.nupkg.sha512",
-    "C:\\Users\\chris\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512"
+    "C:\\Users\\chris\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.1.2\\system.identitymodel.tokens.jwt.7.1.2.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\system.io.pipelines\\9.0.0\\system.io.pipelines.9.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\system.text.encodings.web\\9.0.0\\system.text.encodings.web.9.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\system.text.json\\9.0.0\\system.text.json.9.0.0.nupkg.sha512"
   ],
   "logs": [
     {
@@ -70,6 +72,29 @@
       "warningLevel": 1,
       "filePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
       "libraryId": "Microsoft.Extensions.Http",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "GamifyMe.Api dépend de Npgsql.EntityFrameworkCore.PostgreSQL (>= 8.0.21) mais Npgsql.EntityFrameworkCore.PostgreSQL 8.0.21 est introuvable. Npgsql.EntityFrameworkCore.PostgreSQL 9.0.0 a été résolu à la place.",
+      "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "warningLevel": 1,
+      "filePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "libraryId": "Npgsql.EntityFrameworkCore.PostgreSQL",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Avertissement comme erreur : Passage à une version antérieure du package détecté\u00A0: Microsoft.EntityFrameworkCore de 9.0.0 à 8.0.21. Référencez le package directement à partir du projet pour sélectionner une version différente. \r\n GamifyMe.Web -> GamifyMe.Api -> Npgsql.EntityFrameworkCore.PostgreSQL 9.0.0 -> Microsoft.EntityFrameworkCore (>= 9.0.0 && < 10.0.0) \r\n GamifyMe.Web -> GamifyMe.Api -> Microsoft.EntityFrameworkCore (>= 8.0.21)",
+      "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "filePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "libraryId": "Microsoft.EntityFrameworkCore",
       "targetGraphs": [
         "net8.0"
       ]
