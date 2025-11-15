@@ -5,7 +5,7 @@ WORKDIR /src
 
 # Copier tous les fichiers .csproj et le .sln pour restaurer les packages
 # (Maintenant que le .sln existe, cette étape va réussir)
-COPY GamifyMe.sln .
+COPY GamifyMeV2.sln .
 COPY GamifyMe.Api/GamifyMe.Api.csproj GamifyMe.Api/
 COPY GamifyMe.Shared/GamifyMe.Shared.csproj GamifyMe.Shared/
 COPY GamifyMe.UI.Shared/GamifyMe.UI.Shared.csproj GamifyMe.UI.Shared/
@@ -14,7 +14,7 @@ COPY GamifyMe.Web.Client/GamifyMe.Web.Client.csproj GamifyMe.Web.Client/
 COPY GamifyMe.App/GamifyMe.App.csproj GamifyMe.App/
 
 # Restaurer les dépendances
-RUN dotnet restore GamifyMe.sln
+RUN dotnet restore GamifyMeV2.sln
 
 # Copier tout le reste du code source
 COPY . .
