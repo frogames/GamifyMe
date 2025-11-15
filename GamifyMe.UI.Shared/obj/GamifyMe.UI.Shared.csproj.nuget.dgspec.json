@@ -123,11 +123,11 @@
           "dependencies": {
             "Microsoft.AspNetCore.Components.Authorization": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.21, )"
             },
             "Microsoft.AspNetCore.Components.Web": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.21, )"
             },
             "MudBlazor": {
               "target": "Package",
