@@ -42,6 +42,13 @@ jobs:
     runs-on: ubuntu-latest
     # Ce job ne commence que si le frontend a réussi
     needs: build-and-deploy-frontend 
+
+# --- AJOUTEZ CES 3 LIGNES ICI ---
+    permissions:
+      contents: read
+      packages: write
+    # --- FIN DE L'AJOUT ---
+
     steps:
     - name: 1. Récupérer le code
       uses: actions/checkout@v4
