@@ -30,3 +30,7 @@ build_metadata.AdditionalFiles.CssScope =
 [D:/GamifyMe_V2/GamifyMe.Web/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
+
+[D:/GamifyMe_V2/GamifyMe.Web/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
