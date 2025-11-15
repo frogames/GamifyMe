@@ -21,7 +21,7 @@ jobs:
 
     - name: 3. Publier le projet Client (Blazor WASM)
       # On compile le projet client en mode Release et on place les fichiers dans /publish-client
-      run: dotnet publish GamifyMe.Web.Client -c Release -o ./publish-client
+      run: dotnet publish GamifyMe.Web -c Release -o ./publish-web
 
     - name: 4. Déployer par FTP sur Hostinger
       # On utilise une action FTP populaire
@@ -31,7 +31,7 @@ jobs:
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
         # On envoie le contenu du dossier wwwroot (le Blazor compilé)
-        local-dir: ./publish-client/wwwroot/
+        local-dir: ./publish-web/wwwroot/
         # On déploie à la racine du FTP. Change '.' pour 'public_html' si Hostinger le demande
         server-dir: ./ 
         protocol: ftps # Utilise FTPS si Hostinger le supporte (plus sécurisé), sinon 'ftp'
