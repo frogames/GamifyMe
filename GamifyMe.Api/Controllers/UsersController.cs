@@ -1,5 +1,4 @@
-﻿using GamifyMe.Api.Constants;
-using GamifyMe.Api.Data;
+﻿using GamifyMe.Api.Data;
 using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
@@ -11,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using GamifyMe.Api.Constants; // Pour les Rôles
 
 namespace GamifyMe.Api.Controllers
 {
@@ -45,7 +45,8 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest("Établissement invalide.");
             }
 
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            // CORRECTION: Utilise la nouvelle méthode de hashage (string, pas de salt)
+            string passwordHash = CreatePasswordHash(request.Password);
 
             var user = new User
             {
@@ -53,16 +54,15 @@ namespace GamifyMe.Api.Controllers
                 EstablishmentId = establishment.Id,
                 Username = request.Username,
                 Email = request.Email.ToLower(),
-                PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt,
-                Role = Shared.Models.UserRole.User, // Rôle par défaut
+                PasswordHash = passwordHash, // Assignation du hash string
+                // PasswordSalt est supprimé (n'existe pas sur ton modèle)
+                Role = Roles.User, // CORRECTION: Utilise un string (depuis tes Constants)
                 CreatedAt = DateTime.UtcNow,
                 EmailConfirmationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
                 IsEmailConfirmed = false,
-                QrCode = Guid.NewGuid().ToString("N") // QR Code unique
+                QrCode = Guid.NewGuid().ToString("N")
             };
 
-            // Créer les portefeuilles (XP et Monnaie)
             var xpWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "XP", Balance = 0 };
             var currencyWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "DOC", Balance = 0 };
 
@@ -72,8 +72,12 @@ namespace GamifyMe.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Envoyer l'email de confirmation
-            await _emailService.SendConfirmationEmailAsync(user.Email, user.EmailConfirmationToken);
+            // CORRECTION: Utilise SendEmailAsync et construit l'email
+            string subject = "Confirmez votre compte GamifyMe";
+            // TODO: Remplacer "https://localhost:7039" par l'URL de production
+            string confirmationLink = $"https://localhost:7039/confirm-email?token={user.EmailConfirmationToken}";
+            string body = $"Bienvenue ! Veuillez confirmer votre compte en cliquant sur ce lien : <a href='{confirmationLink}'>Confirmer</a>";
+            await _emailService.SendEmailAsync(user.Email, subject, body);
 
             return Ok("Inscription réussie. Veuillez vérifier vos emails pour confirmer votre compte.");
         }
@@ -84,10 +88,11 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<string>> Login(LoginDto request)
         {
             var user = await _context.Users
-                .Include(u => u.Establishment) // Inclure l'établissement
+                .Include(u => u.Establishment)
                 .FirstOrDefaultAsync(u => u.Email == request.Email.ToLower());
 
-            if (user == null || !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+            // CORRECTION: Utilise la nouvelle méthode de vérification (pas de salt)
+            if (user == null || !VerifyPasswordHash(request.Password, user.PasswordHash))
             {
                 return BadRequest("Email ou mot de passe incorrect.");
             }
@@ -113,7 +118,7 @@ namespace GamifyMe.Api.Controllers
             }
 
             user.IsEmailConfirmed = true;
-            user.EmailConfirmationToken = null; // Token utilisé
+            user.EmailConfirmationToken = null;
             await _context.SaveChangesAsync();
 
             return Ok("Email confirmé avec succès ! Vous pouvez maintenant vous connecter.");
@@ -127,15 +132,22 @@ namespace GamifyMe.Api.Controllers
             var establishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A";
 
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
-            var currencyWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP");
+            var otherWallets = await _context.Wallets
+                .Where(w => w.UserId == userId && w.CurrencyCode != "XP")
+                .Select(w => new WalletBalanceDto { CurrencyCode = w.CurrencyCode, Balance = (int)w.Balance })
+                .ToListAsync();
 
             int currentXp = (int)(xpWallet?.Balance ?? 0);
-            int level = 1 + (currentXp / 500); // Formule simple
+            int level = 1 + (currentXp / 500);
+            int xpForNextLevel = level * 500; // Seuil du prochain niveau
 
+            // CORRECTION: Remplit le DTO tel qu'il est défini dans tes fichiers
             return Ok(new InfoBarDto
             {
                 Level = level,
-                CurrencyBalance = (int)(currencyWallet?.Balance ?? 0),
+                CurrentXp = currentXp,
+                XpToNextLevel = xpForNextLevel,
+                OtherWallets = otherWallets, // Assignation de la liste
                 EstablishmentName = establishmentName
             });
         }
@@ -264,22 +276,23 @@ namespace GamifyMe.Api.Controllers
 
 
         // --- Helpers (Logique privée) ---
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+
+        // CORRECTION: Nouvelle méthode de hashage (simple, sans salt)
+        private string CreatePasswordHash(string password)
         {
-            using (var hmac = new HMACSHA512())
+            using (var sha256 = SHA256.Create())
             {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                // Convertit le tableau de bytes en chaîne hexadécimale
+                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
             }
         }
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        // CORRECTION: Nouvelle méthode de vérification
+        private bool VerifyPasswordHash(string password, string storedHash)
         {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
+            string hashOfInput = CreatePasswordHash(password);
+            return hashOfInput == storedHash;
         }
 
         private string CreateToken(User user)
@@ -289,7 +302,7 @@ namespace GamifyMe.Api.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(ClaimTypes.Role, user.Role), // CORRECTION: user.Role est déjà un string
                 new Claim("EstablishmentId", user.EstablishmentId.ToString()),
                 new Claim("EstablishmentName", user.Establishment.Name)
             };

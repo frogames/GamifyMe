@@ -4,7 +4,7 @@ using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // <-- CORRECTION: USING MANQUANT
 using System.Security.Claims;
 
 namespace GamifyMe.Api.Controllers
@@ -72,7 +72,7 @@ namespace GamifyMe.Api.Controllers
             var allCompletedObjectiveIds = await _context.Validations
                 .Where(v => v.UserId == userId)
                 .Select(v => v.ObjectiveId)
-                .ToHashSetAsync();
+                .ToHashSetAsync(); // <-- Cette ligne va maintenant compiler
 
             var allActiveObjectives = await _context.Objectives
                 .Include(o => o.Prerequisites)
