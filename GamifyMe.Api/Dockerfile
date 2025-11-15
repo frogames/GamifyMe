@@ -4,14 +4,13 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copier tous les fichiers .csproj et le .sln pour restaurer les packages
-# (Maintenant que le .sln existe, cette étape va réussir)
 COPY GamifyMeV2.sln .
 COPY GamifyMe.Api/GamifyMe.Api.csproj GamifyMe.Api/
 COPY GamifyMe.Shared/GamifyMe.Shared.csproj GamifyMe.Shared/
 COPY GamifyMe.UI.Shared/GamifyMe.UI.Shared.csproj GamifyMe.UI.Shared/
 COPY GamifyMe.Web/GamifyMe.Web.csproj GamifyMe.Web/
 COPY GamifyMe.Web.Client/GamifyMe.Web.Client.csproj GamifyMe.Web.Client/
-COPY GamifyMe.App/GamifyMe.App.csproj GamifyMe.App/
+# La ligne pour GamifyMe.App a été supprimée
 
 # Restaurer les dépendances
 RUN dotnet restore GamifyMeV2.sln
@@ -34,3 +33,17 @@ EXPOSE 8080
 
 # Commande de démarrage
 ENTRYPOINT ["dotnet", "GamifyMe.Api.dll"]
+```
+
+---
+
+### Prochaine Étape : Le "Vrai" Push
+
+1.  Enregistre ce `Dockerfile` mis à jour.
+2.  Ouvre ton terminal PowerShell (dans `D:\GamifyMe_V2`).
+3.  **Pousse (Push) cette dernière modification** sur GitHub :
+
+    ```bash
+    git add .
+    git commit -m "Fix(CI): Met à jour le Dockerfile pour correspondre à la solution (5 projets)"
+    git push main
