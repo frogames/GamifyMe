@@ -33,17 +33,3 @@ EXPOSE 8080
 
 # Commande de démarrage
 ENTRYPOINT ["dotnet", "GamifyMe.Api.dll"]
-```
-
----
-
-### Prochaine Étape : Le "Vrai" Push
-
-1.  Enregistre ce `Dockerfile` mis à jour.
-2.  Ouvre ton terminal PowerShell (dans `D:\GamifyMe_V2`).
-3.  **Pousse (Push) cette dernière modification** sur GitHub :
-
-    ```bash
-    git add .
-    git commit -m "Fix(CI): Met à jour le Dockerfile pour correspondre à la solution (5 projets)"
-    git push main
