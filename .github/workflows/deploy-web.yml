@@ -43,11 +43,9 @@ jobs:
     # Ce job ne commence que si le frontend a réussi
     needs: build-and-deploy-frontend 
 
-# --- AJOUTEZ CES 3 LIGNES ICI ---
     permissions:
       contents: read
       packages: write
-    # --- FIN DE L'AJOUT ---
 
     steps:
     - name: 1. Récupérer le code
@@ -81,8 +79,8 @@ jobs:
           
           # Injecter les secrets dans l'environnement du VPS
           export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
-          export JWT_KEY="${{ secrets.JWT_KEY }}" # <-- LIGNE AJOUTÉE
+          export JWT_KEY="${{ secrets.JWT_KEY }}"
           
-          # Lancer Docker Compose
-          docker-compose pull
-          docker-compose up -d --remove-orphans
+          # Lancer Docker Compose (VERSION CORRIGÉE AVEC UN ESPACE)
+          docker compose pull
+          docker compose up -d --remove-orphans
