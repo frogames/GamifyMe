@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # Remplacez 'frogames' par votre user GitHub exact si différent
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: frogames/gamifyme
 
 jobs:
   build-and-push:
