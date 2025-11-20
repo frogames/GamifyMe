@@ -1,0 +1,92 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  # Remplacez 'frogames' par votre user GitHub exact si différent
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 1. Build & Push API
+      - name: Build and push API image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: GamifyMe.Api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:latest
+
+      # 2. Build & Push Web
+      - name: Build and push Web image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: GamifyMe.Web/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web:latest
+
+  deploy-to-vps:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      # 3. Copie du fichier docker-compose.prod.yml vers le VPS
+      - name: Copy docker-compose.prod.yml to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }} # <--- CHANGEMENT ICI
+          source: "docker-compose.prod.yml"
+          target: "/root/gamifyme/"
+
+      # 4. Connexion SSH et redémarrage des conteneurs
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }} # <--- CHANGEMENT ICI
+          script: |
+            # Création du dossier s'il n'existe pas
+            mkdir -p /root/gamifyme/
+            cd /root/gamifyme/
+            
+            # Login au registre GitHub pour pouvoir télécharger vos images privées
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Téléchargement des nouvelles images
+            docker compose -f docker-compose.prod.yml pull
+            
+            # Export des variables d'environnement pour Docker Compose
+            export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
+            export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
+            
+            # Redémarrage (Up détache et recrée si l'image a changé)
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            
+            # Nettoyage des vieilles images pour ne pas saturer le disque du VPS
+            docker image prune -f

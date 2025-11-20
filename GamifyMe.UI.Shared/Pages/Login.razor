@@ -1,0 +1,102 @@
+﻿@page "/login"
+@attribute [AllowAnonymous]
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@inject TokenStorageService TokenService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full" Style="height: 100vh;">
+    <MudPaper Elevation="3" Class="pa-8" Width="100%">
+        <MudText Typo="Typo.h4" GutterBottom="true" Align="Align.Center">GamifyMe V2</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">Connexion</MudText>
+
+        <EditForm Model="@loginModel" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+
+            <MudTextField Label="Email"
+                          @bind-Value="loginModel.Email"
+                          For="@(() => loginModel.Email)"
+                          Variant="Variant.Outlined"
+                          Class="mb-4" />
+
+            <MudTextField Label="Mot de passe"
+                          @bind-Value="loginModel.Password"
+                          For="@(() => loginModel.Password)"
+                          InputType="InputType.Password"
+                          Variant="Variant.Outlined"
+                          Class="mb-6" />
+
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Size="Size.Large"
+                       Disabled="@_processing">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Connexion...</MudText>
+                }
+                else
+                {
+                    <MudText>Se connecter</MudText>
+                }
+            </MudButton>
+        </EditForm>
+
+        <MudText Align="Align.Center" Class="mt-4">
+            Pas encore de compte ? <MudLink Href="register">S'inscrire</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private LoginDto loginModel = new LoginDto();
+    private bool _processing = false;
+
+    private async Task OnValidSubmit()
+    {
+        _processing = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/users/login", loginModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // --- CORRECTION ICI ---
+                // L'API renvoie le token directement sous forme de chaîne (String), pas un objet JSON complexe.
+                // On lit donc le contenu comme une simple string.
+                var token = await response.Content.ReadAsStringAsync();
+
+                // Nettoyage : Parfois le string arrive avec des guillemets "..." autour, on les enlève.
+                token = token.Trim('"');
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    // 3. Stockage du token
+                    await TokenService.SetTokenAsync(token);
+
+                    // 4. Redirection forcée pour recharger l'état d'authentification
+                    Navigation.NavigateTo("/", forceLoad: true);
+                }
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Erreur : {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de connexion : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+@using GamifyMe.UI.Shared.Layout
+@using GamifyMe.UI.Shared.Components
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous] 
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(MainLayout).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="pa-4">Page introuvable</div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

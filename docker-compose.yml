@@ -1,0 +1,31 @@
+services:
+  # Service Backend (API)
+  gamifyme-api:
+    image: gamifyme-api
+    build:
+      context: .
+      dockerfile: GamifyMe.Api/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # --- MODIFICATION ICI ---
+      # 1. Host=host.docker.internal : Pour cibler votre machine Windows
+      # 2. Database=gamifyme_db : Le nom exact vu sur votre capture d'écran
+      # 3. Username=postgres : Le nom d'utilisateur vu sur la capture
+      # 4. Password=Canon060570
+      - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Port=5432;Database=gamifyme_db;Username=postgres;Password=Canon060570;Include Error Detail=true
+
+  # Service Frontend (Web)
+  gamifyme-web:
+    image: gamifyme-web
+    build:
+      context: .
+      dockerfile: GamifyMe.Web/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Services__BaseUri=http://gamifyme-api:8080
+    depends_on:
+      - gamifyme-api

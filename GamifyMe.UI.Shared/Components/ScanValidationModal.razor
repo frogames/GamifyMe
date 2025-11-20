@@ -4,33 +4,36 @@
 
 @if (IsOpen)
 {
-    <div class="modal-backdrop show"></div>
-    <div class="modal show" tabindex="-1" style="display: block;">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Valider l'Objectif : <strong>@objectiveToScan?.Title</strong></h5>
-                    <button type="button" class="btn-close" @onclick="Close"></button>
-                </div>
-                <div class="modal-body">
+    <div class="modal-backdrop show" style="background-color: rgba(0,0,0,0.8); position: fixed; top:0; left:0; width:100%; height:100%; z-index:1040;"></div>
+    <div class="modal show" tabindex="-1" style="display: block; position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); z-index:1050;">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:90vw; width:500px;"> <div class="modal-content" style="border-radius:15px; overflow: hidden; border: none; box-shadow:010px30px rgba(0,0,0,0.5);">
+        
+        <div class="modal-header" style="background-color: #594AE2; color: white; display:flex; justify-content:center; align-items:center; position:relative;">
+            <h5 class="modal-title" style="margin:0; text-align:center; width:100%;">Valider : <strong>@objectiveToScan?.Title</strong></h5>
+            <button type="button" class="btn-close btn-close-white" @onclick="Close" style="position:absolute; right:10px; top:10px;"></button>
+        </div>
+        
+        <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding:20px; background-color: #f8f9fa;">
 
                     @if (!string.IsNullOrEmpty(scanMessage))
                     {
-                        <div class="alert @(isScanError ? "alert-danger" : "alert-success")">
+                        <div class="alert @(isScanError ? "alert-danger" : "alert-success")" style="width:100%; text-align: center; margin-bottom:15px;">
                             @scanMessage
                         </div>
                     }
 
-                    @if (_isScannerComponentActive) // <-- MODIFIEZ CECI
+                    @if (_isScannerComponentActive)
                     {
-                        <p>Scannez le QR code de l'utilisateur :</p>
-                        <QrCodeScanner @ref="qrScannerRef" OnScanSuccess="HandleScanResult" />
+                        <p style="margin-bottom:10px; font-weight:500;">Scannez le QR code du joueur :</p>
+                        
+                        <div style="width:100%; max-width:350px; height:350px; border:4px solid #594AE2; border-radius:12px; overflow: hidden; position: relative; background: black;">
+                            <QrCodeScanner @ref="qrScannerRef" OnScanSuccess="HandleScanResult" />
+                        </div>
+                        
+                        <button type="button" class="btn btn-danger mt-3" @onclick="Close" style="width:100%; max-width:350px;">
+                            Arrêter la caméra
+                        </button>
                     }
-
-                </div>
-                <div class="modal-footer">
-                    @* J'ai aussi corrigé la faute de frappe ici *@
-                    <button type="button" class="btn btn-secondary" @onclick="Close">Fermer</button>
                 </div>
             </div>
         </div>
@@ -38,193 +41,109 @@
 }
 
 @code {
+
+    [Parameter] public EventCallback OnScanSuccessRefresh { get; set; }
+
     private bool IsOpen = false;
     private ObjectiveDto? objectiveToScan;
     private string? scanMessage;
     private bool isScanError = false;
     private bool _isScannerComponentActive = true;
-
-    // reference to child scanner component
     private QrCodeScanner? qrScannerRef;
 
-    //1. Méthode publique asynchrone pour que le Dashboard puisse ouvrir ce modal
-    // Démarre le scanner après le rendu afin d'éviter tout appel JS pendant le rendu initial.
     public async Task ShowAsync(ObjectiveDto objective)
     {
         objectiveToScan = objective;
         scanMessage = null;
         isScanError = false;
         IsOpen = true;
-
-        // Force un rendu pour que le scanner child soit instancié et le @ref attribué
+        _isScannerComponentActive = true;
         await InvokeAsync(StateHasChanged);
-
-        // Laisser le renderer terminer, puis démarrer le scanner de façon asynchrone
-        await Task.Yield();
-
+        await Task.Yield(); // Laisser le temps au rendu HTML
+        
         if (qrScannerRef != null)
         {
-            try
-            {
-                await qrScannerRef.StartAsync();
-            }
-            catch (Exception ex)
-            {
-                scanMessage = "Impossible de démarrer le scanner : " + ex.Message;
-                isScanError = true;
-                Console.WriteLine($"ScanValidationModal: erreur démarrage scanner: {ex.Message}");
-            }
+            await qrScannerRef.StartAsync();
+        }
+        else 
+        {
+             Console.WriteLine("ERREUR: qrScannerRef est null après le rendu !");
         }
     }
 
-    // Backwards-compatible synchronous Show (fire-and-forget) — évite le blocage si parent n'await pas
-    public void Show(ObjectiveDto objective)
-    {
-        _ = ShowAsync(objective);
-    }
+    public void Show(ObjectiveDto objective) => _ = ShowAsync(objective);
 
-    //2. Méthode pour fermer
     public async void Close()
     {
-        // Stopper proprement le scanner s'il tourne
-        if (qrScannerRef != null)
-        {
-            try { await qrScannerRef.StopAsync(); } catch (Exception ex) { Console.WriteLine($"ScanValidationModal.Close stop error: {ex.Message}"); }
-        }
-
+        if (qrScannerRef != null) try { await qrScannerRef.StopAsync(); } catch { }
         IsOpen = false;
         objectiveToScan = null;
-        scanMessage = null;
-        isScanError = false;
         StateHasChanged();
     }
 
-    //3. Appelé par le <QrCodeScanner>
     private async Task HandleScanResult(string qrCode)
     {
         if (objectiveToScan == null) return;
 
-        // 1. DÉTRUIRE LE COMPOSANT SCANNER
-        // (En mettant le @if à false, Blazor va le supprimer du DOM et appeler son Dispose)
+        // 1. Pause visuelle
         _isScannerComponentActive = false;
-        scanMessage = null;
-        isScanError = false;
+        scanMessage = "Analyse en cours...";
         await InvokeAsync(StateHasChanged);
-        qrScannerRef = null; // On s'assure que l'ancienne référence est partie
+        qrScannerRef = null;
 
-        // ... (Logique d'appel API inchangée) ...
-        var request = new CreateValidationDto { /* ... */ };
+        // 2. Appel API
         try
         {
-            var response = await Http.PostAsJsonAsync("api/validations", request);
+            var request = new CreateValidationDto 
+            { 
+                Type = "Objective",
+                QrCode = objectiveToScan.Id.ToString(),
+                UserQrCode = qrCode 
+            };
+
+            var response = await Http.PostAsJsonAsync("api/dashboard/process-scan", request);
+
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<ValidationResponseDto>();
-                scanMessage = $"{result?.Message} (Nouvel XP: {result?.NewXpBalance})";
+                
+                // --- FIX : AFFICHAGE DU GAIN (Issue 3) ---
+                scanMessage = $"✅ {result?.Message} !";
+                if (result != null) 
+                {
+                    scanMessage += $" Gagnez : +{result.RewardXp} XP / +{result.RewardCurrency} Coins.";
+                    // Notification au Dashboard de rafraîchir les stats du joueur
+                    await OnScanSuccessRefresh.InvokeAsync(); 
+                }
                 isScanError = false;
             }
             else
             {
-                scanMessage = await response.Content.ReadAsStringAsync();
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                scanMessage = $"❌ ERREUR VALIDATION : {errorMsg.Trim('\"')}";
                 isScanError = true;
-            }
-        }
-        catch (Exception ex) { /* ... */ }
-
-        // 2. AFFICHER LE RÉSULTAT (sans scanner)
-        await InvokeAsync(StateHasChanged);
-
-        // 3. PAUSE pour la lecture
-        await Task.Delay(2000);
-
-        // 4. PRÉPARER LA RECRÉATION
-        scanMessage = null;
-        isScanError = false;
-        _isScannerComponentActive = true; // On dit à Blazor de recréer le composant
-        await InvokeAsync(StateHasChanged); // Blazor recrée le scanner
-
-        // 5. ATTENDRE QUE BLazor ASSIGNE LE NOUVEAU @ref
-        // C'est crucial, il faut laisser le temps au moteur de rendu.
-        await Task.Yield();
-
-        // 6. DÉMARRER LA NOUVELLE INSTANCE DU SCANNER
-        try
-        {
-            if (qrScannerRef != null)
-            {
-                await qrScannerRef.StartAsync(); // Démarrer la NOUVELLE instance
-            }
-            else
-            {
-                throw new Exception("Référence du scanner non réassignée.");
             }
         }
         catch (Exception ex)
         {
-            scanMessage = "Erreur au redémarrage du scanner: " + ex.Message;
+            scanMessage = "Erreur technique : " + ex.Message;
             isScanError = true;
-            await InvokeAsync(StateHasChanged);
         }
-    }
 
+        // 3. Affichage résultat
+        await InvokeAsync(StateHasChanged);
+        
+        // --- FIX : DÉLAI RÉDUIT (Issue 2) ---
+        await Task.Delay(800); 
 
-    // ==================================================
-    // BLOC DE TRACAGE SYSTÉMATIQUE
-    // ==================================================
-
-    protected override void OnInitialized()
-    {
-        Console.WriteLine("TRACE: MODAL - OnInitialized START");
-        base.OnInitialized();
-        Console.WriteLine("TRACE: MODAL - OnInitialized END");
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        Console.WriteLine("TRACE: MODAL - OnInitializedAsync START");
-        await base.OnInitializedAsync();
-        Console.WriteLine("TRACE: MODAL - OnInitializedAsync END");
-    }
-
-    protected override void OnParametersSet()
-    {
-        Console.WriteLine("TRACE: MODAL - OnParametersSet START");
-        base.OnParametersSet();
-        Console.WriteLine("TRACE: MODAL - OnParametersSet END");
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        Console.WriteLine("TRACE: MODAL - OnParametersSetAsync START");
-        await base.OnParametersSetAsync();
-        Console.WriteLine("TRACE: MODAL - OnParametersSetAsync END");
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Console.WriteLine($"TRACE: MODAL - OnAfterRender START (firstRender: {firstRender})");
-        base.OnAfterRender(firstRender);
-        Console.WriteLine($"TRACE: MODAL - OnAfterRender END (firstRender: {firstRender})");
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        Console.WriteLine($"TRACE: MODAL - OnAfterRenderAsync START (firstRender: {firstRender})");
-        await base.OnAfterRenderAsync(firstRender);
-        Console.WriteLine($"TRACE: MODAL - OnAfterRenderAsync END (firstRender: {firstRender})");
-    }
-
-    // LA MÉTHODE CORRIGÉE (avec les traces)
-    public async ValueTask DisposeAsync()
-    {
-        Console.WriteLine("TRACE: MODAL - DisposeAsync START"); // <-- AJOUTEZ CECI
-
-        if (qrScannerRef != null)
+        // 4. Relance
+        if (IsOpen)
         {
-            try { await qrScannerRef.StopAsync(); } catch (Exception ex) { Console.WriteLine($"ScanValidationModal.Dispose stop error: {ex.Message}"); }
-            qrScannerRef = null;
+            scanMessage = null;
+            _isScannerComponentActive = true;
+            await InvokeAsync(StateHasChanged);
+            await Task.Yield();
+            if (qrScannerRef != null) await qrScannerRef.StartAsync();
         }
-
-        Console.WriteLine("TRACE: MODAL - DisposeAsync END"); // <-- AJOUTEZ CECI
     }
 }

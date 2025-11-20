@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+
+@code {
+    protected override void OnInitialized()
+    {
+        // On redirige vers la page de login
+        Navigation.NavigateTo("login", forceLoad: false);
+    }
+}

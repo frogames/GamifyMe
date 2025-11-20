@@ -115,7 +115,7 @@ namespace GamifyMe.Api.Migrations
 
                     b.HasIndex("PrerequisitesId");
 
-                    b.ToTable("ObjectiveObjectives", (string)null);
+                    b.ToTable("ObjectiveObjective", (string)null);
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.Order", b =>
@@ -123,6 +123,9 @@ namespace GamifyMe.Api.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DateCompleted")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DatePurchased")
                         .HasColumnType("timestamp with time zone");
@@ -423,7 +426,7 @@ namespace GamifyMe.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GamifyMe.Shared.Models.User", "ScannedUser")
+                    b.HasOne("GamifyMe.Shared.Models.User", "User")
                         .WithMany("ValidationsReceived")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -431,7 +434,7 @@ namespace GamifyMe.Api.Migrations
 
                     b.Navigation("Objective");
 
-                    b.Navigation("ScannedUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.Wallet", b =>

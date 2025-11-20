@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GamifyMe.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4579aeadf258c342806e501f88ec4f3f4fff491b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4007ea167be768c6f0e33c0c7935457fdfd44428")]
 [assembly: System.Reflection.AssemblyProductAttribute("GamifyMe.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GamifyMe.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

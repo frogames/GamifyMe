@@ -2,9 +2,13 @@
 {
     public class ValidationResponseDto
     {
-        public string? Message { get; set; }
-        public string? Username { get; set; }
-        public int NewXpBalance { get; set; }
-        public int NewDocPointsBalance { get; set; }
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        // --- NOUVEAUX CHAMPS NÉCESSAIRES ---
+        public int RewardXp { get; set; }
+        public int RewardCurrency { get; set; }
+        public int UserNewLevel { get; set; }
+        public int UserNewBalance { get; set; }
     }
 }

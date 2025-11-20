@@ -1,35 +1,26 @@
-# Étape 1: Construction (Build)
-# On utilise l'image SDK .NET 8 pour compiler
+# D:\GamifyMe_V2\GamifyMe.Api\Dockerfile
+
+# Étape 1 : Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copier tous les fichiers .csproj et le .sln pour restaurer les packages
-COPY GamifyMeV2.sln .
-COPY GamifyMe.Api/GamifyMe.Api.csproj GamifyMe.Api/
-COPY GamifyMe.Shared/GamifyMe.Shared.csproj GamifyMe.Shared/
-COPY GamifyMe.UI.Shared/GamifyMe.UI.Shared.csproj GamifyMe.UI.Shared/
-COPY GamifyMe.Web/GamifyMe.Web.csproj GamifyMe.Web/
-COPY GamifyMe.Web.Client/GamifyMe.Web.Client.csproj GamifyMe.Web.Client/
-# La ligne pour GamifyMe.App a été supprimée
+# Copie des fichiers projets pour restaurer les dépendances
+COPY ["GamifyMe.Api/GamifyMe.Api.csproj", "GamifyMe.Api/"]
+COPY ["GamifyMe.Shared/GamifyMe.Shared.csproj", "GamifyMe.Shared/"]
 
-# Restaurer les dépendances
-RUN dotnet restore GamifyMeV2.sln
+# Restauration
+RUN dotnet restore "GamifyMe.Api/GamifyMe.Api.csproj"
 
-# Copier tout le reste du code source
+# Copie du reste du code source
 COPY . .
 
-# Publier l'API en mode Release
-RUN dotnet publish GamifyMe.Api/GamifyMe.Api.csproj -c Release -o /app/publish
+# Compilation et Publication
+WORKDIR "/src/GamifyMe.Api"
+RUN dotnet publish "GamifyMe.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Étape 2: Production (Runtime)
-# On utilise l'image ASP.NET légère pour l'exécution
+# Étape 2 : Runtime (Image finale légère)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish .
-
-# L'API écoutera sur le port 8080 à l'intérieur du conteneur
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-
-# Commande de démarrage
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "GamifyMe.Api.dll"]

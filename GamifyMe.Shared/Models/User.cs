@@ -29,11 +29,21 @@ namespace GamifyMe.Shared.Models
 
         public List<Wallet> Wallets { get; set; } = new();
 
-        [InverseProperty("ScannedUser")]
+        [InverseProperty("User")]
         public List<Validation> ValidationsReceived { get; set; } = new();
 
         public List<Order> Orders { get; set; } = new();
         public List<UserInventory> Inventory { get; set; } = new();
+
+        // --- PROPRIÉTÉS CALCULÉES / NON MAPPÉES (CORRECTION) ---
+        [NotMapped] // <-- INDIQUE À EF CORE D'IGNORER CES CHAMPS EN BASE DE DONNÉES
+        public int Level { get; set; }
+
+        [NotMapped]
+        public int CurrentXp { get; set; }
+
+        [NotMapped]
+        public int CurrencyBalance { get; set; }
 
         public bool IsEmailConfirmed { get; set; } = false; // Par défaut, non confirmé
         public string? EmailConfirmationToken { get; set; }

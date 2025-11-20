@@ -65,6 +65,37 @@
 
 </MudContainer>
 
+
+<script>
+    window.shareQrImage = async (title, text, imageUrl) => {
+        try {
+            // 1. Télécharger l'image
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+
+            // 2. Créer un fichier virtuel
+            const file = new File([blob], "pass-gamifyme.png", { type: "image/png" });
+
+            // 3. Partager
+            if (navigator.share) {
+                await navigator.share({
+                    title: title,
+                    text: text,
+                    files: [file]
+                });
+            } else {
+                alert("Partage non supporté sur cet appareil.");
+            }
+        } catch (e) {
+            console.error("Erreur partage:", e);
+            // Fallback : on partage juste le lien
+             if (navigator.share) {
+                await navigator.share({ title, text, url: imageUrl });
+            }
+        }
+    };
+</script>
+
 @code {
     private UserProfileDetailsDto? profile;
     private bool isLoading = true;
@@ -94,24 +125,16 @@
 
     private async Task ShareCard()
     {
-        // Tente d'utiliser l'API de partage native (Mobile)
-        try
-        {
-            if (profile != null)
-            {
-                await JSRuntime.InvokeVoidAsync("navigator.share", new
-                {
-                    title = "Mon Pass GamifyMe",
-                    text = $"Voici mon code joueur pour {profile.Username}",
-                    url = NavigationManager.Uri // Ou autre lien
-                });
-            }
-        }
-        catch
-        {
-            // Fallback si l'API n'est pas supportée (ex: Desktop)
-            // On pourrait copier dans le presse-papier ici
-        }
+        if (profile == null) return;
+
+        // L'URL de l'image QR Code
+        string qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}";
+
+        // Appel de notre script personnalisé
+        await JSRuntime.InvokeVoidAsync("window.shareQrImage",
+            "Mon Pass GamifyMe",
+            $"Voici mon code joueur pour {profile.Username}",
+            qrImageUrl);
     }
 
     [Inject] NavigationManager NavigationManager { get; set; } = default!;

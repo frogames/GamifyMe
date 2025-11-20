@@ -1,59 +1,67 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using GamifyMe.Web.Components;
 using MudBlazor.Services;
-using GamifyMe.UI.Shared.Layout;
 using GamifyMe.UI.Shared.Services;
-using GamifyMe.Web.Components;
-using GamifyMe.Web.Services;
-using System.Reflection;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies; // <--- AJOUT IMPORTANT
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. Services Côté Serveur ---
+// 1. Services Razor Components
 builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddHttpClient();
-builder.Services.AddMudServices();
+// --- CORRECTION ICI : ON DÉFINIT LE SCHÉMA PAR DÉFAUT ---
+// On dit au serveur : "Par défaut, utilise le système de Cookies pour gérer l'identité".
+// C'est ce qui manque et cause l'erreur 500.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        // Optionnel : On peut dire où est la page de login, 
+        // même si notre composant RedirectToLogin le fait déjà.
+        options.LoginPath = "/login";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    });
 
-// --- CORRECTION ---
-// Il faut AJOUTER AddAuthentication() pour que app.UseAuthentication() fonctionne.
-// On ajoute un schéma "Cookies" par défaut pour la partie serveur.
-builder.Services.AddAuthentication("Cookies")
-    .AddCookie();
-// --- FIN CORRECTION ---
-
-builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<AuthenticationStateProvider, ServerSideAuthStateProvider>();
+// ---------------------------------------------------------
 
+// 2. Services MudBlazor & UI
+builder.Services.AddMudServices();
+builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
+
+// 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://api.gamifyme.fun:8080")
+    BaseAddress = new Uri("http://gamifyme-api:8080")
 });
 
 var app = builder.Build();
 
-// --- 2. Pipeline HTTP ---
+// Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
 }
 else
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseBlazorFrameworkFiles();
 app.UseAntiforgery();
 
-app.UseAuthentication(); // Cette ligne a maintenant le service dont elle a besoin
+// --- SÉCURITÉ ---
+app.UseAuthentication();
 app.UseAuthorization();
+// ----------------
 
 app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(MainLayout).Assembly);
+    .AddAdditionalAssemblies(typeof(GamifyMe.Web.Client.Program).Assembly)
+    .AddAdditionalAssemblies(typeof(GamifyMe.UI.Shared.Layout.MainLayout).Assembly);
 
 app.Run();

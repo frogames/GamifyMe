@@ -8,6 +8,16 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5001", "https://gamifyme.fun") // Autorise le Local et la Prod
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,17 +46,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// 4. CORS (pour autoriser le Web Client)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowBlazorWasm",
-        policy =>
-        {
-            policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new string[] { "https://localhost:7039" })
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
-});
 
 var app = builder.Build();
 
@@ -60,7 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // IMPORTANT: UseCors doit être avant UseAuthentication/UseAuthorization
-app.UseCors("AllowBlazorWasm");
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();
 app.UseAuthorization();

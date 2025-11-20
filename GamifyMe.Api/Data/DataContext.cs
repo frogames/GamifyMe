@@ -22,7 +22,7 @@ namespace GamifyMe.Api.Data
         public DbSet<StoreItem> StoreItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
-        public DbSet<ObjectiveObjective> ObjectiveObjectives { get; set; }
+        public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,7 +51,7 @@ namespace GamifyMe.Api.Data
                     j =>
                     {
                         j.HasKey(oo => new { oo.IsPrerequisiteForId, oo.PrerequisitesId });
-                        j.ToTable("ObjectiveObjectives");
+                        j.ToTable("ObjectiveObjective");
                     });
 
             // --- Filtre Global de Sécurité (Multi-Tenant) ---

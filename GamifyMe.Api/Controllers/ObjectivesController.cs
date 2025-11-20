@@ -4,7 +4,7 @@ using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore; // <-- CORRECTION: USING MANQUANT
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace GamifyMe.Api.Controllers
@@ -20,6 +20,87 @@ namespace GamifyMe.Api.Controllers
         {
             _context = context;
         }
+
+        [HttpGet("active")]
+        public async Task<ActionResult<List<ObjectiveDto>>> GetActiveObjectives()
+        {
+            // 1. Récupérer l'ID utilisateur de manière sécurisée
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized("Utilisateur non identifié.");
+            }
+
+            // 2. Récupérer l'utilisateur pour avoir son EstablishmentId
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Unauthorized("Utilisateur introuvable.");
+
+            var now = DateTime.UtcNow;
+
+            // 3. Récupérer les IDs des objectifs déjà validés par cet utilisateur
+            // Note : On utilise un HashSet pour des recherches ultra-rapides (O(1))
+            var completedObjectiveIds = await _context.Validations
+                .Where(v => v.UserId == userId)
+                .Select(v => v.ObjectiveId)
+                .ToListAsync();
+
+            var completedSet = completedObjectiveIds.ToHashSet();
+
+            // 4. Récupérer tous les objectifs ACTIFS de l'établissement
+            var allActiveObjectives = await _context.Objectives
+                .Include(o => o.Prerequisites) // Important pour vérifier les prérequis
+                .Where(o => o.EstablishmentId == user.EstablishmentId
+                            && o.IsActive
+                            && (o.EndDate == null || o.EndDate > now))
+                .AsNoTracking() // Optimisation lecture seule
+                .ToListAsync();
+
+            var resultList = new List<ObjectiveDto>();
+
+            foreach (var obj in allActiveObjectives)
+            {
+                // Vérification des prérequis
+                bool isLocked = false;
+                if (obj.Prerequisites != null && obj.Prerequisites.Any())
+                {
+                    // Si un seul prérequis n'est pas dans la liste des validés, c'est verrouillé
+                    if (!obj.Prerequisites.All(p => completedSet.Contains(p.Id)))
+                    {
+                        isLocked = true;
+                    }
+                }
+
+                // On ne montre pas les objectifs verrouillés (ou alors on pourrait les montrer grisés, 
+                // mais ici la logique semble être de les masquer)
+                if (isLocked) continue;
+
+                // Vérification si déjà complété (pour les objectifs uniques)
+                bool alreadyDone = obj.IsUnique && completedSet.Contains(obj.Id);
+
+                // Si c'est unique et déjà fait, on ne l'affiche plus dans la liste "Active"
+                if (alreadyDone) continue;
+
+                resultList.Add(new ObjectiveDto
+                {
+                    Id = obj.Id,
+                    Title = obj.Title,
+                    Description = obj.Description,
+                    IconName = obj.IconName,
+                    XpReward = obj.XpReward,
+                    DocPointsReward = obj.DocPointsReward,
+                    Location = obj.Location,
+                    EventDate = obj.EventDate,
+                    EndDate = obj.EndDate,
+                    IsUnique = obj.IsUnique,
+                    IsAlreadyCompleted = alreadyDone // Sera false ici vu le filtrage ci-dessus
+                });
+            }
+
+            // Tri final : Les événements les plus proches d'abord
+            return Ok(resultList.OrderBy(o => o.EventDate ?? DateTime.MaxValue).ToList());
+        }
+
+        // ... (GARDEZ LES AUTRES MÉTHODES CreateObjective, Update, Delete TELLES QUELLES CI-DESSOUS) ...
 
         [HttpPost]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
@@ -61,51 +142,6 @@ namespace GamifyMe.Api.Controllers
             _context.Objectives.Add(objective);
             await _context.SaveChangesAsync();
             return Ok();
-        }
-
-        [HttpGet("active")]
-        public async Task<ActionResult<List<ObjectiveDto>>> GetActiveObjectives()
-        {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var now = DateTime.UtcNow;
-
-            var allCompletedObjectiveIds = (await _context.Validations
-                .Where(v => v.UserId == userId)
-                .Select(v => v.ObjectiveId)
-                .ToListAsync())
-                .ToHashSet();
-
-            var allActiveObjectives = await _context.Objectives
-                .Include(o => o.Prerequisites)
-                .Where(o => o.IsActive && (o.EndDate == null || o.EndDate.Value > now))
-                .ToListAsync();
-
-            var unlockedObjectives = allActiveObjectives.Where(objective =>
-            {
-                if (!objective.Prerequisites.Any()) return true;
-                return objective.Prerequisites.All(prereq => allCompletedObjectiveIds.Contains(prereq.Id));
-            });
-
-            var resultDtoList = unlockedObjectives
-                .Select(o => new ObjectiveDto
-                {
-                    Id = o.Id,
-                    Title = o.Title,
-                    Description = o.Description,
-                    IconName = o.IconName,
-                    XpReward = o.XpReward,
-                    DocPointsReward = o.DocPointsReward,
-                    Location = o.Location,
-                    EventDate = o.EventDate,
-                    EndDate = o.EndDate,
-                    IsUnique = o.IsUnique,
-                    IsAlreadyCompleted = o.IsUnique && allCompletedObjectiveIds.Contains(o.Id)
-                })
-                .Where(dto => !dto.IsAlreadyCompleted)
-                .OrderByDescending(o => o.EventDate)
-                .ToList();
-
-            return Ok(resultDtoList);
         }
 
         [HttpGet("list-all")]

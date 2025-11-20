@@ -1,0 +1,29 @@
+services:
+  # --- BACKEND ---
+  gamifyme-api:
+    image: ghcr.io/frogames/gamifyme-api:latest
+    container_name: gamifyme-api
+    restart: always
+    ports:
+      - "5000:8080" # On expose le 5000 localement sur le VPS (Nginx prendra le relais)
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # On injecte les secrets via le VPS ou GitHub Actions
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - Jwt__Key=${JWT_SECRET_KEY}
+      # CORS : On autorise le frontend
+      - Cors__AllowedOrigins=https://gamifyme.fun
+
+  # --- FRONTEND ---
+  gamifyme-web:
+    image: ghcr.io/frogames/gamifyme-web:latest
+    container_name: gamifyme-web
+    restart: always
+    ports:
+      - "5001:8080" # On expose le 5001 localement
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # L'URL interne pour le SSR (Server Side Rendering)
+      - Services__BaseUri=http://gamifyme-api:8080
+    depends_on:
+      - gamifyme-api
