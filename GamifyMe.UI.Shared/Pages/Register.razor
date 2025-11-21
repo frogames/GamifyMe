@@ -8,38 +8,26 @@
 @inject ISnackbar Snackbar
 @inject TokenStorageService TokenService
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full" Style="height: 100vh;">
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"
+    Style="height: 100vh;">
     <MudPaper Elevation="3" Class="pa-8" Width="100%">
         <MudText Typo="Typo.h4" GutterBottom="true" Align="Align.Center">Créer un compte</MudText>
 
-        <EditForm Model="@registerModel" OnValidSubmit="OnValidSubmit">
+        <EditForm Model="@registerModel" OnValidSubmit="OnValidSubmit" FormName="registerForm">
             <DataAnnotationsValidator />
 
-            <MudTextField Label="Nom d'utilisateur"
-                          @bind-Value="registerModel.Username"
-                          For="@(() => registerModel.Username)"
-                          Variant="Variant.Outlined"
-                          Class="mb-4" />
+            <MudTextField Label="Nom d'utilisateur" @bind-Value="registerModel.Username"
+                For="@(() => registerModel.Username)" Variant="Variant.Outlined" Class="mb-4" />
 
-            <MudTextField Label="Email"
-                          @bind-Value="registerModel.Email"
-                          For="@(() => registerModel.Email)"
-                          Variant="Variant.Outlined"
-                          Class="mb-4" />
+            <MudTextField Label="Email" @bind-Value="registerModel.Email" For="@(() => registerModel.Email)"
+                Variant="Variant.Outlined" Class="mb-4" />
 
-            <MudTextField Label="Mot de passe"
-                          @bind-Value="registerModel.Password"
-                          For="@(() => registerModel.Password)"
-                          InputType="InputType.Password"
-                          Variant="Variant.Outlined"
-                          Class="mb-6" />
+            <MudTextField Label="Mot de passe" @bind-Value="registerModel.Password"
+                For="@(() => registerModel.Password)" InputType="InputType.Password" Variant="Variant.Outlined"
+                Class="mb-6" />
 
-            <MudButton ButtonType="ButtonType.Submit"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Size="Size.Large"
-                       Disabled="@_processing">
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                Size="Size.Large" Disabled="@_processing">
                 @if (_processing)
                 {
                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -104,7 +92,11 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Compte créé avec succès !", Severity.Success);
+                Snackbar.Add("Compte créé avec succès ! Un email de validation vous a été envoyé. Veuillez vérifier votre boîte mail pour activer votre compte.", Severity.Success, config =>
+                {
+                    config.VisibleStateDuration = 5000; // Affiche pendant 5 secondes
+                });
+                await Task.Delay(2000); // Laisse le temps de lire le message
                 Navigation.NavigateTo("login");
             }
             else

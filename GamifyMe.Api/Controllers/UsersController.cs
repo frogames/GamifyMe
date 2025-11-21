@@ -1,4 +1,5 @@
-﻿using GamifyMe.Api.Data;
+﻿using GamifyMe.Api.Constants;
+using GamifyMe.Api.Data;
 using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
@@ -9,8 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using GamifyMe.Api.Constants;
-using BCrypt.Net; // Nécessaire pour la crypto
 
 namespace GamifyMe.Api.Controllers
 {
@@ -29,30 +28,23 @@ namespace GamifyMe.Api.Controllers
             _emailService = emailService;
         }
 
-        // POST api/users/register
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register(RegisterDto request)
+        public async Task<ActionResult<string>> Register(RegisterDto request)
         {
-            // 1. Validation de l'email
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email.ToLower()))
-            {
-                return BadRequest("Cet email est déjà associé à un compte.");
-            }
-
-            // 2. Validation de l'établissement
-            // On retire la logique "Sauvetage" : si l'ID est faux, on refuse l'inscription. C'est plus sûr.
             var establishment = await _context.Establishments.FindAsync(request.EstablishmentId);
             if (establishment == null)
             {
-                return BadRequest("L'établissement sélectionné est invalide ou introuvable.");
+                return BadRequest("Établissement invalide.");
             }
 
-            // 3. Hachage Sécurisé (BCrypt)
-            // BCrypt gère lui-même le Salt, pas besoin de colonne séparée
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            // 4. Création de l'utilisateur
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -60,23 +52,19 @@ namespace GamifyMe.Api.Controllers
                 Username = request.Username,
                 Email = request.Email.ToLower(),
                 PasswordHash = passwordHash,
-                Role = Roles.User, // Par défaut, un nouvel inscrit est un simple User
+                Role = Roles.User,
                 CreatedAt = DateTime.UtcNow,
                 EmailConfirmationToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64)),
-                IsEmailConfirmed = false, // On remettra la validation email plus tard
+                IsEmailConfirmed = false,
                 QrCode = Guid.NewGuid().ToString("N")
             };
 
-            // Pour le développement local, on peut auto-confirmer si c'est un admin, 
-            // mais restons standard pour l'instant.
-            // ASTUCE DEV : Si l'email contient "admin", on le passe SuperAdmin et confirmé direct
             if (user.Email.Contains("admin") || user.Email.Contains("cx6"))
             {
                 user.Role = Roles.SuperAdmin;
                 user.IsEmailConfirmed = true;
             }
 
-            // 5. Création des portefeuilles
             var xpWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "XP", Balance = 0 };
             var currencyWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "DOC", Balance = 0 };
 
@@ -86,13 +74,25 @@ namespace GamifyMe.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            // TODO: Réactiver l'envoi d'email réel en production
-            // await _emailService.SendEmailAsync(...) 
+            // Envoyer l'email de confirmation
+            if (!user.IsEmailConfirmed)
+            {
+                var appUrl = _configuration["AppUrl"];
+                var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
+                var subject = "Confirmez votre compte GamifyMe";
+                var body = $@"
+                    <h1>Bienvenue sur GamifyMe !</h1>
+                    <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
+                    <p><a href='{confirmationLink}'>Confirmer mon email</a></p>
+                    <p>Si le lien ne fonctionne pas, copiez-collez l'URL suivante dans votre navigateur : {confirmationLink}</p>";
+
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+                return Ok("Compte créé avec succès. Veuillez vérifier vos emails pour confirmer votre compte.");
+            }
 
             return Ok("Compte créé avec succès. Vous pouvez vous connecter.");
         }
 
-        // POST api/users/login
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<string>> Login(LoginDto request)
@@ -106,26 +106,19 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest("Email ou mot de passe incorrect.");
             }
 
-            // 1. Vérification du Hash (BCrypt)
-            // Cette méthode compare le mot de passe en clair avec le hash sécurisé
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return BadRequest("Email ou mot de passe incorrect.");
             }
 
-            // 2. Vérification Email
             if (!user.IsEmailConfirmed)
             {
                 return BadRequest("Veuillez confirmer votre email avant de vous connecter.");
             }
 
-            // 3. Génération du Token
             string token = CreateToken(user);
             return Ok(token);
         }
-
-        // ... (Gardez les méthodes GetInfoBar, GetProfileDetails, GetProfileScan, ConfirmEmail telles quelles) ...
-        // Je remets juste les méthodes inchangées pour que le copier-coller soit complet :
 
         [HttpGet("confirm-email")]
         [AllowAnonymous]
@@ -143,7 +136,9 @@ namespace GamifyMe.Api.Controllers
         [Authorize]
         public async Task<ActionResult<InfoBarDto>> GetInfoBar()
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
             var otherWallets = await _context.Wallets.Where(w => w.UserId == userId && w.CurrencyCode != "XP")
                 .Select(w => new WalletBalanceDto { CurrencyCode = w.CurrencyCode, Balance = (int)w.Balance }).ToListAsync();
@@ -165,9 +160,9 @@ namespace GamifyMe.Api.Controllers
         [Authorize]
         public async Task<ActionResult<UserProfileDetailsDto>> GetMyProfileDetails()
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
 
-            // 1. Récupérer l'utilisateur et ses infos de base
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .Include(u => u.Wallets)
@@ -175,17 +170,14 @@ namespace GamifyMe.Api.Controllers
 
             if (user == null) return NotFound("Utilisateur introuvable.");
 
-            // Calcul des niveaux / soldes (Logique existante)
             var xpWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode == "XP");
             var currencyWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode != "XP");
             int currentXp = (int)(xpWallet?.Balance ?? 0);
             int currentCurrency = (int)(currencyWallet?.Balance ?? 0);
             int level = 1 + (currentXp / 500);
 
-            // --- 2. RÉCUPÉRATION DES LOGS (C'est ici que ça manquait) ---
             var logs = new List<UserActivityLogDto>();
 
-            // A. Les Validations (Gains d'XP)
             var validations = await _context.Validations
                 .Include(v => v.Objective)
                 .Where(v => v.UserId == userId)
@@ -205,7 +197,6 @@ namespace GamifyMe.Api.Controllers
                 });
             }
 
-            // B. Les Commandes (Dépenses)
             var orders = await _context.Orders
                 .Include(o => o.StoreItem)
                 .Where(o => o.UserId == userId)
@@ -219,16 +210,14 @@ namespace GamifyMe.Api.Controllers
                 {
                     Date = o.DatePurchased,
                     Description = $"Achat : {o.StoreItem?.Name ?? "Objet supprimé"}",
-                    AmountChange = -o.PricePaid, // Négatif car c'est une dépense
+                    AmountChange = -o.PricePaid,
                     Type = "Currency",
                     Icon = "ShoppingBag"
                 });
             }
 
-            // Fusion et tri final
             var sortedLogs = logs.OrderByDescending(l => l.Date).Take(10).ToList();
 
-            // 3. Construction de la réponse
             return Ok(new UserProfileDetailsDto
             {
                 Username = user.Username,
@@ -243,28 +232,96 @@ namespace GamifyMe.Api.Controllers
                 ProgressPercentage = Math.Min(100, Math.Max(0, ((double)(currentXp % 500) / 500) * 100)),
                 CurrencyBalance = currentCurrency,
                 CurrencyName = currencyWallet?.CurrencyCode ?? "Points",
-
-                // On injecte la liste remplie ici :
                 RecentActivity = sortedLogs
             });
+        }
+
+        [HttpGet("inventory")]
+        [Authorize]
+        public async Task<ActionResult<List<UserInventoryDto>>> GetMyInventory()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var inventoryItems = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .Where(ui => ui.UserId == userId)
+                .OrderByDescending(ui => ui.DateAcquired)
+                .Select(ui => new UserInventoryDto
+                {
+                    Id = ui.Id,
+                    ItemName = ui.StoreItem.Name,
+                    Description = ui.StoreItem.Description,
+                    IconName = ui.StoreItem.IconName,
+                    AcquiredDate = ui.DateAcquired,
+                    IsUsed = ui.IsActive,
+                    UsedDate = ui.ExpiresAt,
+                    ItemType = ui.StoreItem.ItemType.ToString()
+                })
+                .ToListAsync();
+
+            return Ok(inventoryItems);
         }
 
         [HttpGet("profile-scan/{qrCode}")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
         public async Task<ActionResult<ProfileScanDto>> GetProfileForScan(string qrCode)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.QrCode == qrCode);
+            var user = await _context.Users
+                .Include(u => u.Establishment)
+                .FirstOrDefaultAsync(u => u.QrCode == qrCode);
+
             if (user == null) return NotFound("QR Code invalide.");
 
-            // Logique simplifiée
+            var pendingOrders = await _context.Orders
+                .Include(o => o.StoreItem)
+                .Where(o => o.UserId == user.Id && o.Status == OrderStatus.Pending && o.StoreItem.ItemType == StoreItemType.Physical)
+                .Select(o => new PendingOrderDto
+                {
+                    OrderId = o.Id,
+                    ItemName = o.StoreItem.Name,
+                    ItemIcon = o.StoreItem.IconName,
+                    DatePurchased = o.DatePurchased
+                })
+                .ToListAsync();
+
             return Ok(new ProfileScanDto
             {
-                UserProfile = new UserProfileDto { Id = user.Id, Username = user.Username, Email = user.Email, Role = user.Role },
-                PendingOrders = new List<PendingOrderDto>()
+                UserProfile = new UserProfileDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    Role = user.Role,
+                    EstablishmentName = user.Establishment?.Name ?? "N/A",
+                    QrCode = user.QrCode,
+                    CreatedAt = user.CreatedAt
+                },
+                PendingOrders = pendingOrders
             });
         }
 
-        // --- Private Helpers ---
+        [HttpDelete("me")]
+        [Authorize]
+        public async Task<IActionResult> DeleteMyAccount()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        }
 
         private string CreateToken(User user)
         {
@@ -287,7 +344,5 @@ namespace GamifyMe.Api.Controllers
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        // La méthode de Diagnostic a été retirée pour la sécurité.
     }
 }

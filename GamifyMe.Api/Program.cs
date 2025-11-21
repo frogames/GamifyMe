@@ -30,8 +30,8 @@ builder.Services.AddSwaggerGen();
 // Ajouter l'accès au HttpContext (pour le DataContext multi-tenant)
 builder.Services.AddHttpContextAccessor();
 
-// Service d'Email (mode Debug)
-builder.Services.AddScoped<IEmailService, DebugEmailService>();
+// Service d'Email (SMTP)
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 // 2. Base de données
 builder.Services.AddDbContext<DataContext>(options =>

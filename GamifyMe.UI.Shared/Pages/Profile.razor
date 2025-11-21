@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject TokenStorageService TokenService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
 
 <PageTitle>Mon Profil</PageTitle>
 
@@ -94,12 +95,12 @@
 
         @* 5. DÉCONNEXION *@
         <div class="mt-8 d-flex flex-column gap-2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true">
+            <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true">
                 Se déconnecter
             </MudButton>
 
-            @* Zone de danger (Suppression) - À implémenter plus tard *@
-            @* <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default">Supprimer mon compte</MudButton> *@
+            @* Zone de danger (Suppression) *@
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick="DeleteAccount">Supprimer mon compte</MudButton>
         </div>
     }
 
@@ -134,5 +135,39 @@
         // 2. Notifier le provider d'auth (si la méthode existe, sinon force reload)
         // (Ici on fait un rechargement complet pour nettoyer l'état)
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    private async Task DeleteAccount()
+    {
+        var parameters = new DialogParameters<DialogConfirmation>
+        {
+            { x => x.ContentText, "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible et toutes vos données seront perdues." },
+            { x => x.ButtonText, "Supprimer" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<DialogConfirmation>("Suppression de compte", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                var response = await Http.DeleteAsync("api/users/me");
+                if (response.IsSuccessStatusCode)
+                {
+                    await Logout();
+                }
+                else
+                {
+                    // Gérer l'erreur (ex: afficher un snackbar si disponible, ou juste log)
+                    Console.WriteLine("Erreur lors de la suppression du compte.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur API : {ex.Message}");
+            }
+        }
     }
 }

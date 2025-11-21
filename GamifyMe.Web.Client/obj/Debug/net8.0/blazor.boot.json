@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GamifyMe.Web.Client",
   "resources": {
-    "hash": "sha256-KY07KAJW0NwoeJuP0iWziPqf3Y3V5rdgHVj+YaZR/aQ=",
+    "hash": "sha256-G93fK9ViESRss6KaBYPd6TFO6s4pJYMkET1sxh/QhLA=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-9Fzd5We95Rp03dEKIAbYjPDR3eWyLbmjMlYStvxyiok="
     },
@@ -23,13 +23,14 @@
       "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-5nj12OZRB8I0RR1DieG0hXoK01tRsK+htFHYKUYHbrE=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-1jl/qHoPbKTJKXCWuwEfV+APowk2vCuL6tSBbAIb7gg=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-kONd+fcYLAO5dwjXlcPuWSOJ2BCRmpR0SM6GvjXS3x4=",
-      "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-ubT4tBprWJ76nPIxXWupNgG3kH+iv6zJ1WJSorfcVSA=",
+      "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-Y+EHIYfJGzXgN3vluuzwmKa+sQxqvGiB07pahOLsVJU=",
+      "Microsoft.AspNetCore.Components.WebAssembly.Authentication.wasm": "sha256-PvO89e2gqxtW2q2Za6JTIIdvYaAYoBIgR1gn8wevlik=",
       "Microsoft.AspNetCore.Metadata.wasm": "sha256-KmZ0uzXLIvv3+YtUF1Yyr5dvhzXiqCT93043u0cCnJA=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-5F9m/QaiqWmjoZO6KTuNpHCl9RXCWfLpepxj3H/36t8=",
       "Microsoft.Extensions.Configuration.Abstractions.wasm": "sha256-TIDkWSKWcLTeGssvfbtIhpllUY0agJmIpWcmf/iqBhc=",
       "Microsoft.Extensions.Configuration.Binder.wasm": "sha256-I5IAdU5/GXKpGKGyXx8whbBlBGUUhsav0ysFr9wkQMc=",
-      "Microsoft.Extensions.Configuration.FileExtensions.wasm": "sha256-SrAtaND/3+ZSfueBc9meuKzyFgcamyVA581L4R7Amzs=",
-      "Microsoft.Extensions.Configuration.Json.wasm": "sha256-CtLsl9w5UTJXGXTbp+SQxMzt9f/gjQ4EkywrtuCscvU=",
+      "Microsoft.Extensions.Configuration.FileExtensions.wasm": "sha256-w4E5uayo1SFMsRc1dLJu4EYYaRQpyP7cvyeJNAqH5+4=",
+      "Microsoft.Extensions.Configuration.Json.wasm": "sha256-ViitoeUHw71Xhs0JJ88lGca05eRKDi+p+NyaYc6cRIQ=",
       "Microsoft.Extensions.DependencyInjection.wasm": "sha256-yZq4I/aOdpbgVbVhyjnS9OfoD5uvztA4RQtTxBWg7O8=",
       "Microsoft.Extensions.DependencyInjection.Abstractions.wasm": "sha256-JShNQ8WZ/3yu2e0dOtyamzA1i8E7i3gUzwN/8PJZ2nA=",
       "Microsoft.Extensions.Diagnostics.wasm": "sha256-Y/8KfbBeby+bO8veTCNCU6sFhCgWM5LMbF/7EMD7TjA=",
@@ -46,7 +47,7 @@
       "Microsoft.Extensions.Options.ConfigurationExtensions.wasm": "sha256-mFg74e14I5TrlTTf2GdiTpsEoDXtIt+GI1T1u0znjwc=",
       "Microsoft.Extensions.Primitives.wasm": "sha256-7lPtPiulCTyKV0njMCfTkjyr2SYBiPXlPQ/dPDcqndw=",
       "Microsoft.JSInterop.wasm": "sha256-swhTDwzMkRtEP7KgZvcuVy1WbQMFsASKekPTeH/rPVI=",
-      "Microsoft.JSInterop.WebAssembly.wasm": "sha256-PbHGoNAYqyOHjH5UNPj5Zh5TGQLL89zj0yL5ocLKaFk=",
+      "Microsoft.JSInterop.WebAssembly.wasm": "sha256-k1ycznAW3kfyxO+I3lroU5VWTHPfMEmvwPqq6dnWPtk=",
       "MudBlazor.wasm": "sha256-AmOtUZlGuPOLrIEYg9f5omGJDdNPS3d8rbKTKgEtlc0=",
       "System.Diagnostics.DiagnosticSource.wasm": "sha256-51SHklrqSmZBYV5ITGje7b4rWfWQ8t4sjKk95NhPDT4=",
       "System.IO.Pipelines.wasm": "sha256-JqVBy6SV+3qk+IK3VJiyIDt9CsVk6b1/ytTXmrI4mTM=",
@@ -217,14 +218,14 @@
       "mscorlib.wasm": "sha256-MZJ1V6miMP318lQowft4FPkcszcibPLDTwKj235fSAc=",
       "netstandard.wasm": "sha256-RYAURbR1AHkUZYjKgu+B/i3N3VP4abnAaH+vxwJ8d3c=",
       "System.Private.CoreLib.wasm": "sha256-4YzdATaWUDkUkRpe+hl+T61TaCjRVapVUtqTIai3Gd8=",
-      "GamifyMe.Shared.wasm": "sha256-eBdevqV44zwLXi6wyfJKukMb3OTPMvxbA2tNsQE+DOY=",
-      "GamifyMe.UI.Shared.wasm": "sha256-zTxAa0yccvRmASJ5IY1wt7Hhu9oJou5ojcl47ArTt/8=",
-      "GamifyMe.Web.Client.wasm": "sha256-ml5HMb3Fmt+BawJ4W/tByRZnKzoSB0gTB/QyupPXTco="
+      "GamifyMe.Shared.wasm": "sha256-r0piLewUKVmsKwDUg9ekkUpNH7cC4hVs/bmHmTyTxD8=",
+      "GamifyMe.UI.Shared.wasm": "sha256-cuzEK0HVnDb68xLz/XCYK4mUJghMUAqWUnlR/xBPxiA=",
+      "GamifyMe.Web.Client.wasm": "sha256-JAY2oXmmpBwmIbsnGkhG09C4ngAO9i/N3Gy2WRcxX4Q="
     },
     "pdb": {
-      "GamifyMe.UI.Shared.pdb": "sha256-6yHf9sKEmSU90TgDAKWloNdU2HhVs4k0N7e250V85fs=",
-      "GamifyMe.Shared.pdb": "sha256-nSuPs32/hqEnw9Uu8SLK7Jdvo5nLnlqxBnWmBwEI9uQ=",
-      "GamifyMe.Web.Client.pdb": "sha256-cJYaxKEhKt7qMLdI0aAOWjTsA6JMTTlDFqMv5vr8YGM="
+      "GamifyMe.UI.Shared.pdb": "sha256-a7pND/IVe3Ix5FIG5op4KASvkespMwdbmqHvUR1CGwA=",
+      "GamifyMe.Shared.pdb": "sha256-VC8IonW+dmhtL2E+8HUt+UhBpdsWweRFfBYPLvSL7Kc=",
+      "GamifyMe.Web.Client.pdb": "sha256-ZyhB4QbpmO+mItm/vbJsczo17tC0sqm3Bc4M16/dd+E="
     }
   },
   "cacheBootResources": true,

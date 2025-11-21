@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "hGODfgjaETo=",
+  "dgSpecHash": "JKnlwme4KwU=",
   "success": true,
-  "projectFilePath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
+  "projectFilePath": "d:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.21\\microsoft.aspnetcore.authorization.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.21\\microsoft.aspnetcore.components.8.0.21.nupkg.sha512",
@@ -49,9 +49,9 @@
       "code": "NU1603",
       "level": "Warning",
       "message": "GamifyMe.Web.Client dépend de Microsoft.Extensions.Http (>= 8.0.4) mais Microsoft.Extensions.Http 8.0.4 est introuvable. Microsoft.Extensions.Http 9.0.0 a été résolu à la place.",
-      "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
+      "projectPath": "d:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
+      "filePath": "d:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj",
       "libraryId": "Microsoft.Extensions.Http",
       "targetGraphs": [
         "net8.0",

@@ -1,32 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\GamifyMe_V2\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|d:\\gamifyme_v2\\gamifyme.api\\controllers\\objectivescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8976A617-8D3A-4713-9D61-CAC0405301C4}|GamifyMe.Api\\GamifyMe.Api.csproj|solutionrelative:gamifyme.api\\controllers\\objectivescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|d:\\gamifyme_v2\\gamifyme.shared\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3A248BE8-C3C1-4040-A21C-F007FD8010B1}|GamifyMe.Shared\\GamifyMe.Shared.csproj|solutionrelative:gamifyme.shared\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|d:\\gamifyme_v2\\gamifyme.ui.shared\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|solutionrelative:gamifyme.ui.shared\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|d:\\gamifyme_v2\\gamifyme.ui.shared\\components\\scanvalidationmodal.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|solutionrelative:gamifyme.ui.shared\\components\\scanvalidationmodal.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|d:\\gamifyme_v2\\gamifyme.ui.shared\\components\\qrcodescanner.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{69D78897-AAEC-42AD-AE04-D421203EBF61}|GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj|solutionrelative:gamifyme.ui.shared\\components\\qrcodescanner.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -34,89 +9,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ObjectivesController.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Controllers\\ObjectivesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-18T19:20:56.663Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "User.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Models\\User.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Shared\\Models\\User.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Shared\\Models\\User.cs",
-              "RelativeToolTip": "GamifyMe.Shared\\Models\\User.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAowC0AAAAwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-18T17:57:53.24Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "DashboardController.cs",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "RelativeDocumentMoniker": "GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "RelativeToolTip": "GamifyMe.Api\\Controllers\\DashboardController.cs",
-              "ViewState": "AgIAAEwAAAAAAAAAAAAtwF0AAAB8AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-18T17:35:02.255Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "QrCodeScanner.razor",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Components\\QrCodeScanner.razor",
-              "RelativeDocumentMoniker": "GamifyMe.UI.Shared\\Components\\QrCodeScanner.razor",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Components\\QrCodeScanner.razor",
-              "RelativeToolTip": "GamifyMe.UI.Shared\\Components\\QrCodeScanner.razor",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAAAB4AAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-16T19:51:53.448Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Dashboard.razor",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Pages\\Dashboard.razor",
-              "RelativeDocumentMoniker": "GamifyMe.UI.Shared\\Pages\\Dashboard.razor",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Pages\\Dashboard.razor",
-              "RelativeToolTip": "GamifyMe.UI.Shared\\Pages\\Dashboard.razor",
-              "ViewState": "AgIAAM4BAAAAAAAAAAAawOABAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-16T17:21:51.969Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ScanValidationModal.razor",
-              "DocumentMoniker": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Components\\ScanValidationModal.razor",
-              "RelativeDocumentMoniker": "GamifyMe.UI.Shared\\Components\\ScanValidationModal.razor",
-              "ToolTip": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\Components\\ScanValidationModal.razor",
-              "RelativeToolTip": "GamifyMe.UI.Shared\\Components\\ScanValidationModal.razor",
-              "ViewState": "AgIAAEgAAAAAAAAAAAAqwF4AAAALAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-16T16:54:19.464Z",
-              "EditorCaption": ""
             }
           ]
         }

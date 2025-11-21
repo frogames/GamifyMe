@@ -2,7 +2,7 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.Shared.Models
 @using GamifyMe.UI.Shared.Helpers
-@using System.Net.Http.Json @* CORRECTION : Indispensable pour GetFromJsonAsync *@
+@using System.Net.Http.Json
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -27,10 +27,13 @@
             @foreach (var item in storeItems)
             {
                 <MudItem xs="6" sm="4" md="3">
-                    <MudCard Elevation="3" Class="h-100 d-flex flex-column hover-elevation">
+                    <MudCard Elevation="3" Class="h-100 d-flex flex-column hover-elevation"
+                        Style="@(userCurrencyBalance >= item.Price ? "border: 2px solid var(--mud-palette-success);" : "border: 2px solid var(--mud-palette-error);")">
                         @* ZONE IMAGE / ICÔNE *@
-                        <div class="d-flex justify-center align-center pa-6" style="background-color: var(--mud-palette-background-grey);">
-                            <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;" Color="Color.Primary" />
+                        <div class="d-flex justify-center align-center pa-6"
+                            style="background-color: var(--mud-palette-background-grey);">
+                            <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;"
+                                Color="@(userCurrencyBalance >= item.Price ? Color.Success : Color.Error)" />
                         </div>
 
                         <MudCardContent Class="flex-grow-1 pt-4">
@@ -42,10 +45,9 @@
 
                         <MudCardActions Class="d-flex justify-center pb-4 px-4">
                             <MudButton Variant="Variant.Filled"
-                                       Color="Color.Secondary"
-                                       FullWidth="true"
-                                       OnClick="() => PurchaseItem(item)"
-                                       Disabled="@isPurchasing">
+                                Color="@(userCurrencyBalance >= item.Price ? Color.Success : Color.Error)" FullWidth="true"
+                                OnClick="() => PurchaseItem(item)"
+                                Disabled="@(isPurchasing || userCurrencyBalance < item.Price)">
                                 @if (isPurchasing)
                                 {
                                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -53,8 +55,9 @@
                                 else
                                 {
                                     <div class="d-flex align-center gap-1">
-                                        <span>Acheter</span>
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Surface" Variant="Variant.Text" Class="ml-2">@item.Price Pts</MudChip>
+                                        <span>@(userCurrencyBalance >= item.Price ? "Acheter" : "Pas assez de fonds")</span>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Surface" Variant="Variant.Text"
+                                            Class="ml-2">@item.Price Pts</MudChip>
                                     </div>
                                 }
                             </MudButton>
@@ -70,6 +73,7 @@
     private List<StoreItemDto> storeItems = new();
     private bool isLoading = true;
     private bool isPurchasing = false;
+    private int userCurrencyBalance = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,7 +85,21 @@
         isLoading = true;
         try
         {
-            storeItems = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active") ?? new List<StoreItemDto>();
+            // On charge les items ET les infos utilisateur (pour le solde) en parallèle
+            var itemsTask = Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active");
+            var infoTask = Http.GetFromJsonAsync<InfoBarDto>("api/users/info-bar");
+
+            await Task.WhenAll(itemsTask, infoTask);
+
+            storeItems = itemsTask.Result ?? new List<StoreItemDto>();
+            var info = infoTask.Result;
+
+            // On récupère le solde de la monnaie principale (pas l'XP)
+            // InfoBarDto a OtherWallets, on suppose que le premier est la monnaie
+            if (info?.OtherWallets != null && info.OtherWallets.Any())
+            {
+                userCurrencyBalance = info.OtherWallets.First().Balance;
+            }
         }
         catch (Exception ex)
         {
@@ -105,8 +123,8 @@
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add($"Vous avez acheté : {item.Name} !", Severity.Success);
-                // Optionnel : Recharger pour mettre à jour le stock si besoin
-                // await LoadStoreItems();
+                // On recharge pour mettre à jour le solde et le stock
+                await LoadStoreItems();
             }
             else
             {

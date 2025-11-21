@@ -1,0 +1,93 @@
+@page "/inventory"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Mon Inventaire</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <MudText Typo="Typo.h4" Color="Color.Primary">Mon Inventaire</MudText>
+    </div>
+
+    @if (isLoading)
+    {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
+    }
+    else if (inventoryItems == null || !inventoryItems.Any())
+    {
+            <MudAlert Severity="Severity.Info">Votre inventaire est vide. Achetez des objets dans la boutique !</MudAlert>
+    }
+    else
+    {
+            <MudGrid>
+            @foreach (var item in inventoryItems)
+            {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="3" Class="h-100 d-flex flex-column">
+                        @* ZONE IMAGE / ICÔNE *@
+                                <div class="d-flex justify-center align-center pa-6"
+                                    style="background-color: var(--mud-palette-background-grey);">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;"
+                                        Color="Color.Success" />
+                                </div>
+
+                                <MudCardContent Class="flex-grow-1 pt-4">
+                                    <MudText Typo="Typo.subtitle1" Align="Align.Center"><b>@item.ItemName</b></MudText>
+                                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
+                                @(string.IsNullOrEmpty(item.Description) ? "Aucune description" : item.Description)
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2" Color="Color.Info">
+                                        Acquis le : @item.AcquiredDate.ToString("dd/MM/yyyy")
+                                    </MudText>
+
+                            @if (item.ItemType == "Physical")
+                            {
+                                            <div class="d-flex justify-center mt-2">
+                                    @if (item.IsUsed)
+                                    {
+                                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Récupéré</MudChip>
+                                    }
+                                    else
+                                    {
+                                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled">En attente de retrait</MudChip>
+                                    }
+                                            </div>
+                            }
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+            }
+            </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<UserInventoryDto> inventoryItems = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInventory();
+    }
+
+    private async Task LoadInventory()
+    {
+        isLoading = true;
+        try
+        {
+            inventoryItems = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory") ?? new
+            List<UserInventoryDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

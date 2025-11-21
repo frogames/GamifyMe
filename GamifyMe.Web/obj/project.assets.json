@@ -1810,11 +1810,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "projectUniqueName": "d:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
       "projectName": "GamifyMe.Web",
-      "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "projectPath": "d:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
       "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-      "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\obj\\",
+      "outputPath": "d:\\GamifyMe_V2\\GamifyMe.Web\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1836,11 +1836,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
-              "projectPath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
+            "d:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj": {
+              "projectPath": "d:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj"
             },
-            "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
-              "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj"
+            "d:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj": {
+              "projectPath": "d:\\GamifyMe_V2\\GamifyMe.Web.Client\\GamifyMe.Web.Client.csproj"
             }
           }
         }

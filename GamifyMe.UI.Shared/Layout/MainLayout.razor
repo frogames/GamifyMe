@@ -6,6 +6,7 @@
 
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -59,7 +60,16 @@
 
     void DrawerToggle() { _drawerOpen = !_drawerOpen; }
 
-    protected override async Task OnParametersSetAsync() { await LoadUserStats(); }
+    protected override async Task OnParametersSetAsync() 
+    { 
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+        // Don't fetch user stats on login or register pages to avoid 404s if token is stale
+        if (relativePath.StartsWith("login") || relativePath.StartsWith("register"))
+        {
+            return;
+        }
+        await LoadUserStats(); 
+    }
 
     private async Task LoadUserStats()
     {

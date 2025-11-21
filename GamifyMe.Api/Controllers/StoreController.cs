@@ -127,24 +127,43 @@ namespace GamifyMe.Api.Controllers
                 if (storeItem.Stock <= 0) return BadRequest("Stock épuisé.");
 
                 var userWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP");
-                if (userWallet == null) return BadRequest("Portefeuille introuvable.");
+                if (userWallet == null)
+                {
+                    var establishmentIdClaim = User.FindFirstValue("EstablishmentId");
+                    if (string.IsNullOrEmpty(establishmentIdClaim)) return BadRequest("Impossible de récupérer l'établissement de l'utilisateur.");
+
+                    userWallet = new Wallet
+                    {
+                        Id = Guid.NewGuid(),
+                        EstablishmentId = Guid.Parse(establishmentIdClaim),
+                        UserId = userId,
+                        CurrencyCode = "DOC",
+                        Balance = 0
+                    };
+                    _context.Wallets.Add(userWallet);
+                    await _context.SaveChangesAsync();
+                }
                 if (userWallet.Balance < storeItem.Price) return BadRequest("Fonds insuffisants.");
 
                 userWallet.Balance -= storeItem.Price;
                 storeItem.Stock -= 1;
 
                 var orderStatus = OrderStatus.Pending;
+
+                // AJOUT : On ajoute TOUS les objets à l'inventaire (Physique ou Digital)
+                var inventoryItem = new UserInventory
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    StoreItemId = storeItem.Id,
+                    EstablishmentId = storeItem.EstablishmentId,
+                    DateAcquired = DateTime.UtcNow,
+                    IsActive = false // Par défaut inactif
+                };
+                _context.UserInventories.Add(inventoryItem);
+
                 if (storeItem.ItemType == StoreItemType.Digital)
                 {
-                    var inventoryItem = new UserInventory
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        StoreItemId = storeItem.Id,
-                        EstablishmentId = storeItem.EstablishmentId,
-                        DateAcquired = DateTime.UtcNow
-                    };
-                    _context.UserInventories.Add(inventoryItem);
                     orderStatus = OrderStatus.Completed;
                 }
 

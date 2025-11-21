@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace GamifyMe.Api.Controllers
 {
-    [Route("api/dashboard")] // <--- ROUTE DE BASE EXPLICITE
+    [Route("api/dashboard")]
     [ApiController]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
     public class DashboardController : ControllerBase
@@ -37,7 +37,6 @@ namespace GamifyMe.Api.Controllers
                 .Select(v => new DashboardLogDto
                 {
                     Date = v.Date,
-                    // On gère les nulls ici pour éviter le crash
                     ActorName = v.User != null ? v.User.Username : "Utilisateur inconnu",
                     ActionType = "Validation Objectif",
                     Details = v.Objective != null ? v.Objective.Title : "Objectif supprimé",
@@ -73,7 +72,6 @@ namespace GamifyMe.Api.Controllers
         [HttpPost("process-scan")]
         public async Task<ActionResult<ValidationResponseDto>> ProcessScan([FromBody] CreateValidationDto request)
         {
-            // LOG TEMPORAIRE POUR VOIR SI ÇA RENTRE
             Console.WriteLine($"[API] Reçu ProcessScan : Type={request.Type}, QR={request.UserQrCode}");
 
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -84,11 +82,59 @@ namespace GamifyMe.Api.Controllers
             }
             else if (request.Type == "Profile")
             {
-                // Logique simplifiée pour test
-                return Ok(new ValidationResponseDto { Success = true, Message = "Scan Profil Reçu (Test)" });
+                return await ProcessProfileScan(request.UserQrCode, establishmentId);
             }
 
             return BadRequest("Type inconnu");
+        }
+
+        private async Task<ActionResult<ValidationResponseDto>> ProcessProfileScan(string userQrCode, Guid establishmentId)
+        {
+            // 1. Trouver l'utilisateur
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.QrCode == userQrCode);
+            if (user == null) return NotFound("Joueur introuvable (QR Code invalide).");
+
+            // 2. Récupérer les commandes en attente (Click & Collect ou Digital non livré)
+            var pendingOrders = await _context.Orders
+                .Include(o => o.StoreItem)
+                .Where(o => o.UserId == user.Id && o.EstablishmentId == establishmentId && o.Status == OrderStatus.Pending)
+                .ToListAsync();
+
+            if (!pendingOrders.Any())
+            {
+                return Ok(new ValidationResponseDto
+                {
+                    Success = true,
+                    Message = $"Profil de {user.Username} scanné. Aucune commande en attente."
+                });
+            }
+
+            int validatedCount = 0;
+            var validatedItemNames = new List<string>();
+
+            foreach (var order in pendingOrders)
+            {
+                // Valider la commande
+                order.Status = OrderStatus.Completed;
+                order.DateCompleted = DateTime.UtcNow;
+                validatedCount++;
+
+                validatedItemNames.Add(order.StoreItem.Name);
+            }
+
+            await _context.SaveChangesAsync();
+
+            string msg = $"{validatedCount} commande(s) validée(s) pour {user.Username}.";
+            if (validatedItemNames.Any())
+            {
+                msg += $" Articles : {string.Join(", ", validatedItemNames)}.";
+            }
+
+            return Ok(new ValidationResponseDto
+            {
+                Success = true,
+                Message = msg
+            });
         }
 
         private async Task<ActionResult<ValidationResponseDto>> ProcessObjectiveScan(string objectiveIdString, string userQrCode, Guid establishmentId)
@@ -104,9 +150,8 @@ namespace GamifyMe.Api.Controllers
 
             // 2. Récupérer le portefeuille XP et Monnaie (pour la mise à jour)
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "XP");
-            var docWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "DOC"); // Assumer 'DOC' est le code monnaie
+            var docWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "DOC");
 
-            // DANS ProcessObjectiveScan (Remplacement du bloc de vérification)
             // --- 3. VÉRIFICATION DES DOUBLONS ET DE L'UNICITÉ ---
 
             var existingValidation = await _context.Validations
@@ -124,36 +169,12 @@ namespace GamifyMe.Api.Controllers
                 });
             }
 
-            // 2. OBJECTIF RÉPÉTABLE (rapporte TOUJOURS des points)
-            // Ton code actuel bloque si un objectif répétable a été validé AUJOURD'HUI.
-            // Si tu veux qu'il rapporte des points à chaque scan (répétable sans limite journalière), 
-            // il faut simplement supprimer la vérification ci-dessous.
-
-            // Si l'objectif est répétable, mais que tu veux limiter à une fois par jour :
-            //if (!objective.IsUnique && existingValidation != null && existingValidation.Date.Date == DateTime.UtcNow.Date)
-            //{
-            //    return BadRequest(new ValidationResponseDto
-            //    {
-            //        Success = false,
-            //        Message = $"Erreur : Cet objectif a déjà été validé aujourd'hui (limite journalière).",
-            //        RewardXp = 0,
-            //        RewardCurrency = 0
-            //    });
-            //}
-            // SINON (Si répétable à l'infini), le code continue et attribue les points.
-            // Le seul cas où on bloque est s'il est unique.
-
-            // Si l'objectif est répétable, mais qu'on veut qu'il rapporte des points à chaque scan (sans limite journalière), 
-            // il faut simplement supprimer le bloc "if" qui suit cette ligne.
-
-            // Si la vérification est passée, le code continue et attribue les récompenses.
-
-            // --- 4. ATTRIBUTION DES RÉCOMPENSES (FIX MAJORITAIRE) ---
+            // --- 4. ATTRIBUTION DES RÉCOMPENSES ---
 
             if (xpWallet != null)
             {
                 xpWallet.Balance += objective.XpReward;
-                user.CurrentXp = (int)xpWallet.Balance; // Mise à jour du champ User pour le DTO
+                user.CurrentXp = (int)xpWallet.Balance;
             }
             if (docWallet != null)
             {
@@ -191,7 +212,7 @@ namespace GamifyMe.Api.Controllers
                 RewardXp = objective.XpReward,
                 RewardCurrency = objective.DocPointsReward,
                 UserNewLevel = user.Level,
-                UserNewBalance = user.CurrencyBalance // Devient le nouveau solde de Coins
+                UserNewBalance = user.CurrencyBalance
             });
         }
     }

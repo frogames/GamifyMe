@@ -25,7 +25,7 @@ services:
     ports:
       - "5001:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - Services__BaseUri=http://gamifyme-api:8080
     depends_on:
       - gamifyme-api
