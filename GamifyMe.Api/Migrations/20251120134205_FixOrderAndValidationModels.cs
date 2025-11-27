@@ -11,6 +11,8 @@ namespace GamifyMe.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // MIGRATION SKIPPED (Baselining)
+            /*
             migrationBuilder.DropForeignKey(
                 name: "FK_ObjectiveObjectives_Objectives_IsPrerequisiteForId",
                 table: "ObjectiveObjectives");
@@ -58,6 +60,7 @@ namespace GamifyMe.Api.Migrations
                 principalTable: "Objectives",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
+            */
         }
 
         /// <inheritdoc />

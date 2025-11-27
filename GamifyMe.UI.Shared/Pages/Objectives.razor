@@ -1,5 +1,5 @@
 ﻿@page "/objectives"
-@page "/" 
+@page "/"
 @attribute [Authorize]
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers @* INDISPENSABLE POUR LES ICÔNES *@
@@ -8,10 +8,11 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+
 <PageTitle>Mes Objectifs</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
-    
+
     <MudText Typo="Typo.h4" Class="mb-6" Color="Color.Primary">Objectifs Disponibles</MudText>
 
     @if (isLoading)
@@ -70,22 +71,25 @@
                                 }
                             </CardHeaderActions>
                         </MudCardHeader>
-                        
+
                         <MudCardContent Class="flex-grow-1">
                             <MudText Typo="Typo.body2" Class="mb-2">@obj.Description</MudText>
-                            
+
                             @if (!string.IsNullOrEmpty(obj.Location))
                             {
                                 <div class="d-flex align-center mt-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Color="Color.Default" Class="mr-1"/>
+                                    <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Color="Color.Default"
+                                        Class="mr-1" />
                                     <MudText Typo="Typo.caption">@obj.Location</MudText>
                                 </div>
                             }
                         </MudCardContent>
 
                         <MudCardActions Class="d-flex justify-end pa-3 bg-gray-light">
-                            <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small">@obj.XpReward XP</MudChip>
-                            <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Small">@obj.DocPointsReward Pts</MudChip>
+                            <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small">
+                                @obj.XpReward XP</MudChip>
+                            <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info"
+                                Size="Size.Small">@obj.DocPointsReward Crédits</MudChip>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -103,7 +107,7 @@
     // ON SUPPRIME OnInitializedAsync
     // protected override async Task OnInitializedAsync()
     // {
-    //     await LoadObjectives();
+    // await LoadObjectives();
     // }
 
     // ON REMPLACE PAR CECI :

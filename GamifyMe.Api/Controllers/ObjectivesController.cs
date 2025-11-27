@@ -21,6 +21,7 @@ namespace GamifyMe.Api.Controllers
             _context = context;
         }
 
+        // GET api/objectives/active
         [HttpGet("active")]
         public async Task<ActionResult<List<ObjectiveDto>>> GetActiveObjectives()
         {
@@ -38,21 +39,21 @@ namespace GamifyMe.Api.Controllers
             var now = DateTime.UtcNow;
 
             // 3. Récupérer les IDs des objectifs déjà validés par cet utilisateur
-            // Note : On utilise un HashSet pour des recherches ultra-rapides (O(1))
             var completedObjectiveIds = await _context.Validations
                 .Where(v => v.UserId == userId)
                 .Select(v => v.ObjectiveId)
                 .ToListAsync();
-
             var completedSet = completedObjectiveIds.ToHashSet();
 
-            // 4. Récupérer tous les objectifs ACTIFS de l'établissement
+            // 4. Récupérer tous les objectifs ACTIFS de l'établissement avec filtres d'affichage
             var allActiveObjectives = await _context.Objectives
-                .Include(o => o.Prerequisites) // Important pour vérifier les prérequis
+                .Include(o => o.Prerequisites)
                 .Where(o => o.EstablishmentId == user.EstablishmentId
                             && o.IsActive
-                            && (o.EndDate == null || o.EndDate > now))
-                .AsNoTracking() // Optimisation lecture seule
+                            && (o.EndDate == null || o.EndDate > now)
+                            && (o.DisplayStartDate == null || o.DisplayStartDate <= now)
+                            && (o.DisplayEndDate == null || o.DisplayEndDate >= now))
+                .AsNoTracking()
                 .ToListAsync();
 
             var resultList = new List<ObjectiveDto>();
@@ -63,21 +64,13 @@ namespace GamifyMe.Api.Controllers
                 bool isLocked = false;
                 if (obj.Prerequisites != null && obj.Prerequisites.Any())
                 {
-                    // Si un seul prérequis n'est pas dans la liste des validés, c'est verrouillé
                     if (!obj.Prerequisites.All(p => completedSet.Contains(p.Id)))
-                    {
                         isLocked = true;
-                    }
                 }
-
-                // On ne montre pas les objectifs verrouillés (ou alors on pourrait les montrer grisés, 
-                // mais ici la logique semble être de les masquer)
                 if (isLocked) continue;
 
                 // Vérification si déjà complété (pour les objectifs uniques)
                 bool alreadyDone = obj.IsUnique && completedSet.Contains(obj.Id);
-
-                // Si c'est unique et déjà fait, on ne l'affiche plus dans la liste "Active"
                 if (alreadyDone) continue;
 
                 resultList.Add(new ObjectiveDto
@@ -91,8 +84,11 @@ namespace GamifyMe.Api.Controllers
                     Location = obj.Location,
                     EventDate = obj.EventDate,
                     EndDate = obj.EndDate,
+                    DisplayStartDate = obj.DisplayStartDate,
+                    DisplayEndDate = obj.DisplayEndDate,
                     IsUnique = obj.IsUnique,
-                    IsAlreadyCompleted = alreadyDone // Sera false ici vu le filtrage ci-dessus
+                    FrequencyHours = obj.FrequencyHours,
+                    IsAlreadyCompleted = alreadyDone
                 });
             }
 
@@ -100,8 +96,7 @@ namespace GamifyMe.Api.Controllers
             return Ok(resultList.OrderBy(o => o.EventDate ?? DateTime.MaxValue).ToList());
         }
 
-        // ... (GARDEZ LES AUTRES MÉTHODES CreateObjective, Update, Delete TELLES QUELLES CI-DESSOUS) ...
-
+        // POST api/objectives
         [HttpPost]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<IActionResult> CreateObjective(CreateObjectiveDto request)
@@ -111,6 +106,8 @@ namespace GamifyMe.Api.Controllers
 
             DateTime? eventDateUtc = request.EventDate.HasValue ? request.EventDate.Value.ToUniversalTime() : null;
             DateTime? endDateUtc = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : null;
+            DateTime? displayStartUtc = request.DisplayStartDate.HasValue ? request.DisplayStartDate.Value.ToUniversalTime() : null;
+            DateTime? displayEndUtc = request.DisplayEndDate.HasValue ? request.DisplayEndDate.Value.ToUniversalTime() : null;
 
             var prerequisiteObjectives = new List<Objective>();
             if (request.PrerequisiteObjectiveIds != null && request.PrerequisiteObjectiveIds.Any())
@@ -132,8 +129,11 @@ namespace GamifyMe.Api.Controllers
                 CreatedAt = DateTime.UtcNow,
                 IsActive = request.IsActive,
                 IsUnique = request.IsUnique,
+                FrequencyHours = request.FrequencyHours,
                 EventDate = eventDateUtc,
                 EndDate = endDateUtc,
+                DisplayStartDate = displayStartUtc,
+                DisplayEndDate = displayEndUtc,
                 Location = request.Location ?? string.Empty,
                 IconName = request.IconName ?? "Star",
                 Prerequisites = prerequisiteObjectives
@@ -144,6 +144,7 @@ namespace GamifyMe.Api.Controllers
             return Ok();
         }
 
+        // GET api/objectives/list-all
         [HttpGet("list-all")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<ActionResult<List<ObjectiveSimpleDto>>> GetAllObjectivesSimpleList()
@@ -159,6 +160,7 @@ namespace GamifyMe.Api.Controllers
             return Ok(objectives);
         }
 
+        // GET api/objectives/list-all-full
         [HttpGet("list-all-full")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<ActionResult<List<ObjectiveDto>>> GetAllObjectivesFullList()
@@ -177,7 +179,10 @@ namespace GamifyMe.Api.Controllers
                     Location = o.Location,
                     EventDate = o.EventDate,
                     EndDate = o.EndDate,
+                    DisplayStartDate = o.DisplayStartDate,
+                    DisplayEndDate = o.DisplayEndDate,
                     IsUnique = o.IsUnique,
+                    FrequencyHours = o.FrequencyHours,
                     IsActive = o.IsActive,
                     IsAlreadyCompleted = false,
                     PrerequisiteObjectiveIds = o.Prerequisites.Select(p => p.Id).ToList()
@@ -186,6 +191,7 @@ namespace GamifyMe.Api.Controllers
             return Ok(objectives);
         }
 
+        // PUT api/objectives/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<IActionResult> UpdateObjective(Guid id, CreateObjectiveDto request)
@@ -198,7 +204,10 @@ namespace GamifyMe.Api.Controllers
 
             DateTime? eventDateUtc = request.EventDate.HasValue ? request.EventDate.Value.ToUniversalTime() : null;
             DateTime? endDateUtc = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : null;
+            DateTime? displayStartUtc = request.DisplayStartDate.HasValue ? request.DisplayStartDate.Value.ToUniversalTime() : null;
+            DateTime? displayEndUtc = request.DisplayEndDate.HasValue ? request.DisplayEndDate.Value.ToUniversalTime() : null;
 
+            // Update prerequisites
             objective.Prerequisites.Clear();
             if (request.PrerequisiteObjectiveIds != null && request.PrerequisiteObjectiveIds.Any())
             {
@@ -208,14 +217,18 @@ namespace GamifyMe.Api.Controllers
                 objective.Prerequisites = newPrerequisites;
             }
 
+            // Update other fields
             objective.Title = request.Title;
             objective.Description = request.Description;
             objective.XpReward = request.XpReward;
             objective.DocPointsReward = request.DocPointsReward;
             objective.IsActive = request.IsActive;
             objective.IsUnique = request.IsUnique;
+            objective.FrequencyHours = request.FrequencyHours;
             objective.EventDate = eventDateUtc;
             objective.EndDate = endDateUtc;
+            objective.DisplayStartDate = displayStartUtc;
+            objective.DisplayEndDate = displayEndUtc;
             objective.Location = request.Location ?? string.Empty;
             objective.IconName = request.IconName ?? "Star";
 
@@ -223,6 +236,7 @@ namespace GamifyMe.Api.Controllers
             return NoContent();
         }
 
+        // DELETE api/objectives/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<IActionResult> DeleteObjective(Guid id)

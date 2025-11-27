@@ -1,0 +1,32 @@
+diff --git a/GamifyMe.UI.Shared/Pages/Dashboard.razor b/GamifyMe.UI.Shared/Pages/Dashboard.razor
+index abc1234..def5678 100644
+--- a/GamifyMe.UI.Shared/Pages/Dashboard.razor
++++ b/GamifyMe.UI.Shared/Pages/Dashboard.razor
+@@ -326,6 +326,19 @@
+                         <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
+ 
++                        @* DATES DE DISPONIBILITÉ *@
++                        <MudText Typo="Typo.subtitle2" Class="mb-2">Période de disponibilité (optionnel)</MudText>
++                        <div class="d-flex gap-4 mb-3">
++                            <MudDatePicker T="DateTime?" Label="Date de début" @bind-Date="newStoreItem.StartDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
++                            <MudDatePicker T="DateTime?" Label="Date de fin" @bind-Date="newStoreItem.EndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
++                        </div>
++                        @if (newStoreItem.StartDate.HasValue || newStoreItem.EndDate.HasValue)
++                        {
++                            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
++                                Cet objet sera disponible @(newStoreItem.StartDate.HasValue ? $"du {newStoreItem.StartDate.Value:dd/MM/yyyy}" : "")@(newStoreItem.StartDate.HasValue && newStoreItem.EndDate.HasValue ? " " : "")@(newStoreItem.EndDate.HasValue ? $"jusqu'au {newStoreItem.EndDate.Value:dd/MM/yyyy}" : "")
++                            </MudAlert>
++                        }
++
+                         <MudCheckBox T="bool" @bind-Value="newStoreItem.IsActive" Label="Actif (Visible)" Color="Color.Success" Dense="true" Class="mb-3" />
+ 
+                         @if (!string.IsNullOrEmpty(successMessageStore)) { <MudAlert Severity="Severity.Success" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => successMessageStore = null">@successMessageStore</MudAlert> }
+@@ -794,7 +807,9 @@
+             DigitalActionCode = itemToEdit.DigitalActionCode,
+             Stock = itemToEdit.Stock,
+-            IsActive = itemToEdit.IsActive
++            IsActive = itemToEdit.IsActive,
++            StartDate = itemToEdit.StartDate,
++            EndDate = itemToEdit.EndDate
+         };
+     }

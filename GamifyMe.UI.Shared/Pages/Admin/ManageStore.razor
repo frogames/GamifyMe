@@ -1,0 +1,352 @@
+@page "/admin/store"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur, Gestionnaire")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.UI.Shared.Helpers
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Gestion Boutique</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Gestion de la Boutique</MudText>
+        @if (!showForm)
+        {
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
+        }
+    </div>
+
+    @if (showForm)
+    {
+        <MudCard Elevation="3" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingStoreItemId == null ? "Créer un objet" : "Modifier l'objet")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <EditForm Model="newStoreItem" OnValidSubmit="@(editingStoreItemId == null ? HandleCreateStoreItem : HandleUpdateStoreItem)">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField T="string" Label="Nom" @bind-Value="newStoreItem.Name" For="@(() => newStoreItem.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Description" @bind-Value="newStoreItem.Description" Variant="Variant.Outlined" Lines="2" Margin="Margin.Dense" Class="mb-3" />
+
+                    <MudSelect T="StoreItemType" Label="Type" @bind-Value="newStoreItem.ItemType" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (StoreItemType type in Enum.GetValues(typeof(StoreItemType)))
+                        {
+                            <MudSelectItem T="StoreItemType" Value="@type">@type.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <div class="d-flex gap-4 mb-3">
+                        <MudNumericField T="int" Label="Prix (Crédits)" @bind-Value="newStoreItem.Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudNumericField T="int" Label="Stock" @bind-Value="newStoreItem.Stock" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                    </div>
+
+                    @if (newStoreItem.ItemType == StoreItemType.Digital)
+                    {
+                        <MudSelect T="DigitalItemPreset" Label="Objet Numérique" @bind-Value="selectedPreset" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var preset in digitalPresets)
+                            {
+                                <MudSelectItem T="DigitalItemPreset" Value="@preset">@preset.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @if (selectedPreset != null)
+                        {
+                            <MudText Typo="Typo.caption" Class="d-block mb-3 ml-1">Code : @selectedPreset.Code</MudText>
+                        }
+                    }
+
+                    @* SÉLECTEUR D'ICÔNE *@
+                    <div class="d-flex justify-center mb-4">
+                        <MudTooltip Text="Cliquez pour changer l'icône">
+                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                </MudPaper>
+                            </MudBadge>
+                        </MudTooltip>
+                    </div>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
+
+                    @* DATES DE DISPONIBILITÉ *@
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Disponibilité (facultatif)</MudText>
+                    <div class="d-flex gap-4 mb-3">
+                        <MudDatePicker Label="Date de début" @bind-Date="newStoreItem.StartDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Clearable="true" />
+                        <MudDatePicker Label="Date de fin" @bind-Date="newStoreItem.EndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Clearable="true" />
+                    </div>
+
+                    <MudCheckBox @bind-Value="newStoreItem.IsUnique" Label="Objet Unique (Achat unique)" Color="Color.Primary" />
+                    <MudSwitch T="bool" @bind-Value="newStoreItem.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
+
+                    @if (!string.IsNullOrEmpty(successMessageStore))
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-3">@successMessageStore</MudAlert>
+                    }
+                    @if (!string.IsNullOrEmpty(errorMessageStore))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessageStore</MudAlert>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusyStore">
+                            @(editingStoreItemId == null ? "Créer" : "Mettre à jour")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelEditStoreItem" FullWidth="true">Annuler</MudButton>
+                    </div>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Objets existants</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@allStoreItemsList" Hover="true" Dense="true" Striped="true">
+                    <HeaderContent>
+                        <MudTh>Nom</MudTh>
+                        <MudTh>Prix / Stock</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Disponibilité</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="item">
+                        <MudTd DataLabel="Nom">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@item.Name</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Prix / Stock">
+                            <MudText Typo="Typo.body2">@item.Price Crédits</MudText>
+                            @if (item.Stock > 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @item.Stock</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Type">
+                            <MudChip T="string" Size="Size.Small" Color="@(item.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@item.ItemType</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Disponibilité">
+                            @if (item.StartDate.HasValue || item.EndDate.HasValue)
+                            {
+                                @if (item.StartDate.HasValue)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Info">@item.StartDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                }
+                                @if (item.EndDate.HasValue)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Stop" Color="Color.Warning">@item.EndDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                }
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => StartEditStoreItem(item)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(item)" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private StoreItemDto newStoreItem = new();
+    private List<StoreItemDto> allStoreItemsList = new();
+    private Guid? editingStoreItemId = null;
+
+    public class DigitalItemPreset
+    {
+        public string Name { get; set; } = "";
+        public string Code { get; set; } = "";
+        public string Url { get; set; } = "";
+        
+        // Override Equals/GetHashCode for MudSelect to work correctly with objects
+        public override bool Equals(object? o)
+        {
+            var other = o as DigitalItemPreset;
+            return other?.Name == Name;
+        }
+        public override int GetHashCode() => Name.GetHashCode();
+    }
+
+    private List<DigitalItemPreset> digitalPresets = new()
+    {
+        new DigitalItemPreset { Name = "Boost XP x2 (24h)", Code = "XP_BOOST_2X_24H", Url = "xp-boost-2x" },
+        new DigitalItemPreset { Name = "Son - Beep 1", Code = "SCAN_SOUND", Url = "/sounds/beep1.mp3" },
+        new DigitalItemPreset { Name = "Son - Beep 2", Code = "SCAN_SOUND", Url = "/sounds/beep2.mp3" },
+        new DigitalItemPreset { Name = "Son - Beep 3", Code = "SCAN_SOUND", Url = "/sounds/beep3.mp3" },
+        new DigitalItemPreset { Name = "Thème - Hiver", Code = "UI_THEME_WINTER", Url = "theme-winter" },
+        new DigitalItemPreset { Name = "Thème - Été", Code = "UI_THEME_SUMMER", Url = "theme-summer" },
+        new DigitalItemPreset { Name = "Thème - Automne", Code = "UI_THEME_AUTUMN", Url = "theme-autumn" },
+        new DigitalItemPreset { Name = "Thème - Printemps", Code = "UI_THEME_SPRING", Url = "theme-spring" },
+        new DigitalItemPreset { Name = "QR Code - Doré", Code = "QR_STYLE_GOLD", Url = "style-gold" },
+        new DigitalItemPreset { Name = "QR Code - Inversé", Code = "QR_STYLE_INVERTED", Url = "style-inverted" }
+    };
+
+    private DigitalItemPreset? _selectedPreset;
+    private DigitalItemPreset? selectedPreset
+    {
+        get => _selectedPreset;
+        set
+        {
+            _selectedPreset = value;
+            if (_selectedPreset != null)
+            {
+                newStoreItem.DigitalActionCode = _selectedPreset.Code;
+                newStoreItem.DigitalAssetUrl = _selectedPreset.Url;
+                Console.WriteLine($"[ManageStore] Preset selected - Code: {_selectedPreset.Code}, URL: {_selectedPreset.Url}");
+                Console.WriteLine($"[ManageStore] Item updated - DigitalActionCode: {newStoreItem.DigitalActionCode}, DigitalAssetUrl: {newStoreItem.DigitalAssetUrl}");
+            }
+        }
+    }
+    
+    private string? successMessageStore;
+    private string? errorMessageStore;
+    private bool isBusyStore = false;
+    private bool showForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            allStoreItemsList = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur chargement : {ex.Message}");
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingStoreItemId = null;
+        newStoreItem = new StoreItemDto();
+        newStoreItem.IsUnique = true; // Par défaut, tous les objets sont uniques
+        selectedPreset = null;
+        showForm = true;
+    }
+
+    private async Task HandleCreateStoreItem()
+    {
+        isBusyStore = true;
+        successMessageStore = null;
+        errorMessageStore = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/store", newStoreItem);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Objet créé !";
+                newStoreItem = new StoreItemDto();
+                await LoadData();
+                showForm = false;
+            }
+            else { errorMessageStore = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = $"Erreur: {ex.Message}"; }
+        finally { isBusyStore = false; }
+    }
+
+    private void StartEditStoreItem(StoreItemDto itemToEdit)
+    {
+        editingStoreItemId = itemToEdit.Id;
+        newStoreItem = new StoreItemDto
+        {
+            Id = itemToEdit.Id,
+            Name = itemToEdit.Name,
+            Description = itemToEdit.Description,
+            Price = itemToEdit.Price,
+            IconName = itemToEdit.IconName,
+            ItemType = itemToEdit.ItemType,
+            DigitalActionCode = itemToEdit.DigitalActionCode,
+            Stock = itemToEdit.Stock,
+            IsActive = itemToEdit.IsActive,
+            StartDate = itemToEdit.StartDate,
+            EndDate = itemToEdit.EndDate,
+            DigitalAssetUrl = itemToEdit.DigitalAssetUrl,
+            IsUnique = itemToEdit.IsUnique
+        };
+
+        if (newStoreItem.ItemType == StoreItemType.Digital)
+        {
+            _selectedPreset = digitalPresets.FirstOrDefault(p => p.Code == newStoreItem.DigitalActionCode && p.Url == newStoreItem.DigitalAssetUrl);
+        }
+        else
+        {
+            _selectedPreset = null;
+        }
+        showForm = true;
+    }
+
+    private void CancelEditStoreItem()
+    {
+        editingStoreItemId = null;
+        newStoreItem = new StoreItemDto();
+        selectedPreset = null;
+        errorMessageStore = null;
+        showForm = false;
+    }
+
+    private async Task HandleUpdateStoreItem()
+    {
+        if (editingStoreItemId == null) return;
+        isBusyStore = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/store/{editingStoreItemId.Value}", newStoreItem);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Mis à jour !";
+                CancelEditStoreItem();
+                await LoadData();
+            }
+            else { errorMessageStore = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+        finally { isBusyStore = false; }
+    }
+
+    private async Task DeleteStoreItem(StoreItemDto itemToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{itemToDelete.Name}' ?");
+        if (!confirmed) return;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/store/{itemToDelete.Id}");
+            if (response.IsSuccessStatusCode) await LoadData();
+            else errorMessageStore = "Erreur suppression.";
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+    }
+
+    private async Task OpenIconPickerForStore()
+    {
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string iconName) newStoreItem.IconName = iconName;
+    }
+}

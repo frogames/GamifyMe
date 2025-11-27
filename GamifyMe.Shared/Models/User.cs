@@ -15,6 +15,8 @@ namespace GamifyMe.Shared.Models
 
         public string Email { get; set; } = string.Empty;
 
+        public string FirstName { get; set; } = string.Empty;
+
         public string PasswordHash { get; set; } = string.Empty;
 
         public string Role { get; set; } = string.Empty;
@@ -34,6 +36,9 @@ namespace GamifyMe.Shared.Models
 
         public List<Order> Orders { get; set; } = new();
         public List<UserInventory> Inventory { get; set; } = new();
+
+        public Guid? GroupId { get; set; }
+        public Group? Group { get; set; }
 
         // --- PROPRIÉTÉS CALCULÉES / NON MAPPÉES (CORRECTION) ---
         [NotMapped] // <-- INDIQUE À EF CORE D'IGNORER CES CHAMPS EN BASE DE DONNÉES

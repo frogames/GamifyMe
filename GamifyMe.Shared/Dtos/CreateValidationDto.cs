@@ -1,4 +1,6 @@
-﻿namespace GamifyMe.Shared.Dtos
+﻿using System;
+
+namespace GamifyMe.Shared.Dtos
 {
     public class CreateValidationDto
     {
@@ -18,6 +20,6 @@
         // On peut les garder pour éviter des erreurs de build si d'autres fichiers les utilisent encore,
         // mais l'objectif est de passer aux nouveaux.
         public string ScannedQrCodeContent { get; set; } = string.Empty;
-        public Guid ObjectiveId { get; set; }
+        public Guid? ObjectiveId { get; set; }
     }
 }

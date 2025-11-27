@@ -25,7 +25,14 @@ namespace GamifyMe.Api.Controllers
             var order = await _context.Orders.Include(o => o.StoreItem).FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return NotFound("Commande introuvable.");
 
-            if (order.Status != OrderStatus.Pending)
+            // Allow if Pending OR (Completed AND DateCompleted is null - for migrated items)
+            // OR (Physical AND Completed AND DateCompleted is close to DatePurchased - for bugged items)
+            bool isBuggedPhysicalOrder = order.StoreItem.ItemType == StoreItemType.Physical 
+                                         && order.Status == OrderStatus.Completed 
+                                         && order.DateCompleted.HasValue 
+                                         && Math.Abs((order.DateCompleted.Value - order.DatePurchased).TotalSeconds) < 10;
+
+            if (order.Status != OrderStatus.Pending && !(order.Status == OrderStatus.Completed && order.DateCompleted == null) && !isBuggedPhysicalOrder)
                 return BadRequest("Cette commande n'est pas en attente.");
 
             order.Status = OrderStatus.Completed;
@@ -49,10 +56,17 @@ namespace GamifyMe.Api.Controllers
         [HttpPost("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(Guid orderId)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var order = await _context.Orders.Include(o => o.StoreItem).FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return NotFound("Commande introuvable.");
 
-            if (order.Status != OrderStatus.Pending)
+            // Allow if Pending OR (Completed AND DateCompleted is null)
+            // OR (Physical AND Completed AND DateCompleted is close to DatePurchased - for bugged items)
+            bool isBuggedPhysicalOrder = order.StoreItem.ItemType == StoreItemType.Physical 
+                                         && order.Status == OrderStatus.Completed 
+                                         && order.DateCompleted.HasValue 
+                                         && Math.Abs((order.DateCompleted.Value - order.DatePurchased).TotalSeconds) < 10;
+
+            if (order.Status != OrderStatus.Pending && !(order.Status == OrderStatus.Completed && order.DateCompleted == null) && !isBuggedPhysicalOrder)
                 return BadRequest("Cette commande n'est pas en attente.");
 
             order.Status = OrderStatus.Cancelled;

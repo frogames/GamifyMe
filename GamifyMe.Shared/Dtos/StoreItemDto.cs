@@ -1,13 +1,11 @@
 ﻿using GamifyMe.Shared.Models;
 using System.ComponentModel.DataAnnotations;
-using System; // <-- Ajoute ce 'using' pour Guid
+using System;
 
 namespace GamifyMe.Shared.Dtos
 {
     public class StoreItemDto
     {
-        // 👇 AJOUTE CETTE LIGNE 👇
-        // L'ID est nécessaire pour afficher/modifier les objets existants
         public Guid Id { get; set; }
 
         [Required]
@@ -15,8 +13,8 @@ namespace GamifyMe.Shared.Dtos
         public string Name { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
-        // ... (le reste de ton fichier est parfait et reste inchangé) ...
-        public string IconName { get; set; } = "fas fa-shopping-bag";
+
+        public string IconName { get; set; } = "fas fa-shopping-bag";
 
         [Range(0, 1000000)]
         public int Price { get; set; }
@@ -26,6 +24,11 @@ namespace GamifyMe.Shared.Dtos
 
         public StoreItemType ItemType { get; set; } = StoreItemType.Physical;
         public bool IsActive { get; set; } = true;
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public string? DigitalActionCode { get; set; }
+        public string? DigitalAssetUrl { get; set; }
+        public bool IsUnique { get; set; }
+        public bool IsOwned { get; set; } // Computed property for UI
     }
 }

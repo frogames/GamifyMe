@@ -1,0 +1,146 @@
+@page "/groups"
+@attribute [Authorize]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Groupes</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" Class="mb-4">Rejoindre un Groupe</MudText>
+    <MudText Typo="Typo.body1" Class="mb-6">
+        Rejoignez un groupe pour contribuer à son succès ! Chaque point d'XP que vous gagnez est également ajouté au total de votre groupe.
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        @if (currentGroupId.HasValue)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-6" Icon="@Icons.Material.Filled.Group">
+                Vous êtes membre du groupe <strong>@currentGroupName</strong>. Si vous changez de groupe, vos futurs gains d'XP iront au nouveau groupe.
+            </MudAlert>
+        }
+
+        <MudGrid>
+            @foreach (var group in groups)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="3" Class="@(group.Id == currentGroupId ? "border-primary" : "")">
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Color="Color.Primary" />
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@group.Name</MudText>
+                                <MudText Typo="Typo.caption">@group.MemberCount membres</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                @if (group.Id == currentGroupId)
+                                {
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Actuel</MudChip>
+                                }
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Class="mb-2">@group.Description</MudText>
+                            <MudText Typo="Typo.body2"><strong>XP Total :</strong> @group.TotalXp</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            @if (group.Id != currentGroupId)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@(() => JoinGroup(group))">Rejoindre</MudButton>
+                            }
+                            else
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" Disabled="true">Membre</MudButton>
+                            }
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .border-primary {
+        border: 2px solid var(--mud-palette-primary);
+    }
+</style>
+
+@code {
+    private List<GroupDto> groups = new();
+    private Guid? currentGroupId;
+    private string? currentGroupName;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            // 1. Get User Profile to know current group
+            var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+            if (profile != null)
+            {
+                currentGroupId = profile.GroupId;
+                currentGroupName = profile.GroupName;
+            }
+
+            // 2. Get All Groups
+            groups = await Http.GetFromJsonAsync<List<GroupDto>>("api/groups") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur chargement : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task JoinGroup(GroupDto group)
+    {
+        bool confirmed = await DialogService.ShowMessageBox(
+            "Changer de groupe ?",
+            $"Voulez-vous vraiment rejoindre le groupe '{group.Name}' ? Vos futurs points d'XP iront à ce groupe.",
+            yesText: "Oui, rejoindre", cancelText: "Annuler") ?? false;
+
+        if (!confirmed) return;
+
+        try
+        {
+            var response = await Http.PostAsync($"api/groups/join/{group.Id}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Bienvenue dans le groupe {group.Name} !", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Erreur : {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+    }
+}

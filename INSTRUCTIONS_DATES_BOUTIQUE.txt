@@ -1,0 +1,15 @@
+@* DATES DE DISPONIBILITÉ - À AJOUTER APRÈS LA LIGNE 326 DANS Dashboard.razor *@
+@* Juste avant la ligne: <MudCheckBox T="bool" @bind-Value="newStoreItem.IsActive"... *@
+
+                        @* DATES DE DISPONIBILITÉ *@
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Période de disponibilité (optionnel)</MudText>
+                        <div class="d-flex gap-4 mb-3">
+                            <MudDatePicker T="DateTime?" Label="Date de début" @bind-Date="newStoreItem.StartDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                            <MudDatePicker T="DateTime?" Label="Date de fin" @bind-Date="newStoreItem.EndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        </div>
+                        @if (newStoreItem.StartDate.HasValue || newStoreItem.EndDate.HasValue)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                                Cet objet sera disponible @(newStoreItem.StartDate.HasValue ? $"du {newStoreItem.StartDate.Value:dd/MM/yyyy}" : "")@(newStoreItem.StartDate.HasValue && newStoreItem.EndDate.HasValue ? " " : "")@(newStoreItem.EndDate.HasValue ? $"jusqu'au {newStoreItem.EndDate.Value:dd/MM/yyyy}" : "")
+                            </MudAlert>
+                        }

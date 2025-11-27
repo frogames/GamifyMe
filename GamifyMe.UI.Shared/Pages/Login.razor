@@ -89,4 +89,16 @@
             _processing = false;
         }
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/");
+            }
+        }
+    }
 }

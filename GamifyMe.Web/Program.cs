@@ -29,6 +29,7 @@ builder.Services.AddCascadingAuthenticationState();
 // 2. Services MudBlazor & UI
 builder.Services.AddMudServices();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
+builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
 
 // 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient

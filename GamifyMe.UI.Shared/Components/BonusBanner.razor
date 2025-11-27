@@ -1,0 +1,86 @@
+@using GamifyMe.Shared.Dtos
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+@if (activeBonus != null)
+{
+    <div class="bonus-banner d-flex justify-center align-center pa-2">
+        <MudIcon Icon="@GetIcon()" Class="mr-2 pulse-animation" Size="Size.Large" />
+        <MudText Typo="Typo.h6" Class="pulse-text">
+            <strong>BONUS ACTIF :</strong> @activeBonus.Name (@GetMultiplierText())
+        </MudText>
+        <MudIcon Icon="@GetIcon()" Class="ml-2 pulse-animation" Size="Size.Large" />
+    </div>
+
+    <style>
+        .bonus-banner {
+            background: linear-gradient(45deg, #ff357a, #fff172);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 53, 122, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 2000; /* Above MudLayout appbar if possible, or just below */
+            width: 100%;
+        }
+
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .pulse-text {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+}
+
+@code {
+    private BonusPeriodDto? activeBonus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBonus();
+    }
+
+    private async Task LoadBonus()
+    {
+        try
+        {
+            var response = await Http.GetAsync("api/bonus-periods/current");
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                activeBonus = null;
+            }
+            else if (response.IsSuccessStatusCode)
+            {
+                activeBonus = await response.Content.ReadFromJsonAsync<BonusPeriodDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading bonus: {ex.Message}");
+        }
+    }
+
+    private string GetIcon()
+    {
+        return activeBonus?.Type == GamifyMe.Shared.Models.BonusType.Xp 
+            ? Icons.Material.Filled.Star 
+            : Icons.Material.Filled.AttachMoney;
+    }
+
+    private string GetMultiplierText()
+    {
+        if (activeBonus == null) return "";
+        return activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp 
+            ? $"XP x{activeBonus.Multiplier}" 
+            : $"Monnaie x{activeBonus.Multiplier}";
+    }
+}

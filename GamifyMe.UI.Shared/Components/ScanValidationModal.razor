@@ -1,6 +1,7 @@
 ﻿@using GamifyMe.Shared.Dtos
 @using System.Net.Http.Json
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 
 @if (IsOpen)
 {
@@ -107,13 +108,21 @@
             {
                 var result = await response.Content.ReadFromJsonAsync<ValidationResponseDto>();
                 
-                // --- FIX : AFFICHAGE DU GAIN (Issue 3) ---
                 scanMessage = $"✅ {result?.Message} !";
                 if (result != null) 
                 {
                     scanMessage += $" Gagnez : +{result.RewardXp} XP / +{result.RewardCurrency} Coins.";
                     // Notification au Dashboard de rafraîchir les stats du joueur
                     await OnScanSuccessRefresh.InvokeAsync(); 
+
+                    if (!string.IsNullOrEmpty(result.ScanSoundUrl))
+                    {
+                        await PlaySound(result.ScanSoundUrl);
+                    }
+                    else
+                    {
+                        await PlaySound(DefaultSuccessSound);
+                    }
                 }
                 isScanError = false;
             }
@@ -122,18 +131,19 @@
                 var errorMsg = await response.Content.ReadAsStringAsync();
                 scanMessage = $"❌ ERREUR VALIDATION : {errorMsg.Trim('\"')}";
                 isScanError = true;
+                await PlaySound(DefaultErrorSound);
             }
         }
         catch (Exception ex)
         {
             scanMessage = "Erreur technique : " + ex.Message;
             isScanError = true;
+            await PlaySound(DefaultErrorSound);
         }
 
         // 3. Affichage résultat
         await InvokeAsync(StateHasChanged);
         
-        // --- FIX : DÉLAI RÉDUIT (Issue 2) ---
         await Task.Delay(800); 
 
         // 4. Relance
@@ -144,6 +154,26 @@
             await InvokeAsync(StateHasChanged);
             await Task.Yield();
             if (qrScannerRef != null) await qrScannerRef.StartAsync();
+        }
+    }
+
+    private const string DefaultSuccessSound = "/sounds/scan-success.mp3";
+    private const string DefaultErrorSound = "/sounds/scan-error.mp3";
+
+    private async Task PlaySound(string url)
+    {
+        try
+        {
+            if (!url.StartsWith("http") && Http.BaseAddress != null)
+            {
+                url = new Uri(Http.BaseAddress, url).ToString();
+            }
+            Console.WriteLine($"[ScanValidationModal] Playing sound: {url}");
+            await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{url}').play()");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error playing sound: {ex.Message}");
         }
     }
 }

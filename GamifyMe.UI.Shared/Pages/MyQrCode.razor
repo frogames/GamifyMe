@@ -3,6 +3,7 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <PageTitle>Mon Pass</PageTitle>
 
@@ -18,26 +19,31 @@
     else if (profile != null)
     {
         <MudCard Elevation="4" Class="pa-8 d-flex flex-column align-center rounded-xl" Style="width: 100%; max-width: 350px;">
+            
+            @{
+                string color = "000000";
+                string bgcolor = "FFFFFF";
 
-            @* Avatar et Nom *@
-            <MudAvatar Style="width:64px; height:64px; font-size:1.5rem;" Color="Color.Primary" Class="mb-2">
-                @profile.Username.Substring(0, 1).ToUpper()
-            </MudAvatar>
-            <MudText Typo="Typo.h5" Align="Align.Center"><b>@profile.Username</b></MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">@profile.EstablishmentName</MudText>
+                if (profile.ActiveQrCodeStyle == "QR_STYLE_GOLD")
+                {
+                    color = "000000";
+                    bgcolor = "D4AF37";
+                }
+                else if (profile.ActiveQrCodeStyle == "QR_STYLE_INVERTED")
+                {
+                    color = "FFFFFF";
+                    bgcolor = "000000";
+                }
 
-            @* LE QR CODE *@
-            @* On utilise l'API 'api.qrserver.com' pour générer l'image *@
-            <MudImage Src="@($"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={profile.QrCode}")"
-                      Alt="QR Code"
-                      Width="200"
-                      Height="200"
-                      Class="mb-6 border-2 pa-2" />
+                string qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}&color={color}&bgcolor={bgcolor}";
+            }
 
-            <MudDivider Style="width: 100%;" Class="mb-6" />
+            <MudImage Src="@qrUrl" Alt="QR Code" Class="mb-6 rounded-lg" Style="width: 250px; height: 250px;" />
 
-            @* Actions *@
-            <div class="d-flex gap-2 width-100">
+            <MudText Typo="Typo.h5" Class="mb-1">@profile.Username</MudText>
+            <MudText Typo="Typo.body2" Class="mb-6 text-muted">@profile.EstablishmentName</MudText>
+
+            <div class="d-flex gap-4 w-100">
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Secondary"
                            StartIcon="@Icons.Material.Filled.Print"
@@ -46,7 +52,6 @@
                     Imprimer
                 </MudButton>
 
-                @* Le partage natif ne marche bien que sur mobile/HTTPS, on le cache sinon ou on gère l'erreur *@
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Share"
@@ -65,37 +70,6 @@
 
 </MudContainer>
 
-
-<script>
-    window.shareQrImage = async (title, text, imageUrl) => {
-        try {
-            // 1. Télécharger l'image
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-
-            // 2. Créer un fichier virtuel
-            const file = new File([blob], "pass-gamifyme.png", { type: "image/png" });
-
-            // 3. Partager
-            if (navigator.share) {
-                await navigator.share({
-                    title: title,
-                    text: text,
-                    files: [file]
-                });
-            } else {
-                alert("Partage non supporté sur cet appareil.");
-            }
-        } catch (e) {
-            console.error("Erreur partage:", e);
-            // Fallback : on partage juste le lien
-             if (navigator.share) {
-                await navigator.share({ title, text, url: imageUrl });
-            }
-        }
-    };
-</script>
-
 @code {
     private UserProfileDetailsDto? profile;
     private bool isLoading = true;
@@ -104,7 +78,6 @@
     {
         try
         {
-            // On réutilise l'endpoint profile-details car il contient le QrCode (string)
             profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
         }
         catch (Exception ex)
@@ -119,7 +92,6 @@
 
     private async Task PrintCard()
     {
-        // Appelle la fonction d'impression native du navigateur
         await JSRuntime.InvokeVoidAsync("print");
     }
 
@@ -127,15 +99,25 @@
     {
         if (profile == null) return;
 
-        // L'URL de l'image QR Code
-        string qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}";
+        string color = "000000";
+        string bgcolor = "FFFFFF";
 
-        // Appel de notre script personnalisé
+        if (profile.ActiveQrCodeStyle == "QR_STYLE_GOLD")
+        {
+            color = "000000";
+            bgcolor = "D4AF37";
+        }
+        else if (profile.ActiveQrCodeStyle == "QR_STYLE_INVERTED")
+        {
+            color = "FFFFFF";
+            bgcolor = "000000";
+        }
+
+        string qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}&color={color}&bgcolor={bgcolor}";
+
         await JSRuntime.InvokeVoidAsync("window.shareQrImage",
             "Mon Pass GamifyMe",
             $"Voici mon code joueur pour {profile.Username}",
             qrImageUrl);
     }
-
-    [Inject] NavigationManager NavigationManager { get; set; } = default!;
 }

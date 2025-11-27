@@ -23,34 +23,36 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
         });
 });
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Ajouter l'accès au HttpContext (pour le DataContext multi-tenant)
+// HttpContext accessor (multi‑tenant)
 builder.Services.AddHttpContextAccessor();
 
-// Service d'Email (SMTP)
+// Email service
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
-// 2. Base de données
+// Database context
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 3. Authentification JWT
+// Currency service (singleton, holds the name of the primary currency)
+builder.Services.AddSingleton<CurrencyService>();
+
+// JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-                .GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!)),
             ValidateIssuer = false,
             ValidateAudience = false
         };
     });
-
 
 var app = builder.Build();
 
@@ -61,10 +63,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-// IMPORTANT: UseCors doit être avant UseAuthentication/UseAuthorization
+// IMPORTANT: UseCors must be before UseStaticFiles
 app.UseCors("AllowBlazorClient");
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

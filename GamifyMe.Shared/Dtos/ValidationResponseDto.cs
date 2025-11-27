@@ -10,5 +10,8 @@
         public int RewardCurrency { get; set; }
         public int UserNewLevel { get; set; }
         public int UserNewBalance { get; set; }
+
+        // --- DIGITAL REWARDS ---
+        public string? ScanSoundUrl { get; set; }
     }
 }

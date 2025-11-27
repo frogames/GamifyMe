@@ -1,0 +1,343 @@
+@page "/admin/objectives"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur, Gestionnaire")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.UI.Shared.Helpers
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Gestion Objectifs</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Gestion des Objectifs</MudText>
+        @if (!showForm)
+        {
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
+        }
+    </div>
+
+    @if (showForm)
+    {
+        <MudCard Elevation="3" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingObjectiveId == null ? "Créer un nouvel objectif" : "Modifier l'objectif")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+        <EditForm Model="newObjective" OnValidSubmit="@(editingObjectiveId == null ? HandleCreateObjective : HandleUpdateObjective)">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
+
+                    @* SÉLECTEUR D'ICÔNE *@
+                    <div class="d-flex justify-center mb-4">
+                        <MudTooltip Text="Cliquez pour changer l'icône">
+                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                </MudPaper>
+                            </MudBadge>
+                        </MudTooltip>
+                    </div>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newObjective.IconName</MudText>
+
+                    <MudTextField T="string" Label="Lieu" @bind-Value="newObjective.Location" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+
+                    <div class="d-flex gap-4 mb-3 align-center">
+                        <MudDatePicker Label="Date Événement" @bind-Date="newObjective.EventDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudField Label="Heure" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 120px; padding-top: 10px;">
+                            <input type="time" value="@(eventTime?.ToString(@"hh\:mm"))" @onchange="@((ChangeEventArgs e) => eventTime = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()))" style="width:100%; border:none; outline:none; background:transparent;" />
+                        </MudField>
+                    </div>
+
+                    <div class="d-flex gap-4 mb-3 align-center">
+                        <MudDatePicker Label="Date Fin" @bind-Date="newObjective.EndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudField Label="Heure" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 120px; padding-top: 10px;">
+                            <input type="time" value="@(endTime?.ToString(@"hh\:mm"))" @onchange="@((ChangeEventArgs e) => endTime = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()))" style="width:100%; border:none; outline:none; background:transparent;" />
+                        </MudField>
+                    </div>
+
+                    <div class="d-flex gap-4 mb-3 align-center">
+                        <MudDatePicker Label="Affichage : Début" @bind-Date="newObjective.DisplayStartDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" HelperText="Date à partir de laquelle l'objectif est visible" />
+                        <MudDatePicker Label="Affichage : Fin" @bind-Date="newObjective.DisplayEndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" HelperText="Date après laquelle l'objectif disparaît" />
+                    </div>
+
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Prérequis (facultatif)</MudText>
+                    <MudPaper Class="pa-2 mb-3" Outlined="true" MaxHeight="150px" Style="overflow-y: auto;">
+                        @if (allObjectivesList.Any())
+                        {
+                            @foreach (var objective in allObjectivesList)
+                            {
+                                <MudCheckBox T="bool" Value="@newObjective.PrerequisiteObjectiveIds.Contains(objective.Id)" ValueChanged="@((bool v) => TogglePrerequisite(objective.Id))" Label="@objective.Title" Dense="true" Color="Color.Primary" />
+                            }
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Class="pa-2">Aucun objectif disponible</MudText>
+                        }
+                    </MudPaper>
+
+                    <MudTextField T="int" Label="Récompense XP" @bind-Value="newObjective.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="int" Label="Récompense Crédits" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+
+                    <MudSwitch T="bool" @bind-Value="newObjective.IsUnique" Label="Objectif unique" Color="Color.Primary" Class="mb-2" />
+                    @if (!newObjective.IsUnique)
+                    {
+                        <MudTextField T="int?" Label="Fréquence (Heures)" @bind-Value="newObjective.FrequencyHours" HelperText="Délai minimum entre deux validations (en heures)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    }
+                    <MudSwitch T="bool" @bind-Value="newObjective.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
+
+                    @if (!string.IsNullOrEmpty(successMessageObjective))
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-3">@successMessageObjective</MudAlert>
+                    }
+                    @if (!string.IsNullOrEmpty(errorMessageObjective))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessageObjective</MudAlert>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusyObjective">
+                            @(editingObjectiveId == null ? "Créer" : "Mettre à jour")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelEditObjective" FullWidth="true">Annuler</MudButton>
+                    </div>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Objectifs existants</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@allObjectivesFullList" Hover="true" Dense="true" Striped="true">
+                    <HeaderContent>
+                        <MudTh>Titre</MudTh>
+                        <MudTh>Lieu</MudTh>
+                        <MudTh>Dates</MudTh>
+                        <MudTh>Récompenses</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="obj">
+                        <MudTd DataLabel="Titre">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@obj.Title</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Lieu">@obj.Location</MudTd>
+                        <MudTd DataLabel="Dates">
+                            @if (obj.EventDate.HasValue)
+                            {
+                                <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">Evt: @obj.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
+                            }
+                            @if (obj.DisplayStartDate.HasValue || obj.DisplayEndDate.HasValue)
+                            {
+                                <div class="d-flex flex-column">
+                                    @if (obj.DisplayStartDate.HasValue)
+                                    {
+                                        <MudText Typo="Typo.caption">Affichage du : @obj.DisplayStartDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                    }
+                                    @if (obj.DisplayEndDate.HasValue)
+                                    {
+                                        <MudText Typo="Typo.caption">au : @obj.DisplayEndDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                    }
+                                </div>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Récompenses">
+                            <div class="d-flex gap-1">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@obj.XpReward XP</MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">@obj.DocPointsReward Crédits</MudChip>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Small" Color="Color.Primary" OnClick="() => scanModal.Show(obj)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEditObjective(obj))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(obj))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+<ScanValidationModal @ref="scanModal" OnScanSuccessRefresh="LoadData" />
+
+@code {
+    private bool showForm = false;
+    private Guid? editingObjectiveId;
+    private CreateObjectiveDto newObjective = new();
+    private List<ObjectiveSimpleDto> allObjectivesList = new();
+    private List<ObjectiveDto> allObjectivesFullList = new();
+    private bool isBusyObjective = false;
+    private string? successMessageObjective;
+    private string? errorMessageObjective;
+    private TimeSpan? eventTime;
+    private TimeSpan? endTime;
+    
+    private ScanValidationModal scanModal = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var objectivesTask = Http.GetFromJsonAsync<List<ObjectiveSimpleDto>>("api/objectives/list-all");
+            var objectivesFullTask = Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/list-all-full");
+            await Task.WhenAll(objectivesTask, objectivesFullTask);
+            allObjectivesList = objectivesTask.Result ?? new();
+            allObjectivesFullList = objectivesFullTask.Result ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur chargement : {ex.Message}");
+        }
+    }
+
+    private void TogglePrerequisite(Guid objectiveId)
+    {
+        if (newObjective.PrerequisiteObjectiveIds.Contains(objectiveId)) 
+            newObjective.PrerequisiteObjectiveIds.Remove(objectiveId);
+        else 
+            newObjective.PrerequisiteObjectiveIds.Add(objectiveId);
+    }
+
+    private void ShowCreateForm()
+    {
+        editingObjectiveId = null;
+        newObjective = new CreateObjectiveDto();
+        eventTime = null;
+        endTime = null;
+        showForm = true;
+    }
+
+    private async Task HandleCreateObjective()
+    {
+        MergeDatesAndTimes();
+        isBusyObjective = true;
+        successMessageObjective = null;
+        errorMessageObjective = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/objectives", newObjective);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Objectif créé !";
+                newObjective = new CreateObjectiveDto();
+                await LoadData();
+                showForm = false;
+            }
+            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
+        finally { isBusyObjective = false; }
+    }
+
+    private void StartEditObjective(ObjectiveDto objectiveToEdit)
+    {
+        editingObjectiveId = objectiveToEdit.Id;
+        eventTime = objectiveToEdit.EventDate?.TimeOfDay;
+        endTime = objectiveToEdit.EndDate?.TimeOfDay;
+        newObjective = new CreateObjectiveDto
+        {
+            Title = objectiveToEdit.Title,
+            Description = objectiveToEdit.Description,
+            IconName = objectiveToEdit.IconName,
+            Location = objectiveToEdit.Location,
+            EventDate = objectiveToEdit.EventDate,
+            EndDate = objectiveToEdit.EndDate,
+            XpReward = objectiveToEdit.XpReward,
+            DocPointsReward = objectiveToEdit.DocPointsReward,
+            IsUnique = objectiveToEdit.IsUnique,
+            FrequencyHours = objectiveToEdit.FrequencyHours,
+            IsActive = objectiveToEdit.IsActive,
+            DisplayStartDate = objectiveToEdit.DisplayStartDate,
+            DisplayEndDate = objectiveToEdit.DisplayEndDate,
+            PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>()
+        };
+        showForm = true;
+    }
+
+    private void CancelEditObjective()
+    {
+        editingObjectiveId = null;
+        newObjective = new CreateObjectiveDto();
+        eventTime = null;
+        endTime = null;
+        errorMessageObjective = null;
+        showForm = false;
+    }
+
+    private async Task HandleUpdateObjective()
+    {
+        if (editingObjectiveId == null) return;
+        MergeDatesAndTimes();
+        isBusyObjective = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/objectives/{editingObjectiveId.Value}", newObjective);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Mis à jour !";
+                CancelEditObjective();
+                await LoadData();
+            }
+            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
+        finally { isBusyObjective = false; }
+    }
+
+    private async Task DeleteObjective(ObjectiveDto objectiveToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{objectiveToDelete.Title}' ?");
+        if (!confirmed) return;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/objectives/{objectiveToDelete.Id}");
+            if (response.IsSuccessStatusCode) await LoadData();
+            else errorMessageObjective = "Erreur suppression.";
+        }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
+    }
+
+    private async Task OpenIconPickerForObjective()
+    {
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string iconName) newObjective.IconName = iconName;
+    }
+
+    private void MergeDatesAndTimes()
+    {
+        if (newObjective.EventDate.HasValue)
+        {
+            newObjective.EventDate = newObjective.EventDate.Value.Date + (eventTime ?? TimeSpan.Zero);
+        }
+        if (newObjective.EndDate.HasValue)
+        {
+            newObjective.EndDate = newObjective.EndDate.Value.Date + (endTime ?? TimeSpan.Zero);
+        }
+    }
+}

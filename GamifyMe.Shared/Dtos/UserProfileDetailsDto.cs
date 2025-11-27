@@ -4,6 +4,7 @@
     {
         // Infos de base (reprise de ton DTO existant)
         public string Username { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string EstablishmentName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
@@ -19,8 +20,18 @@
         // Monnaie
         public int CurrencyBalance { get; set; }
         public string CurrencyName { get; set; } = "Points"; // "DOC", "Gold", etc.
+        public Guid? GroupId { get; set; }
+        public string? GroupName { get; set; }
 
         // Historique
         public List<UserActivityLogDto> RecentActivity { get; set; } = new();
+
+        // Custom UI
+        public string ActiveUiTheme { get; set; } = Constants.ThemeConstants.Default;
+        public string ActiveQrCodeStyle { get; set; } = Constants.ThemeConstants.QrStyleDefault;
+
+        // Boost XP
+        public int ActiveBoostMultiplier { get; set; } = 1;
+        public DateTime? BoostEndsAt { get; set; }
     }
 }

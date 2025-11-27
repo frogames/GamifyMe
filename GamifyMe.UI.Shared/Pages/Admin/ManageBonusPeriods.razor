@@ -1,0 +1,252 @@
+@page "/admin/bonus-periods"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Gestion Périodes Bonus</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Périodes Bonus</MudText>
+        @if (!showForm)
+        {
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
+        }
+    </div>
+
+    @if (showForm)
+    {
+        <MudCard Elevation="3" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingId == null ? "Créer une période bonus" : "Modifier la période")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <EditForm Model="model" OnValidSubmit="@(editingId == null ? HandleCreate : HandleUpdate)">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField T="string" Label="Nom" @bind-Value="model.Name" For="@(() => model.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    
+                    <div class="d-flex gap-4 mb-3">
+                        <MudDatePicker Label="Date de début" @bind-Date="startDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudTimePicker Label="Heure début" @bind-Time="startTime" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                    </div>
+
+                    <div class="d-flex gap-4 mb-3">
+                        <MudDatePicker Label="Date de fin" @bind-Date="endDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudTimePicker Label="Heure fin" @bind-Time="endTime" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                    </div>
+
+                    <MudSelect T="BonusType" Label="Type de Bonus" @bind-Value="model.Type" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3">
+                        <MudSelectItem Value="BonusType.Xp">XP</MudSelectItem>
+                        <MudSelectItem Value="BonusType.Currency">Crédits</MudSelectItem>
+                    </MudSelect>
+
+                    <MudNumericField T="double" Label="Multiplicateur (ex: 2.0 pour x2)" @bind-Value="model.Multiplier" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Step="0.1" Min="1.0" />
+
+                    <MudSwitch T="bool" @bind-Value="model.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessage</MudAlert>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusy">
+                            @(editingId == null ? "Créer" : "Mettre à jour")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelEdit" FullWidth="true">Annuler</MudButton>
+                    </div>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Historique des bonus</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@list" Hover="true" Dense="true" Striped="true">
+                    <HeaderContent>
+                        <MudTh>Nom</MudTh>
+                        <MudTh>Dates</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Multiplicateur</MudTh>
+                        <MudTh>Actif</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="item">
+                        <MudTd DataLabel="Nom">@item.Name</MudTd>
+                        <MudTd DataLabel="Dates">
+                            <div>Du @item.StartDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                            <div>Au @item.EndDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                        </MudTd>
+                        <MudTd DataLabel="Type">@item.Type</MudTd>
+                        <MudTd DataLabel="Multiplicateur">x @item.Multiplier</MudTd>
+                        <MudTd DataLabel="Actif">
+                            @if (item.IsActive)
+                            {
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small">Oui</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Default" Size="Size.Small">Non</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEdit(item))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Delete(item))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private bool showForm = false;
+    private Guid? editingId;
+    private UpdateBonusPeriodDto model = new();
+    private List<BonusPeriodDto> list = new();
+    private bool isBusy = false;
+    private string? errorMessage;
+
+    private DateTime? startDate;
+    private TimeSpan? startTime;
+    private DateTime? endDate;
+    private TimeSpan? endTime;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            list = await Http.GetFromJsonAsync<List<BonusPeriodDto>>("api/bonus-periods") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur chargement : {ex.Message}");
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingId = null;
+        model = new UpdateBonusPeriodDto { Multiplier = 2.0, IsActive = true, Type = BonusType.Xp };
+        startDate = DateTime.Today;
+        startTime = DateTime.Now.TimeOfDay;
+        endDate = DateTime.Today.AddDays(7);
+        endTime = DateTime.Now.TimeOfDay;
+        showForm = true;
+    }
+
+    private void StartEdit(BonusPeriodDto item)
+    {
+        editingId = item.Id;
+        var localStart = item.StartDate.ToLocalTime();
+        var localEnd = item.EndDate.ToLocalTime();
+        
+        startDate = localStart.Date;
+        startTime = localStart.TimeOfDay;
+        endDate = localEnd.Date;
+        endTime = localEnd.TimeOfDay;
+
+        model = new UpdateBonusPeriodDto
+        {
+            Name = item.Name,
+            Type = item.Type,
+            Multiplier = item.Multiplier,
+            IsActive = item.IsActive
+        };
+        showForm = true;
+    }
+
+    private void CancelEdit()
+    {
+        editingId = null;
+        model = new UpdateBonusPeriodDto();
+        errorMessage = null;
+        showForm = false;
+    }
+
+    private void MergeDates()
+    {
+        if (startDate.HasValue)
+            model.StartDate = startDate.Value.Date + (startTime ?? TimeSpan.Zero);
+        
+        if (endDate.HasValue)
+            model.EndDate = endDate.Value.Date + (endTime ?? TimeSpan.Zero);
+    }
+
+    private async Task HandleCreate()
+    {
+        MergeDates();
+        isBusy = true;
+        errorMessage = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/bonus-periods", model);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Période bonus créée !", Severity.Success);
+                await LoadData();
+                showForm = false;
+            }
+            else { errorMessage = await response.Content.ReadAsStringAsync(); }
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task HandleUpdate()
+    {
+        if (editingId == null) return;
+        MergeDates();
+        isBusy = true;
+        errorMessage = null;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/bonus-periods/{editingId.Value}", model);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Mis à jour !", Severity.Success);
+                await LoadData();
+                showForm = false;
+            }
+            else { errorMessage = await response.Content.ReadAsStringAsync(); }
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task Delete(BonusPeriodDto item)
+    {
+        bool confirmed = await DialogService.ShowMessageBox("Supprimer ?", $"Voulez-vous supprimer '{item.Name}' ?", yesText: "Oui", cancelText: "Non") ?? false;
+        if (!confirmed) return;
+        
+        try
+        {
+            var response = await Http.DeleteAsync($"api/bonus-periods/{item.Id}");
+            if (response.IsSuccessStatusCode) await LoadData();
+            else Snackbar.Add("Erreur suppression", Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
+    }
+}

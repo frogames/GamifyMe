@@ -3,10 +3,12 @@
 
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject TokenStorageService TokenService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"
     Style="height: 100vh;">
@@ -15,6 +17,9 @@
 
         <EditForm Model="@registerModel" OnValidSubmit="OnValidSubmit" FormName="registerForm">
             <DataAnnotationsValidator />
+
+            <MudTextField Label="Prénom" @bind-Value="registerModel.FirstName"
+                For="@(() => registerModel.FirstName)" Variant="Variant.Outlined" Class="mb-4" />
 
             <MudTextField Label="Nom d'utilisateur" @bind-Value="registerModel.Username"
                 For="@(() => registerModel.Username)" Variant="Variant.Outlined" Class="mb-4" />
@@ -112,6 +117,18 @@
         finally
         {
             _processing = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/");
+            }
         }
     }
 }

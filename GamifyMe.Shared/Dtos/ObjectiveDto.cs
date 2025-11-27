@@ -20,9 +20,12 @@ namespace GamifyMe.Shared.Dtos
         public string? Location { get; set; }
         public DateTime? EventDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public DateTime? DisplayStartDate { get; set; }
+        public DateTime? DisplayEndDate { get; set; }
 
         // Statut pour le joueur
         public bool IsUnique { get; set; }
+        public int? FrequencyHours { get; set; }
         public bool IsAlreadyCompleted { get; set; } // Très important pour l'UI
 
         public bool IsActive { get; set; }

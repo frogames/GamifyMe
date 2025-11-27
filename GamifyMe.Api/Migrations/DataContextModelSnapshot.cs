@@ -22,6 +22,41 @@ namespace GamifyMe.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.BonusPeriod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Multiplier")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstablishmentId");
+
+                    b.ToTable("BonusPeriods");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.Establishment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -49,6 +84,37 @@ namespace GamifyMe.Api.Migrations
                     b.ToTable("Establishments");
                 });
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("IconName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TotalXp")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstablishmentId");
+
+                    b.ToTable("Groups");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.Objective", b =>
                 {
                     b.Property<Guid>("Id")
@@ -65,6 +131,12 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("DisplayEndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DisplayStartDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("DocPointsReward")
                         .HasColumnType("integer");
 
@@ -76,6 +148,9 @@ namespace GamifyMe.Api.Migrations
 
                     b.Property<DateTime?>("EventDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("FrequencyHours")
+                        .HasColumnType("integer");
 
                     b.Property<string>("IconName")
                         .IsRequired()
@@ -167,6 +242,12 @@ namespace GamifyMe.Api.Migrations
                     b.Property<string>("DigitalActionCode")
                         .HasColumnType("text");
 
+                    b.Property<string>("DigitalAssetUrl")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("EstablishmentId")
                         .HasColumnType("uuid");
 
@@ -175,6 +256,9 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsUnique")
                         .HasColumnType("boolean");
 
                     b.Property<int>("ItemType")
@@ -187,6 +271,9 @@ namespace GamifyMe.Api.Migrations
 
                     b.Property<int>("Price")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
@@ -215,6 +302,13 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("GroupId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsEmailConfirmed")
@@ -246,6 +340,8 @@ namespace GamifyMe.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EstablishmentId");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Users");
                 });
@@ -339,6 +435,28 @@ namespace GamifyMe.Api.Migrations
                     b.ToTable("Wallets");
                 });
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.BonusPeriod", b =>
+                {
+                    b.HasOne("GamifyMe.Shared.Models.Establishment", "Establishment")
+                        .WithMany()
+                        .HasForeignKey("EstablishmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Establishment");
+                });
+
+            modelBuilder.Entity("GamifyMe.Shared.Models.Group", b =>
+                {
+                    b.HasOne("GamifyMe.Shared.Models.Establishment", "Establishment")
+                        .WithMany()
+                        .HasForeignKey("EstablishmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Establishment");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.ObjectiveObjective", b =>
                 {
                     b.HasOne("GamifyMe.Shared.Models.Objective", "IsPrerequisiteForObjective")
@@ -396,7 +514,13 @@ namespace GamifyMe.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GamifyMe.Shared.Models.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId");
+
                     b.Navigation("Establishment");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.UserInventory", b =>
@@ -451,6 +575,11 @@ namespace GamifyMe.Api.Migrations
             modelBuilder.Entity("GamifyMe.Shared.Models.Establishment", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("GamifyMe.Shared.Models.Group", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.Objective", b =>

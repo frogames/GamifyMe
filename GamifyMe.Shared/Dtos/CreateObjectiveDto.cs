@@ -19,9 +19,12 @@ namespace GamifyMe.Shared.Dtos
 
         // 1. CORRECTION : Défini à 'true' par défaut, comme tu l'as demandé.
         public bool IsUnique { get; set; } = true;
+        public int? FrequencyHours { get; set; } = 24;
 
         public DateTime? EventDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public DateTime? DisplayStartDate { get; set; }
+        public DateTime? DisplayEndDate { get; set; }
         public string Location { get; set; } = string.Empty;
 
         // 2. CORRECTION : Rendu obligatoire, comme tu l'as demandé.

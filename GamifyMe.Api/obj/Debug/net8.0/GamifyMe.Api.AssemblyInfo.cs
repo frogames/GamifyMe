@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GamifyMe.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0532e52e91febb198f900227b1a19cd17ad8a109")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+afd67c391feb01cc3091a3c8a40f20f54a74c8ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("GamifyMe.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GamifyMe.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

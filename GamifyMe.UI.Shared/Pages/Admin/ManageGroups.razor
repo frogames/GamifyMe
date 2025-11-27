@@ -1,0 +1,228 @@
+@page "/admin/groups"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.UI.Shared.Helpers
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Gestion des Groupes</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Gestion des Groupes</MudText>
+        @if (!showForm)
+        {
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
+        }
+    </div>
+
+    @if (showForm)
+    {
+        <MudCard Elevation="3" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingGroupId == null ? "Créer un nouveau groupe" : "Modifier le groupe")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <EditForm Model="groupModel" OnValidSubmit="@(editingGroupId == null ? HandleCreateGroup : HandleUpdateGroup)">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField T="string" Label="Nom" @bind-Value="groupModel.Name" For="@(() => groupModel.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Description" @bind-Value="groupModel.Description" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
+
+                    @* SÉLECTEUR D'ICÔNE *@
+                    <div class="d-flex justify-center mb-4">
+                        <MudTooltip Text="Cliquez pour changer l'icône">
+                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                </MudPaper>
+                            </MudBadge>
+                        </MudTooltip>
+                    </div>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @groupModel.IconName</MudText>
+
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-3">@successMessage</MudAlert>
+                    }
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessage</MudAlert>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusy">
+                            @(editingGroupId == null ? "Créer" : "Mettre à jour")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelEdit" FullWidth="true">Annuler</MudButton>
+                    </div>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Groupes existants</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true">
+                    <HeaderContent>
+                        <MudTh>Nom</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Membres</MudTh>
+                        <MudTh>XP Total</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="group">
+                        <MudTd DataLabel="Nom">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@group.Name</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Description">@group.Description</MudTd>
+                        <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
+                        <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEdit(group))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteGroup(group))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private bool showForm = false;
+    private Guid? editingGroupId;
+    private UpdateGroupDto groupModel = new(); // Using UpdateGroupDto for both create and update as they are similar enough here, or map accordingly
+    private List<GroupDto> groupsList = new();
+    private bool isBusy = false;
+    private string? successMessage;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            groupsList = await Http.GetFromJsonAsync<List<GroupDto>>("api/groups") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur chargement : {ex.Message}");
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingGroupId = null;
+        groupModel = new UpdateGroupDto();
+        showForm = true;
+    }
+
+    private async Task HandleCreateGroup()
+    {
+        isBusy = true;
+        successMessage = null;
+        errorMessage = null;
+        try
+        {
+            var createDto = new CreateGroupDto 
+            { 
+                Name = groupModel.Name, 
+                Description = groupModel.Description, 
+                IconName = groupModel.IconName 
+            };
+            var response = await Http.PostAsJsonAsync("api/groups", createDto);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Groupe créé !";
+                groupModel = new UpdateGroupDto();
+                await LoadData();
+                showForm = false;
+            }
+            else { errorMessage = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessage = $"Erreur: {ex.Message}"; }
+        finally { isBusy = false; }
+    }
+
+    private void StartEdit(GroupDto group)
+    {
+        editingGroupId = group.Id;
+        groupModel = new UpdateGroupDto
+        {
+            Name = group.Name,
+            Description = group.Description,
+            IconName = group.IconName
+        };
+        showForm = true;
+    }
+
+    private void CancelEdit()
+    {
+        editingGroupId = null;
+        groupModel = new UpdateGroupDto();
+        errorMessage = null;
+        showForm = false;
+    }
+
+    private async Task HandleUpdateGroup()
+    {
+        if (editingGroupId == null) return;
+        isBusy = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/groups/{editingGroupId.Value}", groupModel);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Mis à jour !";
+                CancelEdit();
+                await LoadData();
+            }
+            else { errorMessage = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessage = $"Erreur: {ex.Message}"; }
+        finally { isBusy = false; }
+    }
+
+    private async Task DeleteGroup(GroupDto group)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{group.Name}' ?");
+        if (!confirmed) return;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/groups/{group.Id}");
+            if (response.IsSuccessStatusCode) await LoadData();
+            else errorMessage = "Erreur suppression.";
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+    }
+
+    private async Task OpenIconPicker()
+    {
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string iconName) groupModel.IconName = iconName;
+    }
+}

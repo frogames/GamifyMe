@@ -23,3 +23,13 @@ D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.dll
 D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\refint\GamifyMe.UI.Shared.dll
 D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.pdb
 D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\ref\GamifyMe.UI.Shared.dll
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.csproj.AssemblyReference.cache
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\rpswa.dswa.cache.json
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.GeneratedMSBuildEditorConfig.editorconfig
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.AssemblyInfoInputs.cache
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.AssemblyInfo.cs
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.csproj.CoreCompileInputs.cache
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.sourcelink.json
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.dll
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\refint\GamifyMe.UI.Shared.dll
+D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.pdb

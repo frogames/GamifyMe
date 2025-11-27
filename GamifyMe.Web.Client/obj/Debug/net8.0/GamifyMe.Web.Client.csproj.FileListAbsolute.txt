@@ -2150,8 +2150,6 @@ d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\17saom4gxo-tjcz0u
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\r50tkcwp74-tptq2av103.gz
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\c459asnwjx-lfu7j35m59.gz
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\dxqlru5bc4-oyz0vx2fzb.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\4jznsv7qwr-t15fy796ci.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s26znw9xt7-c2sliz7i1b.gz
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\staticwebassets.build.json
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\staticwebassets.build.json.cache
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\staticwebassets.development.json
@@ -2161,8 +2159,10 @@ d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\GamifyMe.Web.Client.dll
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\refint\GamifyMe.Web.Client.dll
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\GamifyMe.Web.Client.pdb
 d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\ref\GamifyMe.Web.Client.dll
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\jnws3rxrj5-ijxvg2st20.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\5jok4goms4-vvb964csfc.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s2bx1g4s0h-oz28prk0nb.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\kw5glj7kjy-tbn6ku1xdy.gz
-d:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s4pdoguo7b-beft5ayiib.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\4jznsv7qwr-dnyjdpri5r.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s26znw9xt7-wz1raixmc2.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\jnws3rxrj5-2jx1p3nuyw.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\5jok4goms4-oe9l1fvfe3.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s2bx1g4s0h-zsti281paj.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\kw5glj7kjy-usr2a0mst2.gz
+D:\GamifyMe_V2\GamifyMe.Web.Client\obj\Debug\net8.0\compressed\s4pdoguo7b-g0vsg5rvky.gz

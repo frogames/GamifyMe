@@ -1,0 +1,230 @@
+@page "/leaderboard"
+@attribute [Authorize]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Classements</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" Class="mb-4">Classements</MudText>
+    <MudText Typo="Typo.body1" Class="mb-6">
+        Découvrez les meilleurs joueurs et les groupes les plus actifs de votre établissement !
+    </MudText>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel Text="Joueurs (XP)" Icon="@Icons.Material.Filled.EmojiEvents">
+            @if (isLoadingUsersXp)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else
+            {
+                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Rang</MudTh>
+                        <MudTh>Joueur</MudTh>
+                        <MudTh>Niveau</MudTh>
+                        <MudTh>Groupe</MudTh>
+                        <MudTh>XP Total</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="user">
+                        <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
+                        <MudTd DataLabel="Joueur">@user.Username</MudTd>
+                        <MudTd DataLabel="Niveau">@user.Level</MudTd>
+                        <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
+                        <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Joueurs (Crédits)" Icon="@Icons.Material.Filled.AttachMoney">
+            @if (isLoadingUsersCurrency)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else
+            {
+                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Rang</MudTh>
+                        <MudTh>Joueur</MudTh>
+                        <MudTh>Niveau</MudTh>
+                        <MudTh>Groupe</MudTh>
+                        <MudTh>Crédits</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="user">
+                        <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
+                        <MudTd DataLabel="Joueur">@user.Username</MudTd>
+                        <MudTd DataLabel="Niveau">@user.Level</MudTd>
+                        <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
+                        <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Groupes (XP)" Icon="@Icons.Material.Filled.Groups">
+            @if (isLoadingGroupsXp)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else
+            {
+                <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Rang</MudTh>
+                        <MudTh>Groupe</MudTh>
+                        <MudTh>Membres</MudTh>
+                        <MudTh>XP Total</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="group">
+                        <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
+                        <MudTd DataLabel="Groupe">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@group.Name</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
+                        <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Groupes (Membres)" Icon="@Icons.Material.Filled.GroupAdd">
+            @if (isLoadingGroupsMembers)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else
+            {
+                <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Rang</MudTh>
+                        <MudTh>Groupe</MudTh>
+                        <MudTh>Membres</MudTh>
+                        <MudTh>XP Total</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="group">
+                        <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
+                        <MudTd DataLabel="Groupe">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@group.Name</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
+                        <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+@code {
+    private List<UserLeaderboardEntryDto> usersXpLeaderboard = new();
+    private List<UserLeaderboardEntryDto> usersCurrencyLeaderboard = new();
+    private List<GroupLeaderboardEntryDto> groupsXpLeaderboard = new();
+    private List<GroupLeaderboardEntryDto> groupsMembersLeaderboard = new();
+
+    private bool isLoadingUsersXp = true;
+    private bool isLoadingUsersCurrency = true;
+    private bool isLoadingGroupsXp = true;
+    private bool isLoadingGroupsMembers = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var t1 = LoadUsersXp();
+        var t2 = LoadUsersCurrency();
+        var t3 = LoadGroupsXp();
+        var t4 = LoadGroupsMembers();
+        await Task.WhenAll(t1, t2, t3, t4);
+    }
+
+    private async Task LoadUsersXp()
+    {
+        isLoadingUsersXp = true;
+        try
+        {
+            usersXpLeaderboard = await Http.GetFromJsonAsync<List<UserLeaderboardEntryDto>>("api/leaderboard/users-xp") ?? new();
+        }
+        catch (Exception ex) { Console.WriteLine($"Erreur users-xp : {ex.Message}"); }
+        finally { isLoadingUsersXp = false; }
+    }
+
+    private async Task LoadUsersCurrency()
+    {
+        isLoadingUsersCurrency = true;
+        try
+        {
+            usersCurrencyLeaderboard = await Http.GetFromJsonAsync<List<UserLeaderboardEntryDto>>("api/leaderboard/users-currency") ?? new();
+        }
+        catch (Exception ex) { Console.WriteLine($"Erreur users-currency : {ex.Message}"); }
+        finally { isLoadingUsersCurrency = false; }
+    }
+
+    private async Task LoadGroupsXp()
+    {
+        isLoadingGroupsXp = true;
+        try
+        {
+            groupsXpLeaderboard = await Http.GetFromJsonAsync<List<GroupLeaderboardEntryDto>>("api/leaderboard/groups-xp") ?? new();
+        }
+        catch (Exception ex) { Console.WriteLine($"Erreur groups-xp : {ex.Message}"); }
+        finally { isLoadingGroupsXp = false; }
+    }
+
+    private async Task LoadGroupsMembers()
+    {
+        isLoadingGroupsMembers = true;
+        try
+        {
+            groupsMembersLeaderboard = await Http.GetFromJsonAsync<List<GroupLeaderboardEntryDto>>("api/leaderboard/groups-members") ?? new();
+        }
+        catch (Exception ex) { Console.WriteLine($"Erreur groups-members : {ex.Message}"); }
+        finally { isLoadingGroupsMembers = false; }
+    }
+
+    private RenderFragment RenderRank(int rank) => builder =>
+    {
+        if (rank == 1)
+        {
+            builder.OpenComponent<MudIcon>(0);
+            builder.AddAttribute(1, "Icon", Icons.Material.Filled.EmojiEvents);
+            builder.AddAttribute(2, "Color", Color.Warning);
+            builder.CloseComponent();
+        }
+        else if (rank == 2)
+        {
+            builder.OpenComponent<MudIcon>(0);
+            builder.AddAttribute(1, "Icon", Icons.Material.Filled.EmojiEvents);
+            builder.AddAttribute(2, "Color", Color.Default); // Silver-ish
+            builder.CloseComponent();
+        }
+        else if (rank == 3)
+        {
+            builder.OpenComponent<MudIcon>(0);
+            builder.AddAttribute(1, "Icon", Icons.Material.Filled.EmojiEvents);
+            builder.AddAttribute(2, "Color", Color.Error); // Bronze-ish
+            builder.CloseComponent();
+        }
+        else
+        {
+            builder.AddContent(0, rank.ToString());
+        }
+    };
+}

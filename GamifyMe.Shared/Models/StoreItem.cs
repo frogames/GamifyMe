@@ -34,10 +34,18 @@ namespace GamifyMe.Shared.Models
 
         public bool IsActive { get; set; } = true; // Pour le cacher de la boutique
 
+        public bool IsUnique { get; set; } = false; // Si vrai, l'utilisateur ne peut l'acheter qu'une seule fois
+
+        public DateTime? StartDate { get; set; } // Date de début de disponibilité
+        public DateTime? EndDate { get; set; }   // Date de fin de disponibilité
+
         // --- Pour les items Numériques ---
         // On peut ajouter un "code d'action" pour dire au jeu quoi faire
         // Ex: "BOOST_XP_24H", "FRAME_HALLOWEEN", "SOUND_SCAN_ROBOT"
         public string? DigitalActionCode { get; set; }
+        
+        // URL de la ressource numérique (ex: fichier MP3 pour un son, PNG pour un cadre)
+        public string? DigitalAssetUrl { get; set; }
 
         public List<Order> Orders { get; set; } = new();
         public List<UserInventory> InventoryItems { get; set; } = new();

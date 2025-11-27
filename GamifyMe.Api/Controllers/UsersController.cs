@@ -51,6 +51,7 @@ namespace GamifyMe.Api.Controllers
                 EstablishmentId = establishment.Id,
                 Username = request.Username,
                 Email = request.Email.ToLower(),
+                FirstName = request.FirstName,
                 PasswordHash = passwordHash,
                 Role = Roles.User,
                 CreatedAt = DateTime.UtcNow,
@@ -163,12 +164,19 @@ namespace GamifyMe.Api.Controllers
             var userId = GetCurrentUserId();
             if (userId == Guid.Empty) return Unauthorized();
 
+            Console.WriteLine($"[GetMyProfileDetails] Requesting profile for UserId: {userId}");
+
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .Include(u => u.Wallets)
+                .Include(u => u.Group)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null) return NotFound("Utilisateur introuvable.");
+            if (user == null)
+            {
+                Console.WriteLine($"[GetMyProfileDetails] User not found for UserId: {userId}");
+                return NotFound("Utilisateur introuvable.");
+            }
 
             var xpWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode == "XP");
             var currencyWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode != "XP");
@@ -218,13 +226,36 @@ namespace GamifyMe.Api.Controllers
 
             var sortedLogs = logs.OrderByDescending(l => l.Date).Take(10).ToList();
 
+            // Fetch Active UI Theme
+            var activeThemeItem = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"));
+            
+            string activeTheme = activeThemeItem?.StoreItem.DigitalActionCode ?? GamifyMe.Shared.Constants.ThemeConstants.Default;
+
+            // Fetch Active QR Style
+            var activeQrItem = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"));
+
+            string activeQrStyle = activeQrItem?.StoreItem.DigitalActionCode ?? GamifyMe.Shared.Constants.ThemeConstants.QrStyleDefault;
+
+            // Fetch Active XP Boost
+            var activeBoostItem = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "XP_BOOST_2X_24H" && (ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow));
+            
+            int activeBoostMultiplier = activeBoostItem != null ? 2 : 1;
+            DateTime? boostEndsAt = activeBoostItem?.ExpiresAt;
+
             return Ok(new UserProfileDetailsDto
             {
                 Username = user.Username,
+                FirstName = user.FirstName,
                 Email = user.Email,
                 Role = user.Role,
                 QrCode = user.QrCode,
-                EstablishmentName = user.Establishment?.Name ?? "Non assigné",
+                EstablishmentName = user.Establishment?.Name ?? "N/A",
                 CreatedAt = user.CreatedAt,
                 Level = level,
                 CurrentXp = currentXp,
@@ -232,12 +263,17 @@ namespace GamifyMe.Api.Controllers
                 ProgressPercentage = Math.Min(100, Math.Max(0, ((double)(currentXp % 500) / 500) * 100)),
                 CurrencyBalance = currentCurrency,
                 CurrencyName = currencyWallet?.CurrencyCode ?? "Points",
-                RecentActivity = sortedLogs
+                GroupId = user.GroupId,
+                GroupName = user.Group?.Name,
+                RecentActivity = sortedLogs,
+                ActiveUiTheme = activeTheme,
+                ActiveQrCodeStyle = activeQrStyle,
+                ActiveBoostMultiplier = activeBoostMultiplier,
+                BoostEndsAt = boostEndsAt
             });
         }
 
         [HttpGet("inventory")]
-        [Authorize]
         public async Task<ActionResult<List<UserInventoryDto>>> GetMyInventory()
         {
             var userId = GetCurrentUserId();
@@ -246,6 +282,7 @@ namespace GamifyMe.Api.Controllers
             var inventoryItems = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
                 .Where(ui => ui.UserId == userId)
+                .Where(ui => ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow) // Filter out expired items
                 .OrderByDescending(ui => ui.DateAcquired)
                 .Select(ui => new UserInventoryDto
                 {
@@ -254,36 +291,146 @@ namespace GamifyMe.Api.Controllers
                     Description = ui.StoreItem.Description,
                     IconName = ui.StoreItem.IconName,
                     AcquiredDate = ui.DateAcquired,
-                    IsUsed = ui.IsActive,
-                    UsedDate = ui.ExpiresAt,
-                    ItemType = ui.StoreItem.ItemType.ToString()
+                    IsActive = ui.IsActive,
+                    ExpiresAt = ui.ExpiresAt,
+                    ItemType = ui.StoreItem.ItemType.ToString(),
+                    DigitalActionCode = ui.StoreItem.DigitalActionCode,
+                    DigitalAssetUrl = ui.StoreItem.DigitalAssetUrl
                 })
                 .ToListAsync();
 
             return Ok(inventoryItems);
         }
 
+        [HttpPost("inventory/{inventoryId}/toggle")]
+        [Authorize]
+        public async Task<IActionResult> ToggleEquipItem(Guid inventoryId)
+        {
+            var userId = GetCurrentUserId();
+            var inventoryItem = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.Id == inventoryId && ui.UserId == userId);
+
+            if (inventoryItem == null) return NotFound("Objet non trouvé.");
+
+            if (inventoryItem.StoreItem.DigitalActionCode == "SCAN_SOUND")
+            {
+                // If activating, deactivate others
+                if (!inventoryItem.IsActive)
+                {
+                    var otherActiveSounds = await _context.UserInventories
+                        .Include(ui => ui.StoreItem)
+                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "SCAN_SOUND" && ui.Id != inventoryId)
+                        .ToListAsync();
+
+                    foreach (var item in otherActiveSounds)
+                    {
+                        item.IsActive = false;
+                    }
+                }
+            }
+            else if (inventoryItem.StoreItem.DigitalActionCode != null && inventoryItem.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"))
+            {
+                // If activating, deactivate others
+                if (!inventoryItem.IsActive)
+                {
+                    var otherActiveThemes = await _context.UserInventories
+                        .Include(ui => ui.StoreItem)
+                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_") && ui.Id != inventoryId)
+                        .ToListAsync();
+
+                    foreach (var item in otherActiveThemes)
+                    {
+                        item.IsActive = false;
+                    }
+                }
+            }
+            else if (inventoryItem.StoreItem.DigitalActionCode != null && inventoryItem.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"))
+            {
+                // If activating, deactivate others
+                if (!inventoryItem.IsActive)
+                {
+                    var otherActiveStyles = await _context.UserInventories
+                        .Include(ui => ui.StoreItem)
+                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_") && ui.Id != inventoryId)
+                        .ToListAsync();
+
+                    foreach (var item in otherActiveStyles)
+                    {
+                        item.IsActive = false;
+                    }
+                }
+            }
+
+            inventoryItem.IsActive = !inventoryItem.IsActive;
+            await _context.SaveChangesAsync();
+
+            return Ok(new UserInventoryDto
+            {
+                Id = inventoryItem.Id,
+                ItemName = inventoryItem.StoreItem.Name,
+                Description = inventoryItem.StoreItem.Description,
+                IconName = inventoryItem.StoreItem.IconName,
+                AcquiredDate = inventoryItem.DateAcquired,
+                IsActive = inventoryItem.IsActive,
+                ExpiresAt = inventoryItem.ExpiresAt,
+                ItemType = inventoryItem.StoreItem.ItemType.ToString(),
+                DigitalActionCode = inventoryItem.StoreItem.DigitalActionCode,
+                DigitalAssetUrl = inventoryItem.StoreItem.DigitalAssetUrl
+            });
+        }
+
         [HttpGet("profile-scan/{qrCode}")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
         public async Task<ActionResult<ProfileScanDto>> GetProfileForScan(string qrCode)
         {
+            Console.WriteLine($"[GetProfileForScan] Scanning QR: {qrCode}");
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .FirstOrDefaultAsync(u => u.QrCode == qrCode);
 
-            if (user == null) return NotFound("QR Code invalide.");
+            if (user == null) 
+            {
+                Console.WriteLine("[GetProfileForScan] User not found.");
+                return NotFound("QR Code invalide.");
+            }
 
-            var pendingOrders = await _context.Orders
+            Console.WriteLine($"[GetProfileForScan] User found: {user.Username} ({user.Id})");
+
+            // Fetch ALL orders for this user
+            var allOrders = await _context.Orders
                 .Include(o => o.StoreItem)
-                .Where(o => o.UserId == user.Id && o.Status == OrderStatus.Pending && o.StoreItem.ItemType == StoreItemType.Physical)
-                .Select(o => new PendingOrderDto
-                {
-                    OrderId = o.Id,
-                    ItemName = o.StoreItem.Name,
-                    ItemIcon = o.StoreItem.IconName,
-                    DatePurchased = o.DatePurchased
-                })
+                .Where(o => o.UserId == user.Id)
                 .ToListAsync();
+
+            Console.WriteLine($"[GetProfileForScan] Found {allOrders.Count} total orders for user.");
+
+            var pendingOrders = new List<PendingOrderDto>();
+
+            foreach (var o in allOrders)
+            {
+                bool isPhysical = o.StoreItem.ItemType == StoreItemType.Physical;
+                bool isPending = o.Status == OrderStatus.Pending;
+                
+                // Detection of bugged orders: Physical items that were auto-completed at purchase time
+                // We check if DateCompleted is very close to DatePurchased (e.g. within 10 seconds)
+                // This allows us to show these items as "Pending" to the admin so they can be validated.
+                bool isBuggedCompleted = o.Status == OrderStatus.Completed 
+                                         && isPhysical 
+                                         && o.DateCompleted.HasValue 
+                                         && Math.Abs((o.DateCompleted.Value - o.DatePurchased).TotalSeconds) < 10;
+
+                if (isPhysical && (isPending || isBuggedCompleted))
+                {
+                    pendingOrders.Add(new PendingOrderDto
+                    {
+                        OrderId = o.Id,
+                        ItemName = o.StoreItem.Name,
+                        ItemIcon = o.StoreItem.IconName,
+                        DatePurchased = o.DatePurchased
+                    });
+                }
+            }
 
             return Ok(new ProfileScanDto
             {

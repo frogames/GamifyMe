@@ -23,6 +23,8 @@ namespace GamifyMe.Api.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
         public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<BonusPeriod> BonusPeriods { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -11,6 +11,11 @@ namespace GamifyMe.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // MIGRATION SKIPPED BECAUSE TABLES ALREADY EXIST
+            // The user has an existing DB but missing migration history.
+            // We comment out the creation logic to "baseline" the DB.
+            
+            /*
             migrationBuilder.CreateTable(
                 name: "Establishments",
                 columns: table => new
@@ -285,6 +290,7 @@ namespace GamifyMe.Api.Migrations
                 name: "IX_Wallets_UserId",
                 table: "Wallets",
                 column: "UserId");
+            */
         }
 
         /// <inheritdoc />

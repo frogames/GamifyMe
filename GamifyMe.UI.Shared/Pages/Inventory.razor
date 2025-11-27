@@ -4,6 +4,8 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
 
 <PageTitle>Mon Inventaire</PageTitle>
 
@@ -14,53 +16,80 @@
 
     @if (isLoading)
     {
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
     }
     else if (inventoryItems == null || !inventoryItems.Any())
     {
-            <MudAlert Severity="Severity.Info">Votre inventaire est vide. Achetez des objets dans la boutique !</MudAlert>
+        <MudAlert Severity="Severity.Info">Votre inventaire est vide. Achetez des objets dans la boutique !</MudAlert>
     }
     else
     {
-            <MudGrid>
+        <MudGrid>
             @foreach (var item in inventoryItems)
             {
-                        <MudItem xs="12" sm="6" md="4">
-                            <MudCard Elevation="3" Class="h-100 d-flex flex-column">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="3" Class="h-100 d-flex flex-column">
                         @* ZONE IMAGE / ICÔNE *@
-                                <div class="d-flex justify-center align-center pa-6"
-                                    style="background-color: var(--mud-palette-background-grey);">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;"
-                                        Color="Color.Success" />
-                                </div>
+                        <div class="d-flex justify-center align-center pa-6"
+                             style="background-color: var(--mud-palette-background-grey);">
+                            <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;"
+                                     Color="Color.Success" />
+                        </div>
 
-                                <MudCardContent Class="flex-grow-1 pt-4">
-                                    <MudText Typo="Typo.subtitle1" Align="Align.Center"><b>@item.ItemName</b></MudText>
-                                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
+                        <MudCardContent Class="flex-grow-1 pt-4">
+                            <MudText Typo="Typo.subtitle1" Align="Align.Center"><b>@item.ItemName</b></MudText>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
                                 @(string.IsNullOrEmpty(item.Description) ? "Aucune description" : item.Description)
-                                    </MudText>
-                                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2" Color="Color.Info">
-                                        Acquis le : @item.AcquiredDate.ToString("dd/MM/yyyy")
-                                    </MudText>
+                            </MudText>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2" Color="Color.Info">
+                                Acquis le : @item.AcquiredDate.ToString("dd/MM/yyyy")
+                            </MudText>
 
                             @if (item.ItemType == "Physical")
                             {
-                                            <div class="d-flex justify-center mt-2">
-                                    @if (item.IsUsed)
+                                <div class="d-flex justify-center mt-2">
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Objet Physique</MudChip>
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(item.DigitalActionCode))
+                            {
+                                <div class="d-flex flex-column align-center mt-3">
+                                    @if (!string.IsNullOrEmpty(item.DigitalAssetUrl) && item.DigitalActionCode == "SCAN_SOUND")
                                     {
-                                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Récupéré</MudChip>
+                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" 
+                                                       Color="Color.Info" 
+                                                       Variant="Variant.Filled"
+                                                       Size="Size.Small"
+                                                       Class="mb-2"
+                                                       OnClick="@(() => PreviewSound(item.DigitalAssetUrl))"
+                                                       Title="Écouter" />
+                                    }
+
+                                    @if (item.DigitalActionCode == "XP_BOOST_2X_24H")
+                                    {
+                                         <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.RocketLaunch">Boost Actif</MudChip>
+                                         <MudText Typo="Typo.caption" Color="Color.Default">Expire le : @item.ExpiresAt?.ToLocalTime().ToString("g")</MudText>
+                                    }
+                                    else if (item.IsActive)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="mb-2">Actif</MudChip>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => ToggleItem(item))">
+                                            Déséquiper
+                                        </MudButton>
                                     }
                                     else
                                     {
-                                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled">En attente de retrait</MudChip>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => ToggleItem(item))">
+                                            Équiper
+                                        </MudButton>
                                     }
-                                            </div>
+                                </div>
                             }
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
             }
-            </MudGrid>
+        </MudGrid>
     }
 </MudContainer>
 
@@ -78,8 +107,7 @@
         isLoading = true;
         try
         {
-            inventoryItems = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory") ?? new
-            List<UserInventoryDto>();
+            inventoryItems = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory") ?? new List<UserInventoryDto>();
         }
         catch (Exception ex)
         {
@@ -88,6 +116,66 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+
+    private async Task ToggleItem(UserInventoryDto item)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/users/inventory/{item.Id}/toggle", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadInventory();
+                Snackbar.Add("Inventaire mis à jour", Severity.Success);
+                
+                // Play sound if we just equipped a sound item
+                if (!item.IsActive && item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(item.DigitalAssetUrl))
+                {
+                    await PreviewSound(item.DigitalAssetUrl);
+                }
+
+                // Update Theme if we toggled a UI Theme
+                if (item.DigitalActionCode != null && item.DigitalActionCode.StartsWith("UI_THEME_"))
+                {
+                    if (!item.IsActive) // Was inactive, now active
+                    {
+                        ThemeService.SetTheme(item.DigitalActionCode);
+                    }
+                    else // Was active, now inactive
+                    {
+                        ThemeService.SetTheme(GamifyMe.Shared.Constants.ThemeConstants.Default);
+                    }
+                }
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la mise à jour", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task PreviewSound(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        try
+        {
+            if (!url.StartsWith("http") && Http.BaseAddress != null)
+            {
+                url = new Uri(Http.BaseAddress, url).ToString();
+            }
+            Console.WriteLine($"[Inventory] Playing sound: {url}");
+            await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{url}').play()");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error playing sound: {ex.Message}");
+            Snackbar.Add("Impossible de lire l'audio", Severity.Error);
         }
     }
 }

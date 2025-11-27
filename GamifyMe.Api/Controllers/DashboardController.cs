@@ -102,10 +102,12 @@ namespace GamifyMe.Api.Controllers
 
             if (!pendingOrders.Any())
             {
+                var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
                 return Ok(new ValidationResponseDto
                 {
                     Success = true,
-                    Message = $"Profil de {user.Username} scanné. Aucune commande en attente."
+                    Message = $"Profil de {user.Username} scanné. Aucune commande en attente.",
+                    ScanSoundUrl = soundUrl
                 });
             }
 
@@ -130,10 +132,12 @@ namespace GamifyMe.Api.Controllers
                 msg += $" Articles : {string.Join(", ", validatedItemNames)}.";
             }
 
+            var soundUrl2 = await GetUserActiveScanSoundUrl(user.Id);
             return Ok(new ValidationResponseDto
             {
                 Success = true,
-                Message = msg
+                Message = msg,
+                ScanSoundUrl = soundUrl2
             });
         }
 
@@ -169,17 +173,93 @@ namespace GamifyMe.Api.Controllers
                 });
             }
 
-            // --- 4. ATTRIBUTION DES RÉCOMPENSES ---
+            // 2. OBJECTIF RÉCURRENT AVEC FRÉQUENCE (Cooldown)
+            if (!objective.IsUnique && objective.FrequencyHours.HasValue)
+            {
+                var lastValidation = await _context.Validations
+                    .Where(v => v.UserId == user.Id && v.ObjectiveId == objectiveId)
+                    .OrderByDescending(v => v.Date)
+                    .FirstOrDefaultAsync();
+
+                if (lastValidation != null)
+                {
+                    var nextAvailableDate = lastValidation.Date.AddHours(objective.FrequencyHours.Value);
+                    if (DateTime.UtcNow < nextAvailableDate)
+                    {
+                        var timeRemaining = nextAvailableDate - DateTime.UtcNow;
+                        string timeString = timeRemaining.TotalHours >= 1 
+                            ? $"{(int)timeRemaining.TotalHours}h et {timeRemaining.Minutes}min" 
+                            : $"{timeRemaining.Minutes}min";
+
+                        return BadRequest(new ValidationResponseDto
+                        {
+                            Success = false,
+                            Message = $"Erreur : Cet objectif ne peut être validé que toutes les {objective.FrequencyHours} heures. Réessayez dans {timeString}.",
+                            RewardXp = 0,
+                            RewardCurrency = 0
+                        });
+                    }
+                }
+            }
+
+            // --- 4. ATTRIBUTION DES RÉCOMPENSES (AVEC BONUS) ---
+
+            // Vérifier s'il y a une période bonus active
+            var now = DateTime.UtcNow;
+            var activeBonus = await _context.BonusPeriods
+                .Where(b => b.EstablishmentId == establishmentId && b.IsActive && b.StartDate <= now && b.EndDate >= now)
+                .OrderByDescending(b => b.StartDate)
+                .FirstOrDefaultAsync();
+
+            int finalXpReward = objective.XpReward;
+            int finalDocPointsReward = objective.DocPointsReward;
+            string bonusMessage = "";
+
+            if (activeBonus != null)
+            {
+                if (activeBonus.Type == BonusType.Xp)
+                {
+                    finalXpReward = (int)(objective.XpReward * activeBonus.Multiplier);
+                    bonusMessage = $" (Bonus {activeBonus.Name}: XP x{activeBonus.Multiplier})";
+                }
+                else if (activeBonus.Type == BonusType.Currency)
+                {
+                    finalDocPointsReward = (int)(objective.DocPointsReward * activeBonus.Multiplier);
+                    bonusMessage = $" (Bonus {activeBonus.Name}: Monnaie x{activeBonus.Multiplier})";
+                }
+            }
+
+            // --- CHECK FOR XP BOOST ITEM ---
+            var activeXpBoost = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .Where(ui => ui.UserId == user.Id && ui.IsActive && ui.StoreItem.DigitalActionCode == "XP_BOOST_2X_24H" && ui.ExpiresAt > now)
+                .FirstOrDefaultAsync();
+
+            if (activeXpBoost != null)
+            {
+                finalXpReward *= 2;
+                bonusMessage += " (Boost XP x2 actif !)";
+            }
 
             if (xpWallet != null)
             {
-                xpWallet.Balance += objective.XpReward;
+                xpWallet.Balance += finalXpReward;
                 user.CurrentXp = (int)xpWallet.Balance;
             }
             if (docWallet != null)
             {
-                docWallet.Balance += objective.DocPointsReward;
+                docWallet.Balance += finalDocPointsReward;
                 user.CurrencyBalance = (int)docWallet.Balance;
+            }
+
+            // Mise à jour de l'XP du groupe
+            if (user.GroupId.HasValue)
+            {
+                var group = await _context.Groups.FindAsync(user.GroupId.Value);
+                if (group != null)
+                {
+                    group.TotalXp += finalXpReward;
+                }
             }
 
             // Mise à jour du niveau
@@ -204,16 +284,29 @@ namespace GamifyMe.Api.Controllers
             // Sauvegarde de : Validation, User (Level, XP, LastActivity), Wallets (Balance)
             await _context.SaveChangesAsync();
 
+            var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
+
             // --- 6. RETOUR AU CLIENT (Pour l'affichage des gains) ---
             return Ok(new ValidationResponseDto
             {
                 Success = true,
-                Message = $"Validé pour {user.Username} !",
-                RewardXp = objective.XpReward,
-                RewardCurrency = objective.DocPointsReward,
+                Message = $"Validé pour {user.Username} !{bonusMessage}",
+                RewardXp = finalXpReward,
+                RewardCurrency = finalDocPointsReward,
                 UserNewLevel = user.Level,
-                UserNewBalance = user.CurrencyBalance
+                UserNewBalance = user.CurrencyBalance,
+                ScanSoundUrl = soundUrl
             });
+        }
+
+        private async Task<string?> GetUserActiveScanSoundUrl(Guid userId)
+        {
+            var inventoryItem = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "SCAN_SOUND")
+                .FirstOrDefaultAsync();
+            
+            return inventoryItem?.StoreItem.DigitalAssetUrl;
         }
     }
 }
