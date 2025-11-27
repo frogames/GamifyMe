@@ -2,7 +2,7 @@
 using MudBlazor.Services;
 using GamifyMe.UI.Shared.Services;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies; // <--- AJOUT IMPORTANT
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,20 +11,14 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// --- CORRECTION ICI : ON DÉFINIT LE SCHÉMA PAR DÉFAUT ---
-// On dit au serveur : "Par défaut, utilise le système de Cookies pour gérer l'identité".
-// C'est ce qui manque et cause l'erreur 500.
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // Optionnel : On peut dire où est la page de login, 
-        // même si notre composant RedirectToLogin le fait déjà.
         options.LoginPath = "/login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
 
 builder.Services.AddCascadingAuthenticationState();
-// ---------------------------------------------------------
 
 // 2. Services MudBlazor & UI
 builder.Services.AddMudServices();
@@ -34,10 +28,19 @@ builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
 // 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://gamifyme-api:8080")
+    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://gamifyme-api:8080")
+});
+
+// Configure ForwardedHeaders for reverse proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                               Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
