@@ -3,10 +3,13 @@ using MudBlazor.Services;
 using GamifyMe.UI.Shared.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Services Razor Components
+// --------------------------------------------------------------------
+// 1️⃣ Services
+// --------------------------------------------------------------------
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -20,30 +23,44 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddCascadingAuthenticationState();
 
-// 2. Services MudBlazor & UI
+// MudBlazor UI
 builder.Services.AddMudServices();
-builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
-builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
+builder.Services.AddScoped<TokenStorageService>();
+builder.Services.AddScoped<ThemeService>();
 
-// 3. HttpClient pour le serveur
+// HttpClient used by the Blazor client to call the API
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://gamifyme-api:8080")
+    BaseAddress = new Uri(
+        builder.Configuration["ApiBaseUrl"] ?? "http://gamifyme-api:8080")
 });
 
-// Configure ForwardedHeaders for reverse proxy
+// Forwarded‑headers (reverse‑proxy)
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
-                               Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
 });
 
 var app = builder.Build();
 
+// --------------------------------------------------------------------
+// 2️⃣ Middleware pipeline
+// --------------------------------------------------------------------
 app.UseForwardedHeaders();
-app.UseCors("AllowBlazorClient");
+app.UseCors("AllowBlazorClient");   // <-- CORS must be before static files
 
-// Configuration du pipeline HTTP
+// Serve the Blazor WebAssembly static assets
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+
+// Fallback for client‑side routing (index.html)
+app.MapFallbackToFile("index.html");
+
+// --------------------------------------------------------------------
+// 3️⃣ Environment‑specific pipeline
+// --------------------------------------------------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -54,18 +71,23 @@ else
     app.UseHsts();
 }
 
+// HTTPS redirection only in development (production handled by proxy)
 if (app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();   // uniquement en dev
+    app.UseHttpsRedirection();
 }
-app.UseStaticFiles();
+
 app.UseAntiforgery();
 
-// --- SÉCURITÉ ---
+// --------------------------------------------------------------------
+// 4️⃣ Security
+// --------------------------------------------------------------------
 app.UseAuthentication();
 app.UseAuthorization();
-// ----------------
 
+// --------------------------------------------------------------------
+// 5️⃣ Razor component mapping
+// --------------------------------------------------------------------
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
