@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {}
+    "d:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {}
   },
   "projects": {
-    "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
+    "d:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
+        "projectUniqueName": "d:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
         "projectName": "GamifyMe.Shared",
-        "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
+        "projectPath": "d:\\GamifyMe_V2\\GamifyMe.Shared\\GamifyMe.Shared.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "D:\\GamifyMe_V2\\GamifyMe.Shared\\obj\\",
+        "outputPath": "d:\\GamifyMe_V2\\GamifyMe.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -32,6 +32,7 @@ namespace GamifyMe.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<string>> Register(RegisterDto request)
         {
+            Response.Headers.Append("Access-Control-Allow-Origin", "*");
             var establishment = await _context.Establishments.FindAsync(request.EstablishmentId);
             if (establishment == null)
             {
@@ -98,6 +99,7 @@ namespace GamifyMe.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<string>> Login(LoginDto request)
         {
+            Response.Headers.Append("Access-Control-Allow-Origin", "*");
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .FirstOrDefaultAsync(u => u.Email == request.Email.ToLower());
