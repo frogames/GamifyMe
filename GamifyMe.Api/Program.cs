@@ -13,12 +13,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowBlazorClient",
         policy =>
         {
-            policy.WithOrigins(
-                "http://localhost:5001",      // Dev
-                "https://localhost:5001",     // Dev HTTPS
-                "https://gamifyme.fun",       // Prod Domaine principal
-                "https://www.gamifyme.fun"    // Prod www
-            )
+            policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
         });
