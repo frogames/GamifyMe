@@ -41,6 +41,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseCors("AllowBlazorClient");
 
 // Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
@@ -53,7 +54,10 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();   // uniquement en dev
+}
 app.UseStaticFiles();
 app.UseAntiforgery();
 

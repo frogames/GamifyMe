@@ -70,7 +70,7 @@ if (app.Environment.IsDevelopment())
 // IMPORTANT: UseCors must be before UseStaticFiles
 app.UseCors("AllowBlazorClient");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // Disabled in production to avoid port detection errors
 app.UseStaticFiles();
 
 app.UseAuthentication();
