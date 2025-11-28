@@ -85,8 +85,8 @@ jobs:
             export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
             export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
             
-            # Redémarrage (Up détache et recrée si l'image a changé)
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Redémarrage (Up détache et recrée si l'image a changé, et attend que ce soit healthy)
+            docker compose -f docker-compose.prod.yml up -d --wait --remove-orphans
             
             # Nettoyage des vieilles images pour ne pas saturer le disque du VPS
             docker image prune -f
