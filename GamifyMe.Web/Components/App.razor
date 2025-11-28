@@ -18,16 +18,18 @@
 
 <body>
     <div style="background:red; color:white; padding:10px; text-align:center; font-weight:bold; z-index:9999; position:relative;">
-        DEBUG: APP IS ALIVE (v3)
+        DEBUG: APP IS ALIVE (v4 - Scripts Commented)
     </div>
-    <Routes @rendermode="new InteractiveAutoRenderMode(prerender: false)" />
+    <GamifyMe.UI.Shared.Routes @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)" />
 
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 
+    @* 
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrScanner.js"></script>
-    <script src="js/qrcode-share.js"></script>
+    <script src="js/qrcode-share.js"></script> 
+    *@
 
 </body>
 
