@@ -21,6 +21,8 @@ RUN dotnet publish "GamifyMe.Api.csproj" -c Release -o /app/publish /p:UseAppHos
 # Étape 2 : Runtime (Image finale légère)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+# Installation de curl pour le healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 EXPOSE 8080
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "GamifyMe.Api.dll"]
