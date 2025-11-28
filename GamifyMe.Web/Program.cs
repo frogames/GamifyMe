@@ -68,4 +68,6 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(GamifyMe.Web.Client.Program).Assembly)
     .AddAdditionalAssemblies(typeof(GamifyMe.UI.Shared.Layout.MainLayout).Assembly);
 
+app.MapGet("/debug-api", () => "API is working!");
+
 app.Run();
