@@ -18,18 +18,16 @@
 
 <body>
     <div style="background:red; color:white; padding:10px; text-align:center; font-weight:bold; z-index:9999; position:relative;">
-        DEBUG: APP IS ALIVE (v4 - Scripts Commented)
+         DEBUG: APP IS ALIVE (v5 - Fixed Routing & Scripts)
     </div>
-    <GamifyMe.UI.Shared.Routes @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)" />
+    <GamifyMe.UI.Shared.Routes AdditionalAssemblies="new[] { typeof(GamifyMe.Web.Client.Program).Assembly, typeof(App).Assembly }" @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)" />
 
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 
-    @* 
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrScanner.js"></script>
     <script src="js/qrcode-share.js"></script> 
-    *@
 
 </body>
 
