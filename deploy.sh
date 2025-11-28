@@ -11,7 +11,7 @@ echo -e "${GREEN}=== DÉPLOIEMENT GAMIFYME ===${NC}"
 if [ ! -f .env ]; then
     echo -e "${RED}Le fichier .env n'existe pas. Création automatique...${NC}"
     cat <<EOT >> .env
-ConnectionStrings__DefaultConnection="Host=postgresql-15efa419-o6fcb0608.database.cloud.ovh.net;Port=20184;Database=defaultdb;Username=gamifyme_admin;Password=xYl8K1TGr9a2MP0XynEA;Ssl Mode=Require;Trust Server Certificate=true"
+ConnectionStrings__DefaultConnection="Host=postgresql-15efa419-o6fcb0608.database.cloud.ovh.net;Port=20184;Database=defaultdb;Username=avnadmin;Password=yR9lQGiws3XV485gqJFe;Ssl Mode=Require;Trust Server Certificate=true"
 ASPNETCORE_ENVIRONMENT=Production
 Jwt__Key="Ceci est une phrase secrète très très longue pour satisfaire l'algorithme HMAC SHA512 qui est gourmand en bits 123456789"
 SMTP_HOST="ssl0.ovh.net"
