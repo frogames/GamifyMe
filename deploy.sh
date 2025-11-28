@@ -14,10 +14,10 @@ if [ ! -f .env ]; then
 ConnectionStrings__DefaultConnection="Host=postgresql-15efa419-o6fcb0608.database.cloud.ovh.net;Port=20184;Database=defaultdb;Username=avnadmin;Password=yR9lQGiws3XV485gqJFe;Ssl Mode=Require;Trust Server Certificate=true"
 ASPNETCORE_ENVIRONMENT=Production
 Jwt__Key="Ceci est une phrase secrète très très longue pour satisfaire l'algorithme HMAC SHA512 qui est gourmand en bits 123456789"
-SMTP_HOST="ssl0.ovh.net"
-SMTP_PORT="587"
+SMTP_HOST="smtp.hostinger.com"
+SMTP_PORT="465
 SMTP_SENDER_EMAIL="contact@gamifyme.fun"
-SMTP_PASSWORD="<VOTRE_MOT_DE_PASSE_SMTP>"
+SMTP_PASSWORD="bfRg6ZUBfD2sUj_"
 EOT
     echo -e "${GREEN}Fichier .env créé avec succès !${NC}"
     echo -e "${RED}ATTENTION : Modifiez le mot de passe SMTP dans le fichier .env si nécessaire.${NC}"
