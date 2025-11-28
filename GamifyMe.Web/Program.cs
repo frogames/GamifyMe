@@ -69,5 +69,6 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(GamifyMe.UI.Shared.Layout.MainLayout).Assembly);
 
 app.MapGet("/debug-api", () => "API is working!");
+app.MapGet("/version", () => new { Version = "1.0.1", Timestamp = DateTime.UtcNow, Note = "Fix Routing & Scripts" });
 
 app.Run();
