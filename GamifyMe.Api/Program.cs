@@ -59,6 +59,24 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+// --- MIGRATION AUTOMATIQUE ---
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    try
+    {
+        Console.WriteLine("Applying database migrations...");
+        dbContext.Database.Migrate();
+        Console.WriteLine("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error applying migrations: {ex.Message}");
+        // On ne throw pas ici pour ne pas crasher l'app si la DB est juste inaccessible temporairement
+    }
+}
+// -----------------------------
+
 // 5. Middleware Pipeline
 app.UseForwardedHeaders();
 

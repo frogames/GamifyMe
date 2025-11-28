@@ -92,5 +92,50 @@ docker rmi ghcr.io/frogames/gamifyme-api:latest
 
 # 3. Relancer le déploiement via GitHub Actions
 # (Allez sur GitHub > Actions > Re-run jobs)
+
+---
+
+## 4. Configuration Nginx (Infrastructure)
+
+Le serveur Nginx du VPS doit être configuré pour router le trafic correctement entre le Frontend et le Backend.
+
+**Fichier de config :** `/etc/nginx/sites-available/gamifyme.fun` (ou `default`)
+
+**Configuration requise :**
+
+```nginx
+server {
+    server_name gamifyme.fun;
+
+    # 1. Frontend (Blazor) -> Port 5001
+    location / {
+        proxy_pass http://localhost:5001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # 2. Backend (API) -> Port 5000
+    # IMPORTANT : C'est ce bloc qui manquait pour l'inscription !
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Après toute modification :
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
 ```
 **Note :** Ne faites pas `docker compose up` manuellement sur le VPS si vous n'avez pas exporté les variables d'environnement (`DB_CONNECTION_STRING`, etc.) au préalable. Il est plus sûr de passer par GitHub Actions.
