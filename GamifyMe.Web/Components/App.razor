@@ -11,19 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
-@using Microsoft.AspNetCore.Components.Web
-@using GamifyMe.UI.Shared
-@using GamifyMe.UI.Shared.Layout
-@using GamifyMe.UI.Shared.Components
-
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 
     <HeadOutlet @rendermode="new InteractiveAutoRenderMode(prerender: false)" />
@@ -33,7 +20,7 @@
     <div style="background:green; color:white; padding:10px; text-align:center; font-weight:bold; z-index:9999; position:relative;">
         DEBUG: APP IS ALIVE (v5 - Serialization Fixed)
     </div>
-    <GamifyMe.UI.Shared.Routes @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)"
+    <GamifyMe.UI.Shared.Routes @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)" 
                                AdditionalAssemblyNames="@(new[] { "GamifyMe.Web.Client", "GamifyMe.Web" })" />
 
     <script src="_framework/blazor.web.js"></script>
