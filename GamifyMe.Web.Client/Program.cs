@@ -18,20 +18,25 @@ namespace GamifyMe.Web.Client
             builder.Services.AddHttpClient("GamifyMeApi", client =>
             {
                 // DYNAMIQUE : Localhost en dev, Domaine réel en prod
-                if (builder.HostEnvironment.IsDevelopment())
+                var baseAddress = builder.HostEnvironment.BaseAddress;
+                
+                // Si l'URL contient "localhost", on suppose qu'on est en dev local
+                if (baseAddress.Contains("localhost"))
                 {
+                    // En local, on tape directement sur l'API (port 5000)
                     client.BaseAddress = new Uri("http://localhost:5000");
                 }
                 else
                 {
-                    // En production, on utilise l'URL d'origine (https://gamifyme.fun/)
+                    // En production (gamifyme.fun), on utilise l'URL d'origine
                     // Nginx se chargera de router /api vers le backend
-                    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+                    client.BaseAddress = new Uri(baseAddress);
                 }
             })
             .AddHttpMessageHandler<JwtHandler>();
 
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("GamifyMeApi"));
+
             // --- 2. Services UI ---
             builder.Services.AddMudServices();
 
