@@ -24,13 +24,14 @@ namespace GamifyMe.Web.Client
                 }
                 else
                 {
-                    client.BaseAddress = new Uri("https://api.gamifyme.fun");
+                    // En production, on utilise l'URL d'origine (https://gamifyme.fun/)
+                    // Nginx se chargera de router /api vers le backend
+                    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
                 }
             })
             .AddHttpMessageHandler<JwtHandler>();
 
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("GamifyMeApi"));
-
             // --- 2. Services UI ---
             builder.Services.AddMudServices();
 
