@@ -27,19 +27,36 @@
                 {
                     <MudHidden Breakpoint="Breakpoint.Xs">
                         <div class="d-flex align-center gap-2 mr-4">
+                             <MudText Typo="Typo.caption" Class="mr-2"><b>@userStats.EstablishmentName</b> @(string.IsNullOrEmpty(userStats.GroupName) ? "" : $" - {userStats.GroupName}")</MudText>
                              <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents">Lvl @userStats.Level</MudChip>
                              <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Bolt">@userStats.CurrentXp XP</MudChip>
                              <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MonetizationOn">@userStats.CurrencyBalance</MudChip>
                              @if (userStats.ActiveBoostMultiplier > 1)
                              {
-                                 <MudTooltip Text="@($"Expire le : {userStats.BoostEndsAt?.ToLocalTime().ToString("g") ?? "Jamais"}")">
-                                     <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.RocketLaunch">XP x@(userStats.ActiveBoostMultiplier)</MudChip>
-                                 </MudTooltip>
+                                  <MudTooltip Text="@($"Expire le : {userStats.BoostEndsAt?.ToLocalTime().ToString("g") ?? "Jamais"}")">
+                                      <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.RocketLaunch">XP x@(userStats.ActiveBoostMultiplier)</MudChip>
+                                  </MudTooltip>
                              }
                         </div>
                     </MudHidden>
                 }
-                <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" Href="profile" />
+                
+                @if (userStats?.Rank == 1)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Size="Size.Large" Href="profile" />
+                }
+                else if (userStats?.Rank == 2)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Style="color: #C0C0C0;" Size="Size.Large" Href="profile" />
+                }
+                else if (userStats?.Rank == 3)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Style="color: #CD7F32;" Size="Size.Large" Href="profile" />
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" Size="Size.Large" Href="profile" />
+                }
             </MudAppBar>
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
                 <NavMenu />
@@ -57,8 +74,8 @@
         <MudLayout>
             <MudMainContent>
                  <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center" Style="height: 100vh;">
-                     @Body
-                </MudContainer>
+                      @Body
+                 </MudContainer>
             </MudMainContent>
         </MudLayout>
     </NotAuthorized>

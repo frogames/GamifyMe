@@ -146,3 +146,7 @@ d:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\refint\GamifyMe.Web.dll
 d:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.pdb
 d:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.genruntimeconfig.cache
 d:\GamifyMe_V2\GamifyMe.Web\obj\Debug\net8.0\ref\GamifyMe.Web.dll
+D:\GamifyMe_V2\GamifyMe.Web\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+D:\GamifyMe_V2\GamifyMe.Web\bin\Debug\net8.0\QRCoder.dll
+D:\GamifyMe_V2\GamifyMe.Web\bin\Debug\net8.0\System.Drawing.Common.dll
+D:\GamifyMe_V2\GamifyMe.Web\bin\Debug\net8.0\runtimes\win\lib\net8.0\Microsoft.Win32.SystemEvents.dll

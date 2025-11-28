@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AFdWbJ54xM8=",
+  "dgSpecHash": "Jn0XJ0LFU14=",
   "success": true,
-  "projectFilePath": "D:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
+  "projectFilePath": "d:\\GamifyMe_V2\\GamifyMe.UI.Shared\\GamifyMe.UI.Shared.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.21\\microsoft.aspnetcore.authorization.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.21\\microsoft.aspnetcore.components.8.0.21.nupkg.sha512",
@@ -19,7 +19,10 @@
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.jsinterop\\8.0.21\\microsoft.jsinterop.8.0.21.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\mudblazor\\7.0.0\\mudblazor.7.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\qrcoder\\1.5.0\\qrcoder.1.5.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\system.drawing.common\\8.0.0\\system.drawing.common.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512"
   ],
   "logs": []

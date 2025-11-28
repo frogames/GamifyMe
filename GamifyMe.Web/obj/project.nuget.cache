@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VgMuklgouRs=",
+  "dgSpecHash": "3MZ4mLMzIg8=",
   "success": true,
-  "projectFilePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+  "projectFilePath": "d:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.21\\microsoft.aspnetcore.authorization.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.21\\microsoft.aspnetcore.components.8.0.21.nupkg.sha512",
@@ -36,8 +36,11 @@
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.0\\microsoft.extensions.primitives.9.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.jsinterop\\8.0.21\\microsoft.jsinterop.8.0.21.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\microsoft.jsinterop.webassembly\\8.0.4\\microsoft.jsinterop.webassembly.8.0.4.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\mudblazor\\7.0.0\\mudblazor.7.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\qrcoder\\1.5.0\\qrcoder.1.5.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.0\\system.diagnostics.diagnosticsource.9.0.0.nupkg.sha512",
+    "C:\\Users\\chris\\.nuget\\packages\\system.drawing.common\\8.0.0\\system.drawing.common.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.text.encodings.web\\8.0.0\\system.text.encodings.web.8.0.0.nupkg.sha512",
     "C:\\Users\\chris\\.nuget\\packages\\system.text.json\\8.0.0\\system.text.json.8.0.0.nupkg.sha512"
@@ -47,9 +50,9 @@
       "code": "NU1603",
       "level": "Warning",
       "message": "GamifyMe.Web.Client dépend de Microsoft.Extensions.Http (>= 8.0.4) mais Microsoft.Extensions.Http 8.0.4 est introuvable. Microsoft.Extensions.Http 9.0.0 a été résolu à la place.",
-      "projectPath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "projectPath": "d:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
+      "filePath": "d:\\GamifyMe_V2\\GamifyMe.Web\\GamifyMe.Web.csproj",
       "libraryId": "Microsoft.Extensions.Http",
       "targetGraphs": [
         "net8.0"

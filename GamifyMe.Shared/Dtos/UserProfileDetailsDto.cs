@@ -16,6 +16,7 @@
         public int CurrentXp { get; set; }
         public int XpForNextLevel { get; set; } // L'objectif à atteindre (ex: 1000)
         public double ProgressPercentage { get; set; } // 0 à 100
+        public int Rank { get; set; }
 
         // Monnaie
         public int CurrencyBalance { get; set; }

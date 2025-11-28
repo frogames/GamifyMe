@@ -4,6 +4,7 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -17,6 +18,15 @@
 
         <EditForm Model="@registerModel" OnValidSubmit="OnValidSubmit" FormName="registerForm">
             <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(establishmentName))
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">Inscription pour : <b>@establishmentName</b></MudAlert>
+            }
+            else if (registerModel.EstablishmentId != Guid.Empty)
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">Inscription pour l'établissement : @registerModel.EstablishmentId</MudAlert>
+            }
 
             <MudTextField Label="Prénom" @bind-Value="registerModel.FirstName"
                 For="@(() => registerModel.FirstName)" Variant="Variant.Outlined" Class="mb-4" />
@@ -54,8 +64,9 @@
 @code {
     private RegisterDto registerModel = new RegisterDto();
     private bool _processing = false;
+    private string? establishmentName;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // SOLUTION SIMPLE (SANS WebUtilities)
         // On lit l'URL nous-mêmes avec du C# de base
@@ -78,6 +89,17 @@
                     {
                         registerModel.EstablishmentId = guid;
                         Console.WriteLine($"[Register] ID valide trouvé : {guid}");
+                        
+                        // Fetch establishment name
+                        try 
+                        {
+                            var nameDto = await Http.GetFromJsonAsync<EstablishmentNameDto>($"api/users/establishment-name/{guid}");
+                            establishmentName = nameDto?.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[Register] Erreur récupération nom établissement : {ex.Message}");
+                        }
                     }
                 }
             }

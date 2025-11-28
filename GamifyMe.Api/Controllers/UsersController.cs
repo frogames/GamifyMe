@@ -135,6 +135,15 @@ namespace GamifyMe.Api.Controllers
             return Ok("Email confirmé.");
         }
 
+        [HttpGet("establishment-name/{establishmentId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<EstablishmentNameDto>> GetEstablishmentName(Guid establishmentId)
+        {
+            var establishment = await _context.Establishments.FindAsync(establishmentId);
+            if (establishment == null) return NotFound("Établissement introuvable.");
+            return Ok(new EstablishmentNameDto { Name = establishment.Name });
+        }
+
         [HttpGet("info-bar")]
         [Authorize]
         public async Task<ActionResult<InfoBarDto>> GetInfoBar()
@@ -250,6 +259,24 @@ namespace GamifyMe.Api.Controllers
             int activeBoostMultiplier = activeBoostItem != null ? 2 : 1;
             DateTime? boostEndsAt = activeBoostItem?.ExpiresAt;
 
+            // Calculate Rank
+            var establishmentUserIds = await _context.Users
+                .Where(u => u.EstablishmentId == user.EstablishmentId)
+                .Select(u => u.Id)
+                .ToListAsync();
+
+            var userXpBalances = await _context.Wallets
+                .Where(w => establishmentUserIds.Contains(w.UserId) && w.CurrencyCode == "XP")
+                .Select(w => new { w.UserId, w.Balance })
+                .ToListAsync();
+
+            var rankedUsers = userXpBalances
+                .OrderByDescending(w => w.Balance)
+                .Select((w, index) => new { w.UserId, Rank = index + 1 })
+                .ToList();
+
+            var userRank = rankedUsers.FirstOrDefault(r => r.UserId == userId)?.Rank ?? 0;
+
             return Ok(new UserProfileDetailsDto
             {
                 Username = user.Username,
@@ -271,7 +298,8 @@ namespace GamifyMe.Api.Controllers
                 ActiveUiTheme = activeTheme,
                 ActiveQrCodeStyle = activeQrStyle,
                 ActiveBoostMultiplier = activeBoostMultiplier,
-                BoostEndsAt = boostEndsAt
+                BoostEndsAt = boostEndsAt,
+                Rank = userRank
             });
         }
 

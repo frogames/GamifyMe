@@ -1,3 +1,29 @@
+
+# Procédure de Déploiement normal - GamifyMe
+
+Pour mettre à jour le code (Site ou API)
+Sur votre PC : Faites vos modifications, committez et pushez sur GitHub.
+bash
+git push
+Attendez que GitHub Actions finisse de construire les images (environ 3 minutes).
+Sur le VPS : Lancez simplement votre script de déploiement (ou les commandes équivalentes).
+bash
+cd ~/gamifyme
+./deploy.sh
+(Ou manuellement : docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d)
+
+
+
+
+
+OU
+
+
+
+
+
+
+
 # Procédure de Déploiement et de Dépannage - GamifyMe
 
 Ce document décrit le processus de déploiement automatique via GitHub Actions et les procédures manuelles à suivre en cas de problème sur le VPS.
