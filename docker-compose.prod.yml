@@ -5,6 +5,13 @@ services:
     container_name: gamifyme-api
     restart: always
     ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Smtp__Host=${SMTP_HOST}
+      - Smtp__Port=${SMTP_PORT}
+      - Smtp__SenderEmail=${SMTP_SENDER_EMAIL}
+      - Smtp__Password=${SMTP_PASSWORD}
 
   # --- FRONTEND ---
   gamifyme-web:
@@ -19,4 +26,4 @@ services:
       - ApiBaseUrl=http://gamifyme-api:8080
     depends_on:
       gamifyme-api:
-        condition: service_healthy
+        condition: service_started
