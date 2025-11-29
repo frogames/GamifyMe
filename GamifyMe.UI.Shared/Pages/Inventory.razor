@@ -48,7 +48,14 @@
                             @if (item.ItemType == "Physical")
                             {
                                 <div class="d-flex justify-center mt-2">
-                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Objet Physique</MudChip>
+                                    @if (item.IsActive)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Retiré</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled">À retirer</MudChip>
+                                    }
                                 </div>
                             }
                             else if (!string.IsNullOrEmpty(item.DigitalActionCode))

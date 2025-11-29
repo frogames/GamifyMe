@@ -49,23 +49,17 @@ namespace GamifyMe.Api.Controllers
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                EstablishmentId = establishment.Id,
                 Username = request.Username,
-                Email = request.Email.ToLower(),
                 FirstName = request.FirstName,
+                Email = request.Email.ToLower(),
                 PasswordHash = passwordHash,
                 Role = Roles.User,
+                EstablishmentId = request.EstablishmentId,
+                QrCode = Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.UtcNow,
-                EmailConfirmationToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64)),
                 IsEmailConfirmed = false,
-                QrCode = Guid.NewGuid().ToString("N")
+                EmailConfirmationToken = Guid.NewGuid().ToString()
             };
-
-            if (user.Email.Contains("admin") || user.Email.Contains("cx6"))
-            {
-                user.Role = Roles.SuperAdmin;
-                user.IsEmailConfirmed = true;
-            }
 
             var xpWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "XP", Balance = 0 };
             var currencyWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "DOC", Balance = 0 };
@@ -79,17 +73,25 @@ namespace GamifyMe.Api.Controllers
             // Envoyer l'email de confirmation
             if (!user.IsEmailConfirmed)
             {
-                var appUrl = _configuration["AppUrl"];
-                var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
-                var subject = "Confirmez votre compte GamifyMe";
-                var body = $@"
-                    <h1>Bienvenue sur GamifyMe !</h1>
-                    <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
-                    <p><a href='{confirmationLink}'>Confirmer mon email</a></p>
-                    <p>Si le lien ne fonctionne pas, copiez-collez l'URL suivante dans votre navigateur : {confirmationLink}</p>";
+                try 
+                {
+                    var appUrl = _configuration["AppUrl"];
+                    var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
+                    var subject = "Confirmez votre compte GamifyMe";
+                    var body = $@"
+                        <h1>Bienvenue sur GamifyMe !</h1>
+                        <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
+                        <p><a href='{confirmationLink}'>Confirmer mon email</a></p>
+                        <p>Si le lien ne fonctionne pas, copiez-collez l'URL suivante dans votre navigateur : {confirmationLink}</p>";
 
-                await _emailService.SendEmailAsync(user.Email, subject, body);
-                return Ok("Compte créé avec succès. Veuillez vérifier vos emails pour confirmer votre compte.");
+                    await _emailService.SendEmailAsync(user.Email, subject, body);
+                    return Ok("Compte créé avec succès. Veuillez vérifier vos emails pour confirmer votre compte.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Register] Error sending email: {ex.Message}");
+                    return Ok("Compte créé avec succès, mais l'envoi de l'email de confirmation a échoué. Veuillez contacter le support.");
+                }
             }
 
             return Ok("Compte créé avec succès. Vous pouvez vous connecter.");
@@ -97,7 +99,7 @@ namespace GamifyMe.Api.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<string>> Login(LoginDto request)
+        public async Task<ActionResult<string>> Login(LoginRequest request)
         {
             Response.Headers.Append("Access-Control-Allow-Origin", "*");
             var user = await _context.Users
@@ -332,89 +334,12 @@ namespace GamifyMe.Api.Controllers
             return Ok(inventoryItems);
         }
 
-        [HttpPost("inventory/{inventoryId}/toggle")]
-        [Authorize]
-        public async Task<IActionResult> ToggleEquipItem(Guid inventoryId)
-        {
-            var userId = GetCurrentUserId();
-            var inventoryItem = await _context.UserInventories
-                .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.Id == inventoryId && ui.UserId == userId);
-
-            if (inventoryItem == null) return NotFound("Objet non trouvé.");
-
-            if (inventoryItem.StoreItem.DigitalActionCode == "SCAN_SOUND")
-            {
-                // If activating, deactivate others
-                if (!inventoryItem.IsActive)
-                {
-                    var otherActiveSounds = await _context.UserInventories
-                        .Include(ui => ui.StoreItem)
-                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "SCAN_SOUND" && ui.Id != inventoryId)
-                        .ToListAsync();
-
-                    foreach (var item in otherActiveSounds)
-                    {
-                        item.IsActive = false;
-                    }
-                }
-            }
-            else if (inventoryItem.StoreItem.DigitalActionCode != null && inventoryItem.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"))
-            {
-                // If activating, deactivate others
-                if (!inventoryItem.IsActive)
-                {
-                    var otherActiveThemes = await _context.UserInventories
-                        .Include(ui => ui.StoreItem)
-                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_") && ui.Id != inventoryId)
-                        .ToListAsync();
-
-                    foreach (var item in otherActiveThemes)
-                    {
-                        item.IsActive = false;
-                    }
-                }
-            }
-            else if (inventoryItem.StoreItem.DigitalActionCode != null && inventoryItem.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"))
-            {
-                // If activating, deactivate others
-                if (!inventoryItem.IsActive)
-                {
-                    var otherActiveStyles = await _context.UserInventories
-                        .Include(ui => ui.StoreItem)
-                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_") && ui.Id != inventoryId)
-                        .ToListAsync();
-
-                    foreach (var item in otherActiveStyles)
-                    {
-                        item.IsActive = false;
-                    }
-                }
-            }
-
-            inventoryItem.IsActive = !inventoryItem.IsActive;
-            await _context.SaveChangesAsync();
-
-            return Ok(new UserInventoryDto
-            {
-                Id = inventoryItem.Id,
-                ItemName = inventoryItem.StoreItem.Name,
-                Description = inventoryItem.StoreItem.Description,
-                IconName = inventoryItem.StoreItem.IconName,
-                AcquiredDate = inventoryItem.DateAcquired,
-                IsActive = inventoryItem.IsActive,
-                ExpiresAt = inventoryItem.ExpiresAt,
-                ItemType = inventoryItem.StoreItem.ItemType.ToString(),
-                DigitalActionCode = inventoryItem.StoreItem.DigitalActionCode,
-                DigitalAssetUrl = inventoryItem.StoreItem.DigitalAssetUrl
-            });
-        }
-
         [HttpGet("profile-scan/{qrCode}")]
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
         public async Task<ActionResult<ProfileScanDto>> GetProfileForScan(string qrCode)
         {
             Console.WriteLine($"[GetProfileForScan] Scanning QR: {qrCode}");
+
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .FirstOrDefaultAsync(u => u.QrCode == qrCode);

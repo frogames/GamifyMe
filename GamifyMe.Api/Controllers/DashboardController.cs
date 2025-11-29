@@ -95,49 +95,26 @@ namespace GamifyMe.Api.Controllers
             if (user == null) return NotFound("Joueur introuvable (QR Code invalide).");
 
             // 2. Récupérer les commandes en attente (Click & Collect ou Digital non livré)
-            var pendingOrders = await _context.Orders
-                .Include(o => o.StoreItem)
+            var pendingOrdersCount = await _context.Orders
                 .Where(o => o.UserId == user.Id && o.EstablishmentId == establishmentId && o.Status == OrderStatus.Pending)
-                .ToListAsync();
+                .CountAsync();
 
-            if (!pendingOrders.Any())
+            string msg;
+            if (pendingOrdersCount == 0)
             {
-                var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
-                return Ok(new ValidationResponseDto
-                {
-                    Success = true,
-                    Message = $"Profil de {user.Username} scanné. Aucune commande en attente.",
-                    ScanSoundUrl = soundUrl
-                });
+                msg = $"Profil de {user.Username} scanné. Aucune commande en attente.";
+            }
+            else
+            {
+                msg = $"Profil de {user.Username} scanné. {pendingOrdersCount} commande(s) en attente de validation.";
             }
 
-            int validatedCount = 0;
-            var validatedItemNames = new List<string>();
-
-            foreach (var order in pendingOrders)
-            {
-                // Valider la commande
-                order.Status = OrderStatus.Completed;
-                order.DateCompleted = DateTime.UtcNow;
-                validatedCount++;
-
-                validatedItemNames.Add(order.StoreItem.Name);
-            }
-
-            await _context.SaveChangesAsync();
-
-            string msg = $"{validatedCount} commande(s) validée(s) pour {user.Username}.";
-            if (validatedItemNames.Any())
-            {
-                msg += $" Articles : {string.Join(", ", validatedItemNames)}.";
-            }
-
-            var soundUrl2 = await GetUserActiveScanSoundUrl(user.Id);
+            var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
             return Ok(new ValidationResponseDto
             {
                 Success = true,
                 Message = msg,
-                ScanSoundUrl = soundUrl2
+                ScanSoundUrl = soundUrl
             });
         }
 

@@ -40,6 +40,10 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Currency service (singleton, holds the name of the primary currency)
 builder.Services.AddSingleton<CurrencyService>();
 
+// Business Logic Services
+builder.Services.AddScoped<ObjectiveService>();
+builder.Services.AddScoped<StoreService>();
+
 // JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -58,6 +62,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
                                Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 var app = builder.Build();

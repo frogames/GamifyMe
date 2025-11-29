@@ -1,20 +1,48 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Objectifs</MudNavLink>
-    <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store">Boutique</MudNavLink>
-    <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">Inventaire</MudNavLink>
-    <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">Mon Pass</MudNavLink>
-    <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">Classements</MudNavLink>
+    <!-- Main navigation -->
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Home
+    </MudNavLink>
+    <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">
+        Mon Pass
+    </MudNavLink>
+    <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment">
+        Objectifs
+    </MudNavLink>
+    <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store">
+        Boutique
+    </MudNavLink>
+    <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">
+        Inventaire
+    </MudNavLink>
+    <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">
+        Classements
+    </MudNavLink>
 
     <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
         <MudDivider Class="my-2" />
-        <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">Gestion</MudText>
-        <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-        <MudNavLink Href="admin/scan-profile" Icon="@Icons.Material.Filled.QrCodeScanner">Scanner</MudNavLink>
-        <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">Objectifs</MudNavLink>
-        <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">Boutique</MudNavLink>
-        <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">Groupes</MudNavLink>
-        <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">Bonus</MudNavLink>
+        <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">
+            Gestion
+        </MudText>
+        <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard">
+            Dashboard
+        </MudNavLink>
+        <MudNavLink Href="admin/scan-profile" Icon="@Icons.Material.Filled.QrCodeScanner">
+            Scanner
+        </MudNavLink>
+        <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">
+            Objectifs
+        </MudNavLink>
+        <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">
+            Boutique
+        </MudNavLink>
+        <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">
+            Groupes
+        </MudNavLink>
+        <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">
+            Bonus
+        </MudNavLink>
     </AuthorizeView>
 </MudNavMenu>

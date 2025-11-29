@@ -1,0 +1,126 @@
+@page "/"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur, Gestionnaire")]
+@using System.Net.Http.Json
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using Microsoft.AspNetCore.Components
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Accueil</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mb-6">Accueil</MudText>
+    <MudGrid Class="mb-8">
+        <!-- Mon Pass Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/my-qrcode"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.QrCode2" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Mon Pass</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Accéder à mon QR code</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <!-- Objectifs Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Objectifs</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@objectiveCount objectifs disponibles</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <!-- Boutique Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/store"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Success" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Boutique</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@storeItemCount articles en boutique</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <!-- Inventaire Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/inventory"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Info" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Inventaire</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@inventoryCount éléments possédés</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <!-- Classements Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/leaderboard"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Warning" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Classements</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Voir les meilleurs scores</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <!-- Profil Card -->
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/profile"))">
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" Color="Color.Warning" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Profil</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Voir votre profil</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .hover-effect { transition: transform 0.2s; }
+    .hover-effect:hover { transform: translateY(-5px); }
+</style>
+
+@code {
+    private int objectiveCount;
+    private int storeItemCount;
+    private int inventoryCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCounts();
+    }
+
+    private async Task LoadCounts()
+    {
+        try
+        {
+            var objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active");
+            objectiveCount = objectives?.Count ?? 0;
+        }
+        catch
+        {
+            objectiveCount = 0;
+        }
+
+        try
+        {
+            var storeItems = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active");
+            storeItemCount = storeItems?.Count ?? 0;
+        }
+        catch
+        {
+            storeItemCount = 0;
+        }
+
+        try
+        {
+            var inventory = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory");
+            inventoryCount = inventory?.Count ?? 0;
+        }
+        catch
+        {
+            inventoryCount = 0;
+        }
+    }
+}
