@@ -71,20 +71,15 @@
                         <MudDatePicker Label="Affichage : Fin" @bind-Date="newObjective.DisplayEndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" HelperText="Date après laquelle l'objectif disparaît" />
                     </div>
 
+                    <MudTextField T="int?" Label="Durée de vie (Heures)" @bind-Value="newObjective.LifespanHours" HelperText="Temps avant autodestruction (optionnel)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+
                     <MudText Typo="Typo.subtitle2" Class="mt-2">Prérequis (facultatif)</MudText>
-                    <MudPaper Class="pa-2 mb-3" Outlined="true" MaxHeight="150px" Style="overflow-y: auto;">
-                        @if (allObjectivesList.Any())
+                    <MudSelect T="Guid?" Label="Choisir un prérequis" @bind-Value="selectedPrerequisiteId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-3">
+                        @foreach (var objective in allObjectivesList.Where(o => o.Id != editingObjectiveId))
                         {
-                            @foreach (var objective in allObjectivesList)
-                            {
-                                <MudCheckBox T="bool" Value="@newObjective.PrerequisiteObjectiveIds.Contains(objective.Id)" ValueChanged="@((bool v) => TogglePrerequisite(objective.Id))" Label="@objective.Title" Dense="true" Color="Color.Primary" />
-                            }
+                            <MudSelectItem Value="@((Guid?)objective.Id)">@objective.Title</MudSelectItem>
                         }
-                        else
-                        {
-                            <MudText Typo="Typo.caption" Class="pa-2">Aucun objectif disponible</MudText>
-                        }
-                    </MudPaper>
+                    </MudSelect>
 
                     <MudTextField T="int" Label="Récompense XP" @bind-Value="newObjective.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                     <MudTextField T="int" Label="Récompense Crédits" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
@@ -190,6 +185,7 @@
     private string? errorMessageObjective;
     private TimeSpan? eventTime;
     private TimeSpan? endTime;
+    private Guid? selectedPrerequisiteId;
     
     private ScanValidationModal scanModal = default!;
 
@@ -214,26 +210,27 @@
         }
     }
 
-    private void TogglePrerequisite(Guid objectiveId)
-    {
-        if (newObjective.PrerequisiteObjectiveIds.Contains(objectiveId)) 
-            newObjective.PrerequisiteObjectiveIds.Remove(objectiveId);
-        else 
-            newObjective.PrerequisiteObjectiveIds.Add(objectiveId);
-    }
-
     private void ShowCreateForm()
     {
         editingObjectiveId = null;
         newObjective = new CreateObjectiveDto();
         eventTime = null;
         endTime = null;
+        selectedPrerequisiteId = null;
         showForm = true;
     }
 
     private async Task HandleCreateObjective()
     {
         MergeDatesAndTimes();
+        
+        // Sync selected prerequisite
+        newObjective.PrerequisiteObjectiveIds.Clear();
+        if (selectedPrerequisiteId.HasValue)
+        {
+            newObjective.PrerequisiteObjectiveIds.Add(selectedPrerequisiteId.Value);
+        }
+
         isBusyObjective = true;
         successMessageObjective = null;
         errorMessageObjective = null;
@@ -244,6 +241,7 @@
             {
                 successMessageObjective = "Objectif créé !";
                 newObjective = new CreateObjectiveDto();
+                selectedPrerequisiteId = null;
                 await LoadData();
                 showForm = false;
             }
@@ -258,6 +256,10 @@
         editingObjectiveId = objectiveToEdit.Id;
         eventTime = objectiveToEdit.EventDate?.TimeOfDay;
         endTime = objectiveToEdit.EndDate?.TimeOfDay;
+        
+        selectedPrerequisiteId = objectiveToEdit.PrerequisiteObjectiveIds.FirstOrDefault();
+        if (selectedPrerequisiteId == Guid.Empty) selectedPrerequisiteId = null;
+
         newObjective = new CreateObjectiveDto
         {
             Title = objectiveToEdit.Title,
@@ -273,7 +275,8 @@
             IsActive = objectiveToEdit.IsActive,
             DisplayStartDate = objectiveToEdit.DisplayStartDate,
             DisplayEndDate = objectiveToEdit.DisplayEndDate,
-            PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>()
+            PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>(),
+            LifespanHours = objectiveToEdit.LifespanHours
         };
         showForm = true;
     }
@@ -284,6 +287,7 @@
         newObjective = new CreateObjectiveDto();
         eventTime = null;
         endTime = null;
+        selectedPrerequisiteId = null;
         errorMessageObjective = null;
         showForm = false;
     }
@@ -292,6 +296,14 @@
     {
         if (editingObjectiveId == null) return;
         MergeDatesAndTimes();
+
+        // Sync selected prerequisite
+        newObjective.PrerequisiteObjectiveIds.Clear();
+        if (selectedPrerequisiteId.HasValue)
+        {
+            newObjective.PrerequisiteObjectiveIds.Add(selectedPrerequisiteId.Value);
+        }
+
         isBusyObjective = true;
         try
         {

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj": {}
+    "D:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj": {}
   },
   "projects": {
-    "d:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj": {
+    "D:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj",
+        "projectUniqueName": "D:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj",
         "projectName": "GamifyMe.Api",
-        "projectPath": "d:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj",
+        "projectPath": "D:\\GamifyMe\\GamifyMe.Api\\GamifyMe.Api.csproj",
         "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
-        "outputPath": "d:\\GamifyMe\\GamifyMe.Api\\obj\\",
+        "outputPath": "D:\\GamifyMe\\GamifyMe.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

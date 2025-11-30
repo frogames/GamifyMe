@@ -213,203 +213,130 @@ namespace GamifyMe.Api.Controllers
             var userId = GetCurrentUserId();
             if (userId == Guid.Empty) return Unauthorized();
 
-            Console.WriteLine($"[GetMyProfileDetails] Requesting profile for UserId: {userId}");
-
             var user = await _context.Users
                 .Include(u => u.Establishment)
-                .Include(u => u.Wallets)
                 .Include(u => u.Group)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null)
-            {
-                Console.WriteLine($"[GetMyProfileDetails] User not found for UserId: {userId}");
-                return NotFound("Utilisateur introuvable.");
-            }
+            if (user == null) return NotFound("Utilisateur introuvable.");
 
-            var xpWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode == "XP");
-            var currencyWallet = user.Wallets.FirstOrDefault(w => w.CurrencyCode != "XP");
+            // Wallets
+            var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
+            var currencyWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP"); // Assuming 1 main currency for now
+
             int currentXp = (int)(xpWallet?.Balance ?? 0);
             int currentCurrency = (int)(currencyWallet?.Balance ?? 0);
             int level = 1 + (currentXp / 500);
+            int xpForNextLevel = level * 500;
+            int xpInCurrentLevel = currentXp - ((level - 1) * 500);
+            double progress = (double)xpInCurrentLevel / 500 * 100;
 
-            var logs = new List<UserActivityLogDto>();
+            // Rank
+            int rank = await _context.Wallets
+                .Where(w => w.EstablishmentId == user.EstablishmentId && w.CurrencyCode == "XP" && w.Balance > currentXp)
+                .CountAsync() + 1;
 
-            var validations = await _context.Validations
+            // Logs
+            var validationLogs = await _context.Validations
                 .Include(v => v.Objective)
                 .Where(v => v.UserId == userId)
                 .OrderByDescending(v => v.Date)
-                .Take(10)
+                .Take(50)
                 .ToListAsync();
 
-            foreach (var v in validations)
-            {
-                logs.Add(new UserActivityLogDto
-                {
-                    Date = v.Date,
-                    Description = v.Objective != null ? $"Validé : {v.Objective.Title}" : "Objectif supprimé",
-                    AmountChange = v.Objective?.XpReward ?? 0,
-                    Type = "XP",
-                    Icon = v.Objective?.IconName ?? "Check"
-                });
-            }
-
-            var orders = await _context.Orders
+            var orderLogs = await _context.Orders
                 .Include(o => o.StoreItem)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.DatePurchased)
-                .Take(10)
+                .Take(50)
                 .ToListAsync();
 
-            foreach (var o in orders)
+            var logs = new List<UserActivityLogDto>();
+            logs.AddRange(validationLogs.Select(v => new UserActivityLogDto
             {
-                logs.Add(new UserActivityLogDto
-                {
-                    Date = o.DatePurchased,
-                    Description = $"Achat : {o.StoreItem?.Name ?? "Objet supprimé"}",
-                    AmountChange = -o.PricePaid,
-                    Type = "Currency",
-                    Icon = "ShoppingBag"
-                });
-            }
+                Date = v.Date,
+                Description = $"Objectif validé : {v.Objective.Title}",
+                XpChange = v.Objective.XpReward,
+                CurrencyChange = v.Objective.DocPointsReward,
+                Type = "XP",
+                Icon = "CheckCircle"
+            }));
+            logs.AddRange(orderLogs.Select(o => new UserActivityLogDto
+            {
+                Date = o.DatePurchased,
+                Description = $"Achat : {o.StoreItem.Name}",
+                XpChange = 0,
+                CurrencyChange = -o.PricePaid,
+                Type = "Currency",
+                Icon = "ShoppingCart"
+            }));
 
-            var sortedLogs = logs.OrderByDescending(l => l.Date).Take(10).ToList();
+            var sortedLogs = logs.OrderByDescending(l => l.Date).Take(50).ToList();
 
-            // Fetch Active UI Theme
-            var activeThemeItem = await _context.UserInventories
+            // Fetch Active UI Theme and QR Style
+            var activeItems = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"));
-            
+                .Where(ui => ui.UserId == userId && ui.IsActive)
+                .ToListAsync();
+
+            var activeThemeItem = activeItems.FirstOrDefault(ui => ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"));
             string activeTheme = activeThemeItem?.StoreItem.DigitalActionCode ?? GamifyMe.Shared.Constants.ThemeConstants.Default;
 
-            // Fetch Active QR Style
-            var activeQrItem = await _context.UserInventories
-                .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"));
+            var activeQrStyleItem = activeItems.FirstOrDefault(ui => ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"));
+            string activeQrStyle = activeQrStyleItem?.StoreItem.DigitalActionCode ?? GamifyMe.Shared.Constants.ThemeConstants.QrStyleDefault;
 
-            string activeQrStyle = activeQrItem?.StoreItem.DigitalActionCode ?? GamifyMe.Shared.Constants.ThemeConstants.QrStyleDefault;
-
-            // Fetch Active XP Boost
-            var activeBoostItem = await _context.UserInventories
-                .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.Contains("BOOST") && (ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow));
-            
-            int activeBoostMultiplier = activeBoostItem != null ? 2 : 1;
-            DateTime? boostEndsAt = activeBoostItem?.ExpiresAt;
-
-            // Calculate Rank
-            var establishmentUserIds = await _context.Users
-                .Where(u => u.EstablishmentId == user.EstablishmentId)
-                .Select(u => u.Id)
-                .ToListAsync();
-
-            var userXpBalances = await _context.Wallets
-                .Where(w => establishmentUserIds.Contains(w.UserId) && w.CurrencyCode == "XP")
-                .Select(w => new { w.UserId, w.Balance })
-                .ToListAsync();
-
-            var rankedUsers = userXpBalances
-                .OrderByDescending(w => w.Balance)
-                .Select((w, index) => new { w.UserId, Rank = index + 1 })
-                .ToList();
-
-            var userRank = rankedUsers.FirstOrDefault(r => r.UserId == userId)?.Rank ?? 0;
+            // Boosts
+            var activeBoostItem = activeItems.FirstOrDefault(ui => ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.Contains("BOOST"));
+            int boostMultiplier = 1;
+            DateTime? boostEndsAt = null;
+            if (activeBoostItem != null)
+            {
+                // Simple logic: if active, it's active. Assuming expiration handles deactivation or we check it here.
+                if (activeBoostItem.ExpiresAt == null || activeBoostItem.ExpiresAt > DateTime.UtcNow)
+                {
+                    // Parse multiplier from code if possible, or default to 2
+                    if (activeBoostItem.StoreItem.DigitalActionCode.Contains("2X")) boostMultiplier = 2;
+                    else if (activeBoostItem.StoreItem.DigitalActionCode.Contains("3X")) boostMultiplier = 3;
+                    boostEndsAt = activeBoostItem.ExpiresAt;
+                }
+            }
 
             return Ok(new UserProfileDetailsDto
             {
                 Username = user.Username,
                 FirstName = user.FirstName,
                 Email = user.Email,
+                EstablishmentName = user.Establishment?.Name ?? "N/A",
                 Role = user.Role,
                 QrCode = user.QrCode,
-                EstablishmentName = user.Establishment?.Name ?? "N/A",
                 CreatedAt = user.CreatedAt,
                 Level = level,
                 CurrentXp = currentXp,
-                XpForNextLevel = level * 500,
-                ProgressPercentage = Math.Min(100, Math.Max(0, ((double)(currentXp % 500) / 500) * 100)),
+                XpForNextLevel = xpForNextLevel,
+                ProgressPercentage = progress,
+                Rank = rank,
                 CurrencyBalance = currentCurrency,
-                CurrencyName = currencyWallet?.CurrencyCode ?? "Points",
+                CurrencyName = currencyWallet?.CurrencyCode ?? "DOC",
                 GroupId = user.GroupId,
                 GroupName = user.Group?.Name,
                 RecentActivity = sortedLogs,
                 ActiveUiTheme = activeTheme,
                 ActiveQrCodeStyle = activeQrStyle,
-                ActiveBoostMultiplier = activeBoostMultiplier,
-                BoostEndsAt = boostEndsAt,
-                Rank = userRank
+                ActiveBoostMultiplier = boostMultiplier,
+                BoostEndsAt = boostEndsAt
             });
         }
 
-        [HttpPost("inventory/{userInventoryId}/toggle")]
-        [Authorize]
-        public async Task<IActionResult> ToggleInventoryItem(Guid userInventoryId)
-        {
-            var userId = GetCurrentUserId();
-            var userInventory = await _context.UserInventories
-                .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.Id == userInventoryId && ui.UserId == userId);
-
-            if (userInventory == null) return NotFound("Objet non trouvé.");
-
-            // Toggle logic
-            if (userInventory.IsActive)
-            {
-                // Deactivate
-                userInventory.IsActive = false;
-            }
-            else
-            {
-                // Activate
-                // First, deactivate other items of the same "type" to ensure mutual exclusivity
-                var code = userInventory.StoreItem.DigitalActionCode;
-                if (!string.IsNullOrEmpty(code))
-                {
-                    // We need to fetch potential conflicts. 
-                    // Note: We can't easily do "StartsWith" on the joined table in a single update without fetching.
-                    // So we fetch active items that might conflict.
-                    
-                    var potentialConflicts = await _context.UserInventories
-                        .Include(ui => ui.StoreItem)
-                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.Id != userInventoryId)
-                        .ToListAsync();
-
-                    foreach (var other in potentialConflicts)
-                    {
-                        var otherCode = other.StoreItem.DigitalActionCode;
-                        if (string.IsNullOrEmpty(otherCode)) continue;
-
-                        bool isConflict = false;
-
-                        if (code.StartsWith("UI_THEME_") && otherCode.StartsWith("UI_THEME_")) isConflict = true;
-                        else if (code.StartsWith("QR_STYLE_") && otherCode.StartsWith("QR_STYLE_")) isConflict = true;
-                        else if (code == "SCAN_SOUND" && otherCode == "SCAN_SOUND") isConflict = true;
-
-                        if (isConflict)
-                        {
-                            other.IsActive = false;
-                        }
-                    }
-                }
-
-                userInventory.IsActive = true;
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
-
         [HttpGet("inventory")]
+        [Authorize]
         public async Task<ActionResult<List<UserInventoryDto>>> GetMyInventory()
         {
             var userId = GetCurrentUserId();
             if (userId == Guid.Empty) return Unauthorized();
 
-            var inventoryItems = await _context.UserInventories
+            var inventory = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
                 .Where(ui => ui.UserId == userId)
-                .Where(ui => ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow) // Filter out expired items
-                .OrderByDescending(ui => ui.DateAcquired)
                 .Select(ui => new UserInventoryDto
                 {
                     Id = ui.Id,
@@ -425,7 +352,62 @@ namespace GamifyMe.Api.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(inventoryItems);
+            return Ok(inventory);
+        }
+
+        [HttpPost("inventory/{userInventoryId}/toggle")]
+        [Authorize]
+        public async Task<IActionResult> ToggleInventoryItem(Guid userInventoryId)
+        {
+            var userId = GetCurrentUserId();
+            var itemToToggle = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.Id == userInventoryId && ui.UserId == userId);
+
+            if (itemToToggle == null) return NotFound("Objet non trouvé.");
+
+            // Logic:
+            // If turning ON:
+            // - If Theme: Turn off other themes
+            // - If QR Style: Turn off other QR styles
+            // - If Boost: (Maybe allow multiple? For now, let's say one boost at a time)
+            // If turning OFF:
+            // - Just turn off.
+
+            if (!itemToToggle.IsActive)
+            {
+                // We are activating it
+                string code = itemToToggle.StoreItem.DigitalActionCode;
+                if (!string.IsNullOrEmpty(code))
+                {
+                    if (code.StartsWith("UI_THEME_"))
+                    {
+                        var otherThemes = await _context.UserInventories
+                            .Include(ui => ui.StoreItem)
+                            .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("UI_THEME_"))
+                            .ToListAsync();
+                        foreach (var item in otherThemes) item.IsActive = false;
+                    }
+                    else if (code.StartsWith("QR_STYLE_"))
+                    {
+                        var otherStyles = await _context.UserInventories
+                            .Include(ui => ui.StoreItem)
+                            .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"))
+                            .ToListAsync();
+                        foreach (var item in otherStyles) item.IsActive = false;
+                    }
+                    // Add other exclusive categories here if needed
+                }
+                itemToToggle.IsActive = true;
+            }
+            else
+            {
+                // We are deactivating it
+                itemToToggle.IsActive = false;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         [HttpGet("profile-scan/{qrCode}")]

@@ -96,29 +96,6 @@
         </MudGrid>
 
         @* 5. HISTORIQUE RÉCENT *@
-        <MudText Typo="Typo.h6" Class="mb-3">Activité Récente</MudText>
-        @if (profile.RecentActivity.Any())
-        {
-            <MudList T="string" Dense="true" DisableGutters="true">
-                @foreach (var log in profile.RecentActivity)
-                {
-                    <MudListItem Icon="@IconLibrary.GetIcon(log.Icon)"
-                                 IconColor="@(log.AmountChange > 0 ? Color.Success : Color.Error)">
-                        <div class="d-flex justify-space-between align-center width-100">
-                            <div>
-                                <MudText Typo="Typo.body2"><b>@log.Description</b></MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@log.Date.ToString("g")</MudText>
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Color="@(log.AmountChange > 0 ? Color.Success : Color.Default)" Variant="Variant.Text">
-                                @(log.AmountChange > 0 ? "+" : "")@log.AmountChange
-                            </MudChip>
-                        </div>
-                    </MudListItem>
-                    <MudDivider />
-                }
-            </MudList>
-        }
-        else
         {
             <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">Aucune activité récente.</MudText>
         }
@@ -169,6 +146,8 @@
 
     private async Task EditProfile()
     {
+        if (profile == null) return;
+
         var model = new UpdateUserProfileDto
         {
             FirstName = profile.FirstName,

@@ -4,6 +4,8 @@
     {
         public DateTime Date { get; set; }
         public string ActorName { get; set; } = string.Empty; // Qui a fait l'action ?
+        public string ScannerName { get; set; } = string.Empty; // Qui a scanné ? (Staff)
+        public string ScannedUserName { get; set; } = string.Empty; // Qui a été scanné ? (Membre)
         public string ActionType { get; set; } = string.Empty; // "Création", "Scan", "Modification"
         public string Details { get; set; } = string.Empty; // "Objectif : Cours de Zumba"
         public string Icon { get; set; } = string.Empty; // Pour l'affichage MudBlazor

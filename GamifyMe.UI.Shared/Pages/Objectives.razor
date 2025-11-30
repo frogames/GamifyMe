@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDialogService DialogService
+@implements IDisposable
 
 
 <PageTitle>Mes Objectifs</PageTitle>
@@ -30,8 +31,13 @@
         <MudGrid>
             @foreach (var obj in objectives)
             {
+                var isCooldown = obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow;
+                var isExpiring = obj.ExpirationDate.HasValue && obj.ExpirationDate > DateTime.UtcNow;
+                
                 <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="3" Class="h-100 d-flex flex-column cursor-pointer hover-effect" @onclick="@(() => OpenDetails(obj))">
+                    <MudCard Elevation="3" Class="h-100 d-flex flex-column cursor-pointer hover-effect" 
+                             Style="@(isCooldown ? "opacity: 0.6; filter: grayscale(100%); cursor: not-allowed;" : "")"
+                             @onclick="@(() => OpenDetails(obj))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
@@ -56,10 +62,6 @@
                                             <span>Fin : @obj.EndDate.Value.ToString("g")</span>
                                         </div>
                                     }
-                                    else if (!obj.EventDate.HasValue)
-                                    {
-                                        <span>Permanent</span>
-                                    }
                                 </MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
@@ -81,6 +83,28 @@
                                     <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Color="Color.Default"
                                         Class="mr-1" />
                                     <MudText Typo="Typo.caption">@obj.Location</MudText>
+                                </div>
+                            }
+
+                            @if (isExpiring)
+                            {
+                                var timeToLive = obj.ExpirationDate!.Value - DateTime.UtcNow;
+                                <div class="d-flex align-center mt-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
+                                    <MudText Typo="Typo.caption" Color="Color.Warning">
+                                        Disparaît dans : @timeToLive.ToString(@"hh\:mm\:ss")
+                                    </MudText>
+                                </div>
+                            }
+                            
+                            @if (isCooldown)
+                            {
+                                var timeLeft = obj.NextAvailableDate!.Value - DateTime.UtcNow;
+                                <div class="d-flex align-center mt-3 justify-center pa-2" style="background-color: rgba(0,0,0,0.05); border-radius: 4px; border: 1px solid var(--mud-palette-error);">
+                                    <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Error" Size="Size.Small" Class="mr-2"/>
+                                    <MudText Typo="Typo.body2" Color="Color.Error" Style="font-weight:bold;">
+                                        Disponible dans : @timeLeft.ToString(@"hh\:mm\:ss")
+                                    </MudText>
                                 </div>
                             }
                         </MudCardContent>
@@ -117,6 +141,7 @@
 @code {
     private List<ObjectiveDto> objectives = new();
     private bool isLoading = true;
+    private System.Timers.Timer? _timer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -127,6 +152,7 @@
             if (authState.User.Identity != null && authState.User.Identity.IsAuthenticated)
             {
                 await LoadObjectives();
+                StartTimer();
             }
             else
             {
@@ -135,6 +161,20 @@
 
             StateHasChanged();
         }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+
+    private void StartTimer()
+    {
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += (s, e) => InvokeAsync(StateHasChanged);
+        _timer.AutoReset = true;
+        _timer.Start();
     }
 
     private async Task LoadObjectives()
@@ -158,6 +198,8 @@
 
     private void OpenDetails(ObjectiveDto obj)
     {
+        if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow) return;
+
         var parameters = new DialogParameters<ObjectiveDetailsDialog> { { x => x.Objective, obj } };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         DialogService.Show<ObjectiveDetailsDialog>("Détails de l'objectif", parameters, options);

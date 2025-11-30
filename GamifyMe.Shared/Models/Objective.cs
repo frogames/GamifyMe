@@ -21,6 +21,7 @@
         public DateTime? DisplayEndDate { get; set; }
         public string Location { get; set; } = string.Empty; 
         public string IconName { get; set; } = string.Empty;
+        public int? LifespanHours { get; set; }
 
         // Les objectifs qui doivent être complétés AVANT que celui-ci ne soit accessible
         public ICollection<Objective> Prerequisites { get; set; } = new List<Objective>();

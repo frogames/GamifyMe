@@ -103,7 +103,7 @@ namespace GamifyMe.Api.Services
                 ItemType = request.ItemType,
                 DigitalActionCode = request.DigitalActionCode,
                 DigitalAssetUrl = request.DigitalAssetUrl,
-                IconName = request.IconName ?? "ShoppingBag",
+                IconName = GetAutoIconName(request) ?? request.IconName ?? "ShoppingBag",
                 IsActive = request.IsActive,
                 IsUnique = request.IsUnique,
                 StartDate = request.StartDate,
@@ -129,7 +129,7 @@ namespace GamifyMe.Api.Services
             storeItem.ItemType = request.ItemType;
             storeItem.DigitalActionCode = request.DigitalActionCode;
             storeItem.DigitalAssetUrl = request.DigitalAssetUrl;
-            storeItem.IconName = request.IconName ?? "ShoppingBag";
+            storeItem.IconName = GetAutoIconName(request) ?? request.IconName ?? "ShoppingBag";
             storeItem.IsActive = request.IsActive;
             storeItem.IsUnique = request.IsUnique;
             storeItem.StartDate = request.StartDate;
@@ -137,6 +137,18 @@ namespace GamifyMe.Api.Services
 
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        private string? GetAutoIconName(StoreItemDto request)
+        {
+            if (request.ItemType == StoreItemType.Digital && !string.IsNullOrEmpty(request.DigitalActionCode))
+            {
+                if (request.DigitalActionCode == "SCAN_SOUND") return "Music";
+                if (request.DigitalActionCode.StartsWith("UI_THEME_")) return "Phone";
+                if (request.DigitalActionCode.Contains("BOOST")) return "Rocket";
+                if (request.DigitalActionCode.StartsWith("QR_STYLE_")) return "QrCode";
+            }
+            return null;
         }
 
         public async Task<bool> DeleteStoreItemAsync(Guid id)

@@ -18,16 +18,21 @@ namespace GamifyMe.Api.Services
         {
             var now = DateTime.UtcNow;
 
-            // 1. Get completed objectives for this user
-            var completedObjectiveIds = await _context.Validations
+            // 1. Get user validations with timestamps
+            var userValidations = await _context.Validations
                 .Where(v => v.UserId == userId)
-                .Select(v => v.ObjectiveId)
+                .Select(v => new { v.ObjectiveId, ValidatedAt = v.Date })
                 .ToListAsync();
-            var completedSet = completedObjectiveIds.ToHashSet();
+            
+            // Group by ObjectiveId and take the latest validation
+            var lastValidationDates = userValidations
+                .GroupBy(v => v.ObjectiveId)
+                .ToDictionary(g => g.Key, g => g.Max(v => v.ValidatedAt));
 
             // 2. Get active objectives for the establishment
             var allActiveObjectives = await _context.Objectives
                 .Include(o => o.Prerequisites)
+                .Include(o => o.IsPrerequisiteFor)
                 .Where(o => o.EstablishmentId == establishmentId
                             && o.IsActive
                             && (o.EndDate == null || o.EndDate > now)
@@ -36,27 +41,137 @@ namespace GamifyMe.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
-            var resultList = new List<ObjectiveDto>();
-
+            // Filter out expired by Lifespan
+            var validObjectives = new List<Objective>();
             foreach (var obj in allActiveObjectives)
             {
-                // Check prerequisites
+                if (obj.LifespanHours.HasValue)
+                {
+                    var startTime = obj.DisplayStartDate ?? obj.CreatedAt;
+                    if (startTime.AddHours(obj.LifespanHours.Value) < now)
+                    {
+                        continue; // Expired
+                    }
+                }
+                validObjectives.Add(obj);
+            }
+
+            // Build Chain Info (x/y)
+            // We assume a linear chain for simplicity as requested ("single prerequisite")
+            // But we must handle the graph structure safely.
+            var objectiveDtos = new List<ObjectiveDto>();
+            
+            // Helper dictionary for quick lookup
+            var objMap = validObjectives.ToDictionary(o => o.Id);
+
+            foreach (var obj in validObjectives)
+            {
+                // Check prerequisites (Locking logic)
                 bool isLocked = false;
                 if (obj.Prerequisites != null && obj.Prerequisites.Any())
                 {
-                    if (!obj.Prerequisites.All(p => completedSet.Contains(p.Id)))
+                    // Check if ALL prerequisites are validated (at least once)
+                    if (!obj.Prerequisites.All(p => lastValidationDates.ContainsKey(p.Id)))
                         isLocked = true;
                 }
                 if (isLocked) continue;
 
-                // Check if already completed (for unique objectives)
-                bool alreadyDone = obj.IsUnique && completedSet.Contains(obj.Id);
-                if (alreadyDone) continue;
+                // Check completion / cooldown
+                bool hasValidated = lastValidationDates.TryGetValue(obj.Id, out var lastValidatedAt);
+                bool isAlreadyCompleted = false;
+                DateTime? nextAvailableDate = null;
 
-                resultList.Add(MapToDto(obj, alreadyDone));
+                if (obj.IsUnique)
+                {
+                    if (hasValidated) continue; // Hide completed unique objectives
+                }
+                else
+                {
+                    // Frequency logic
+                    if (hasValidated && obj.FrequencyHours.HasValue)
+                    {
+                        var cooldownEnd = lastValidatedAt.AddHours(obj.FrequencyHours.Value);
+                        if (cooldownEnd > now)
+                        {
+                            nextAvailableDate = cooldownEnd;
+                            isAlreadyCompleted = true; // Mark as "done for now" (grayed out)
+                        }
+                    }
+                }
+
+                // Calculate Chain Position
+                int chainPos = 1;
+                int chainLen = 1;
+                
+                // Traverse up (Prerequisites) to find position
+                var current = obj;
+                var visited = new HashSet<Guid> { current.Id };
+                while (current.Prerequisites != null && current.Prerequisites.Any())
+                {
+                    // Take the first prerequisite (assuming single chain)
+                    var parentId = current.Prerequisites.First().Id;
+                    // We need to look up the parent in our loaded list to continue traversing
+                    // Note: Parent might not be in 'validObjectives' if it's expired/inactive, 
+                    // but usually it should be. If not found, we stop.
+                    var parent = allActiveObjectives.FirstOrDefault(o => o.Id == parentId);
+                    if (parent == null || visited.Contains(parent.Id)) break;
+                    
+                    visited.Add(parent.Id);
+                    current = parent;
+                    chainPos++;
+                }
+
+                // Traverse down (IsPrerequisiteFor) to find total length
+                // We start from the ROOT we found (current is now the root)
+                // But wait, 'obj' is the current item. 
+                // Total length = (depth of obj) + (max depth below obj) - 1?
+                // Simpler: Find the root, then traverse down to find max depth.
+                
+                // Let's find the root first (already done, 'current' is root).
+                // Now find max depth starting from 'current'.
+                chainLen = GetMaxChainDepth(current, allActiveObjectives, new HashSet<Guid>());
+
+                var dto = MapToDto(obj, isAlreadyCompleted);
+                dto.NextAvailableDate = nextAvailableDate;
+
+                if (obj.LifespanHours.HasValue)
+                {
+                    var startTime = obj.DisplayStartDate ?? obj.CreatedAt;
+                    dto.ExpirationDate = startTime.AddHours(obj.LifespanHours.Value);
+                }
+                
+                if (chainLen > 1)
+                {
+                    dto.Title = $"{dto.Title} ({chainPos}/{chainLen})";
+                    dto.ChainPosition = chainPos;
+                    dto.ChainLength = chainLen;
+                }
+
+                objectiveDtos.Add(dto);
             }
 
-            return resultList.OrderBy(o => o.EventDate ?? DateTime.MaxValue).ToList();
+            return objectiveDtos.OrderBy(o => o.EventDate ?? DateTime.MaxValue).ToList();
+        }
+
+        private int GetMaxChainDepth(Objective current, List<Objective> allObjectives, HashSet<Guid> visited)
+        {
+            if (visited.Contains(current.Id)) return 0; // Cycle detected
+            visited.Add(current.Id);
+
+            // Find children: objectives that have 'current' as a prerequisite
+            // We can use IsPrerequisiteFor if loaded, or search the list
+            var children = allObjectives.Where(o => o.Prerequisites.Any(p => p.Id == current.Id)).ToList();
+            
+            if (!children.Any()) return 1;
+
+            int maxChildDepth = 0;
+            foreach (var child in children)
+            {
+                int depth = GetMaxChainDepth(child, allObjectives, new HashSet<Guid>(visited));
+                if (depth > maxChildDepth) maxChildDepth = depth;
+            }
+
+            return 1 + maxChildDepth;
         }
 
         public async Task<List<ObjectiveDto>> GetAllObjectivesFullListAsync()
@@ -115,7 +230,8 @@ namespace GamifyMe.Api.Services
                 DisplayEndDate = displayEndUtc,
                 Location = request.Location ?? string.Empty,
                 IconName = request.IconName ?? "Star",
-                Prerequisites = prerequisiteObjectives
+                Prerequisites = prerequisiteObjectives,
+                LifespanHours = request.LifespanHours
             };
 
             _context.Objectives.Add(objective);
@@ -154,6 +270,7 @@ namespace GamifyMe.Api.Services
             objective.DisplayEndDate = request.DisplayEndDate?.ToUniversalTime();
             objective.Location = request.Location ?? string.Empty;
             objective.IconName = request.IconName ?? "Star";
+            objective.LifespanHours = request.LifespanHours;
 
             await _context.SaveChangesAsync();
             return true;
@@ -188,7 +305,8 @@ namespace GamifyMe.Api.Services
                 FrequencyHours = obj.FrequencyHours,
                 IsActive = obj.IsActive,
                 IsAlreadyCompleted = isAlreadyCompleted,
-                PrerequisiteObjectiveIds = obj.Prerequisites?.Select(p => p.Id).ToList() ?? new List<Guid>()
+                PrerequisiteObjectiveIds = obj.Prerequisites?.Select(p => p.Id).ToList() ?? new List<Guid>(),
+                LifespanHours = obj.LifespanHours
             };
         }
     }

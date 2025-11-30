@@ -4,7 +4,9 @@
     {
         public DateTime Date { get; set; }
         public string Description { get; set; } = string.Empty; // Ex: "Achat : Café", "Validé : Cours de Zumba"
-        public int AmountChange { get; set; } // +50 ou -10
+        public int AmountChange { get; set; } // +50 ou -10 (Deprecated, use XpChange/CurrencyChange)
+        public int XpChange { get; set; }
+        public int CurrencyChange { get; set; }
         public string Type { get; set; } = string.Empty; // "XP", "Currency"
         public string Icon { get; set; } = string.Empty; // Pour faire joli dans la liste
     }

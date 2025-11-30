@@ -11,7 +11,7 @@ namespace GamifyMe.Shared.Models
 
         public Guid UserId { get; set; }
 
-        public Guid ValidatedById { get; set; }
+        public Guid? ValidatedById { get; set; }
 
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
@@ -21,5 +21,9 @@ namespace GamifyMe.Shared.Models
         [ForeignKey("UserId")]
         public User User { get; set; } = null!;
         // ----------------------------------------------------------
+
+        // --- AJOUT : Qui a validé ? (Staff) ---
+        [ForeignKey("ValidatedById")]
+        public User? ValidatedBy { get; set; }
     }
 }

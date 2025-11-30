@@ -35,5 +35,7 @@ namespace GamifyMe.Shared.Dtos
 
         // On n'oublie pas le champ pour les prérequis
         public List<Guid> PrerequisiteObjectiveIds { get; set; } = new List<Guid>();
+
+        public int? LifespanHours { get; set; }
     }
 }

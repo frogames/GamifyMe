@@ -31,9 +31,10 @@ namespace GamifyMe.Api.Controllers
             var validationLogs = await _context.Validations
                 .Include(v => v.Objective)
                 .Include(v => v.User)
+                .Include(v => v.ValidatedBy)
                 .Where(v => v.EstablishmentId == establishmentId)
                 .OrderByDescending(v => v.Date)
-                .Take(20)
+                .Take(50)
                 .ToListAsync();
 
             logs.AddRange(validationLogs.Select(v => new DashboardLogDto
@@ -43,7 +44,9 @@ namespace GamifyMe.Api.Controllers
                 ActionType = "Scan",
                 Details = $"Objectif : {v.Objective.Title}",
                 Icon = "QrCodeScanner",
-                Color = "Success"
+                Color = "Success",
+                ScannerName = v.ValidatedBy != null ? $"{v.ValidatedBy.FirstName} {v.ValidatedBy.Username}" : "Système",
+                ScannedUserName = $"{v.User.FirstName} {v.User.Username}"
             }));
 
             // 2. ACHATS (Sécurisé)
@@ -52,7 +55,7 @@ namespace GamifyMe.Api.Controllers
                 .Include(o => o.User)
                 .Where(o => o.EstablishmentId == establishmentId)
                 .OrderByDescending(o => o.DatePurchased)
-                .Take(20)
+                .Take(50)
                 .ToListAsync();
 
             logs.AddRange(orderLogs.Select(o => new DashboardLogDto
@@ -65,7 +68,7 @@ namespace GamifyMe.Api.Controllers
                 Color = "Info"
             }));
 
-            return Ok(logs.OrderByDescending(l => l.Date).Take(20).ToList());
+            return Ok(logs.OrderByDescending(l => l.Date).Take(50).ToList());
         }
 
         // POST api/dashboard/process-scan
@@ -248,13 +251,17 @@ namespace GamifyMe.Api.Controllers
             user.LastActivityAt = DateTime.UtcNow;
 
             // --- 5. ENREGISTREMENT ET VALIDATION ---
+            var scannerIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid? scannerId = Guid.TryParse(scannerIdClaim, out var sid) ? sid : null;
+
             var validation = new Validation
             {
                 Id = Guid.NewGuid(),
                 EstablishmentId = establishmentId,
                 UserId = user.Id,
                 ObjectiveId = objective.Id,
-                Date = DateTime.UtcNow
+                Date = DateTime.UtcNow,
+                ValidatedById = scannerId
             };
             _context.Validations.Add(validation);
 

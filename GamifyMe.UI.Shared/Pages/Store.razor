@@ -22,14 +22,14 @@
 
     <MudPaper Class="mb-6 pa-4" Elevation="1">
         <MudText Typo="Typo.subtitle1" Class="mb-2">Filtrer par type :</MudText>
-        <MudChipSet T="string" @bind-SelectedValue="selectedFilter" CheckMark SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" Variant="Variant.Outlined">
-            <MudChip Text="All" Default="true">Tout</MudChip>
-            <MudChip Text="Physical">Objets Physiques</MudChip>
-            <MudChip Text="Interfaces">Interfaces</MudChip>
-            <MudChip Text="Sounds">Sons</MudChip>
-            <MudChip Text="QRCode">QR Codes</MudChip>
-            <MudChip Text="Boost">Boosts</MudChip>
-        </MudChipSet>
+        <MudSelect T="string" @bind-Value="selectedFilter" Label="Catégorie" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+            <MudSelectItem Value="@("All")">Tout</MudSelectItem>
+            <MudSelectItem Value="@("Physical")">Objets Physiques</MudSelectItem>
+            <MudSelectItem Value="@("Interfaces")">Interfaces</MudSelectItem>
+            <MudSelectItem Value="@("Sounds")">Sons</MudSelectItem>
+            <MudSelectItem Value="@("QRCode")">QR Codes</MudSelectItem>
+            <MudSelectItem Value="@("Boost")">Boosts</MudSelectItem>
+        </MudSelect>
     </MudPaper>
 
     @if (isLoading)

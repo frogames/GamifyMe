@@ -104,7 +104,8 @@
                 <MudTh>Date / Heure</MudTh>
                 <MudTh>Action</MudTh>
                 <MudTh>Détails</MudTh>
-                <MudTh>Auteur</MudTh>
+                <MudTh>Joueur</MudTh>
+                <MudTh>Validé par</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Date">@context.Date.ToLocalTime().ToString("g")</MudTd>
@@ -124,7 +125,23 @@
                     </div>
                 </MudTd>
                 <MudTd DataLabel="Détails"><b>@context.Details</b></MudTd>
-                <MudTd DataLabel="Auteur"><MudChip T="string" Size="Size.Small" Variant="Variant.Text">@context.ActorName</MudChip></MudTd>
+                <MudTd DataLabel="Joueur">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                        @(context.ScannedUserName ?? context.ActorName)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Validé par">
+                    @if (!string.IsNullOrEmpty(context.ScannerName))
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">
+                            @context.ScannerName
+                        </MudChip>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
+                    }
+                </MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager />

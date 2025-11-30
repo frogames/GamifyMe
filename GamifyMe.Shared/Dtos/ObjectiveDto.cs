@@ -31,5 +31,11 @@ namespace GamifyMe.Shared.Dtos
         public bool IsActive { get; set; }
 
         public List<Guid> PrerequisiteObjectiveIds { get; set; } = new List<Guid>();
+        
+        public int? LifespanHours { get; set; }
+        public DateTime? NextAvailableDate { get; set; }
+        public int? ChainPosition { get; set; }
+        public int? ChainLength { get; set; }
+        public DateTime? ExpirationDate { get; set; }
     }
 }
