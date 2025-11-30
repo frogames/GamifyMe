@@ -35,7 +35,7 @@
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">@user.Username</MudTd>
+                        <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
                         <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
@@ -61,7 +61,7 @@
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">@user.Username</MudTd>
+                        <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
                         <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>

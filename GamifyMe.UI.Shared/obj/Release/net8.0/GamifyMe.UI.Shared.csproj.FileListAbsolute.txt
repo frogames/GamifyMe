@@ -33,3 +33,11 @@ D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.sourceli
 D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.dll
 D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\refint\GamifyMe.UI.Shared.dll
 D:\GamifyMe_V2\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.pdb
+d:\GamifyMe\GamifyMe.UI.Shared\bin\Release\net8.0\GamifyMe.UI.Shared.staticwebassets.endpoints.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\rpswa.dswa.cache.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\rjimswa.dswa.cache.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\rjsmrazor.dswa.cache.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\rjsmcshtml.dswa.cache.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets.build.json.cache
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets.build.endpoints.json
+d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets\msbuild.GamifyMe.UI.Shared.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

@@ -35,6 +35,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEaWFsb2dDb25maXJtYXRpb24ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/DialogEditProfile.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEaWFsb2dFZGl0UHJvZmlsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [d:/GamifyMe/GamifyMe.UI.Shared/Components/IconPickerDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xJY29uUGlja2VyRGlhbG9nLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -43,8 +47,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xJbmZvQmFyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/InventoryItemCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xJbnZlbnRvcnlJdGVtQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/InventoryItemDetailsDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xJbnZlbnRvcnlJdGVtRGV0YWlsc0RpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [d:/GamifyMe/GamifyMe.UI.Shared/Components/ObjectiveCard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xPYmplY3RpdmVDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/ObjectiveDetailsDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xPYmplY3RpdmVEZXRhaWxzRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/PurchaseConfirmationDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQdXJjaGFzZUNvbmZpcm1hdGlvbkRpYWxvZy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Components/QrCodeScanner.razor]
@@ -61,6 +81,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Components/StoreItemCard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTdG9yZUl0ZW1DYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/StoreItemDetailsDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTdG9yZUl0ZW1EZXRhaWxzRGlhbG9nLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Layout/MainLayout.razor]

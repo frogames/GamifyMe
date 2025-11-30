@@ -1,0 +1,79 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
+            <div class="d-flex flex-column align-center mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="width: 80px; height: 80px;">
+                    <MudIcon Icon="@IconLibrary.GetIcon(Objective.IconName)" Size="Size.Large" Style="font-size: 3rem;" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Align="Align.Center">@Objective.Title</MudText>
+                
+                @if (Objective.IsUnique)
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="mt-2">Objectif Unique</MudChip>
+                }
+            </div>
+
+            <MudText Typo="Typo.body1" Class="mb-4 text-justify">@Objective.Description</MudText>
+
+            <MudDivider Class="mb-4" />
+
+            <div class="d-flex flex-column gap-2">
+                @if (Objective.EventDate.HasValue)
+                {
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                        <MudText Typo="Typo.body2"><strong>Date :</strong> @Objective.EventDate.Value.ToString("g")</MudText>
+                    </div>
+                }
+
+                @if (Objective.EndDate.HasValue)
+                {
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-2" Color="Color.Error" />
+                        <MudText Typo="Typo.body2"><strong>Fin :</strong> @Objective.EndDate.Value.ToString("g")</MudText>
+                    </div>
+                }
+                else if (!Objective.EventDate.HasValue)
+                {
+                     <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.AllInclusive" Size="Size.Small" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2"><strong>Durée :</strong> Permanent</MudText>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Objective.Location))
+                {
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-2" Color="Color.Default" />
+                        <MudText Typo="Typo.body2"><strong>Lieu :</strong> @Objective.Location</MudText>
+                    </div>
+                }
+            </div>
+             <MudDivider Class="my-4" />
+             <div class="d-flex justify-center gap-4">
+                 <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning">
+                    +@Objective.XpReward XP
+                </MudChip>
+                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info">
+                    +@Objective.DocPointsReward Crédits
+                </MudChip>
+             </div>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public ObjectiveDto Objective { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+}

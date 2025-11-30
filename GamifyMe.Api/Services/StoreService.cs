@@ -179,9 +179,40 @@ namespace GamifyMe.Api.Services
                 if (userWallet.Balance < storeItem.Price) return (false, "Fonds insuffisants.");
 
                 userWallet.Balance -= storeItem.Price;
-                storeItem.Stock -= 1;
+                
+                // Only decrement stock for physical items
+                if (storeItem.ItemType != StoreItemType.Digital)
+                {
+                    storeItem.Stock -= 1;
+                }
 
                 var orderStatus = OrderStatus.Pending;
+
+                // Boost Logic
+                bool isBoost = storeItem.DigitalActionCode != null && storeItem.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase);
+                DateTime? expiresAt = null;
+                bool isActive = false;
+
+                if (isBoost)
+                {
+                    // Check if user already has an active boost
+                    var hasActiveBoost = await _dbContext.UserInventories
+                        .Include(ui => ui.StoreItem)
+                        .AnyAsync(ui => ui.UserId == userId && 
+                                        ui.IsActive && 
+                                        ui.StoreItem.DigitalActionCode != null && 
+                                        ui.StoreItem.DigitalActionCode.Contains("BOOST") &&
+                                        (ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow));
+
+                    if (hasActiveBoost)
+                    {
+                        await transaction.RollbackAsync();
+                        return (false, "Vous avez déjà un boost actif. Attendez qu'il expire.");
+                    }
+
+                    isActive = true;
+                    expiresAt = DateTime.UtcNow.AddHours(24);
+                }
 
                 // Add to inventory
                 var inventoryItem = new UserInventory
@@ -191,7 +222,8 @@ namespace GamifyMe.Api.Services
                     StoreItemId = storeItem.Id,
                     EstablishmentId = storeItem.EstablishmentId,
                     DateAcquired = DateTime.UtcNow,
-                    IsActive = false
+                    IsActive = isActive,
+                    ExpiresAt = expiresAt
                 };
                 _dbContext.UserInventories.Add(inventoryItem);
 

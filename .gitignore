@@ -20,3 +20,6 @@
 # Fichiers de cache de tests
 *.testresult
 TestResults/
+
+# Documentation privée
+DEPLOYMENT_PROCEDURE.md

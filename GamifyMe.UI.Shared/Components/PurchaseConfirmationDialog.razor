@@ -1,0 +1,53 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="pa-0 d-flex flex-column align-center">
+            <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Color="Color.Primary" Style="font-size: 4rem;" Class="mb-4" />
+            
+            <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Confirmer l'achat ?</MudText>
+            
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">
+                Voulez-vous acheter <b>@Item.Name</b> pour <b>@Item.Price Crédits</b> ?
+            </MudText>
+
+            @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
+            }
+
+            <MudDivider Class="w-100 mb-4" />
+
+            <div class="d-flex justify-space-between w-100 align-center px-4">
+                <MudText Typo="Typo.body2">Votre solde :</MudText>
+                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Small">
+                    @UserBalance
+                </MudChip>
+            </div>
+            
+            <div class="d-flex justify-space-between w-100 align-center px-4 mt-2">
+                <MudText Typo="Typo.body2">Après achat :</MudText>
+                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserBalance >= Item.Price ? Color.Success : Color.Error)" Size="Size.Small">
+                    @(UserBalance - Item.Price)
+                </MudChip>
+            </div>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Confirm" Disabled="@(UserBalance < Item.Price)">Confirmer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public StoreItemDto Item { get; set; }
+    [Parameter] public int UserBalance { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+}

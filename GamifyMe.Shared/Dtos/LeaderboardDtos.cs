@@ -5,6 +5,7 @@ namespace GamifyMe.Shared.Dtos
         public int Rank { get; set; }
         public Guid UserId { get; set; }
         public string Username { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
         public int Level { get; set; }
         public int TotalXp { get; set; }
         public int TotalCurrency { get; set; }

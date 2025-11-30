@@ -62,7 +62,7 @@
                 @* RÉSULTAT DU SCAN PROFIL *@
                 <MudGrid>
                     <MudItem xs="12">
-                        <MudText Typo="Typo.h5" Color="Color.Primary">@scanResultDto.UserProfile?.Username</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Primary">@scanResultDto.UserProfile?.FirstName @scanResultDto.UserProfile?.Username</MudText>
                         <MudText Typo="Typo.body2">@scanResultDto.UserProfile?.Email</MudText>
                         <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mt-2">@scanResultDto.UserProfile?.EstablishmentName</MudChip>
                     </MudItem>

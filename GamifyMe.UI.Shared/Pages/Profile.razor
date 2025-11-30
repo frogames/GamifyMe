@@ -10,6 +10,7 @@
 @inject TokenStorageService TokenService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Mon Profil</PageTitle>
 
@@ -35,8 +36,11 @@
             <MudAvatar Style="width:80px; height:80px; font-size:2rem;" Color="Color.Primary" Class="mb-2">
                 @profile.FirstName.Substring(0, 1).ToUpper()
             </MudAvatar>
-            <MudText Typo="Typo.h5">@profile.FirstName</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.Username</MudText>
+            <div class="d-flex align-center">
+                <MudText Typo="Typo.h5">@profile.FirstName @profile.Username</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditProfile" Class="ml-2" />
+            </div>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.Email</MudText>
             <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.EstablishmentName</MudText>
             <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-1">@profile.Role</MudChip>
         </div>
@@ -161,6 +165,45 @@
         // 2. Notifier le provider d'auth (si la méthode existe, sinon force reload)
         // (Ici on fait un rechargement complet pour nettoyer l'état)
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    private async Task EditProfile()
+    {
+        var model = new UpdateUserProfileDto
+        {
+            FirstName = profile.FirstName,
+            Username = profile.Username,
+            Email = profile.Email
+        };
+
+        var parameters = new DialogParameters<DialogEditProfile> { { x => x.Model, model } };
+        var dialog = await DialogService.ShowAsync<DialogEditProfile>("Modifier mon profil", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var updatedModel = (UpdateUserProfileDto)result.Data;
+            try
+            {
+                var response = await Http.PutAsJsonAsync("api/users/profile", updatedModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Refresh profile
+                    profile = await response.Content.ReadFromJsonAsync<UserProfileDetailsDto>();
+                    Snackbar.Add("Profil mis à jour avec succès !", Severity.Success);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Erreur : {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur update profil : {ex.Message}");
+                Snackbar.Add("Une erreur est survenue.", Severity.Error);
+            }
+        }
     }
 
     private async Task DeleteAccount()

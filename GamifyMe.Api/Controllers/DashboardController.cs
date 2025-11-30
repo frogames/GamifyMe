@@ -34,36 +34,36 @@ namespace GamifyMe.Api.Controllers
                 .Where(v => v.EstablishmentId == establishmentId)
                 .OrderByDescending(v => v.Date)
                 .Take(20)
-                .Select(v => new DashboardLogDto
-                {
-                    Date = v.Date,
-                    ActorName = v.User != null ? v.User.Username : "Utilisateur inconnu",
-                    ActionType = "Validation Objectif",
-                    Details = v.Objective != null ? v.Objective.Title : "Objectif supprimé",
-                    Icon = "QrCode",
-                    Color = "Success"
-                })
                 .ToListAsync();
-            logs.AddRange(validationLogs);
+
+            logs.AddRange(validationLogs.Select(v => new DashboardLogDto
+            {
+                Date = v.Date,
+                ActorName = $"{v.User.FirstName} {v.User.Username}",
+                ActionType = "Scan",
+                Details = $"Objectif : {v.Objective.Title}",
+                Icon = "QrCodeScanner",
+                Color = "Success"
+            }));
 
             // 2. ACHATS (Sécurisé)
             var orderLogs = await _context.Orders
                 .Include(o => o.StoreItem)
                 .Include(o => o.User)
-                .Where(o => o.StoreItem.EstablishmentId == establishmentId && o.Status == OrderStatus.Completed)
-                .OrderByDescending(o => o.DateCompleted)
+                .Where(o => o.EstablishmentId == establishmentId)
+                .OrderByDescending(o => o.DatePurchased)
                 .Take(20)
-                .Select(o => new DashboardLogDto
-                {
-                    Date = o.DateCompleted ?? o.DatePurchased,
-                    ActorName = o.User != null ? o.User.Username : "Utilisateur inconnu",
-                    ActionType = "Achat Boutique",
-                    Details = o.StoreItem != null ? o.StoreItem.Name : "Objet supprimé",
-                    Icon = "ShoppingBag",
-                    Color = "Info"
-                })
                 .ToListAsync();
-            logs.AddRange(orderLogs);
+
+            logs.AddRange(orderLogs.Select(o => new DashboardLogDto
+            {
+                Date = o.DatePurchased,
+                ActorName = $"{o.User.FirstName} {o.User.Username}",
+                ActionType = "Achat",
+                Details = $"Article : {o.StoreItem.Name}",
+                Icon = "ShoppingCart",
+                Color = "Info"
+            }));
 
             return Ok(logs.OrderByDescending(l => l.Date).Take(20).ToList());
         }
@@ -102,11 +102,11 @@ namespace GamifyMe.Api.Controllers
             string msg;
             if (pendingOrdersCount == 0)
             {
-                msg = $"Profil de {user.Username} scanné. Aucune commande en attente.";
+                msg = $"Profil de {user.FirstName} {user.Username} scanné. Aucune commande en attente.";
             }
             else
             {
-                msg = $"Profil de {user.Username} scanné. {pendingOrdersCount} commande(s) en attente de validation.";
+                msg = $"Profil de {user.FirstName} {user.Username} scanné. {pendingOrdersCount} commande(s) en attente de validation.";
             }
 
             var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
@@ -144,7 +144,7 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest(new ValidationResponseDto
                 {
                     Success = false,
-                    Message = $"Erreur : Cet objectif unique a déjà été validé par {user.Username}.",
+                    Message = $"Erreur : Cet objectif unique a déjà été validé par {user.FirstName} {user.Username}.",
                     RewardXp = 0,
                     RewardCurrency = 0
                 });
@@ -267,7 +267,7 @@ namespace GamifyMe.Api.Controllers
             return Ok(new ValidationResponseDto
             {
                 Success = true,
-                Message = $"Validé pour {user.Username} !{bonusMessage}",
+                Message = $"Validé pour {user.FirstName} {user.Username} !{bonusMessage}",
                 RewardXp = finalXpReward,
                 RewardCurrency = finalDocPointsReward,
                 UserNewLevel = user.Level,

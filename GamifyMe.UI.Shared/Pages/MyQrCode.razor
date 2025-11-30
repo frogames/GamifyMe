@@ -40,7 +40,7 @@
 
             <MudImage Src="@qrUrl" Alt="QR Code" Class="mb-6 rounded-lg" Style="width: 250px; height: 250px;" />
 
-            <MudText Typo="Typo.h5" Class="mb-1">@profile.Username</MudText>
+            <MudText Typo="Typo.h5" Class="mb-1">@profile.FirstName @profile.Username</MudText>
             <MudText Typo="Typo.body2" Class="mb-6 text-muted">@profile.EstablishmentName</MudText>
 
             <div class="d-flex gap-4 w-100">
@@ -117,7 +117,7 @@
 
         await JSRuntime.InvokeVoidAsync("window.shareQrImage",
             "Mon Pass GamifyMe",
-            $"Voici mon code joueur pour {profile.Username}",
+            $"Voici mon code joueur pour {profile.FirstName} {profile.Username}",
             qrImageUrl);
     }
 }

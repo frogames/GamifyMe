@@ -5,13 +5,15 @@
 @using GamifyMe.Shared.Dtos
 @using Microsoft.AspNetCore.Components
 
+@using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Accueil</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mb-6">Accueil</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mb-6">Bienvenue @firstName</MudText>
     <MudGrid Class="mb-8">
         <!-- Mon Pass Card -->
         <MudItem xs="12" sm="4">
@@ -85,9 +87,27 @@
     private int objectiveCount;
     private int storeItemCount;
     private int inventoryCount;
+    private string firstName = "";
 
     protected override async Task OnInitializedAsync()
     {
+        try 
+        {
+            var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+            firstName = profile?.FirstName ?? "Invité";
+        }
+        catch
+        {
+            // Fallback to claims if API fails
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            firstName = user.FindFirst("FirstName")?.Value 
+                        ?? user.Identity?.Name 
+                        ?? "Invité";
+        }
+        
+        StateHasChanged();
+        
         await LoadCounts();
     }
 

@@ -102,6 +102,12 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<string>> Login(LoginRequest request)
         {
             Response.Headers.Append("Access-Control-Allow-Origin", "*");
+
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest("L'email est requis.");
+            }
+
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .FirstOrDefaultAsync(u => u.Email == request.Email.ToLower());
@@ -159,15 +165,45 @@ namespace GamifyMe.Api.Controllers
 
             int currentXp = (int)(xpWallet?.Balance ?? 0);
             int level = 1 + (currentXp / 500);
-
             return Ok(new InfoBarDto
             {
                 Level = level,
                 CurrentXp = currentXp,
                 XpToNextLevel = level * 500,
                 OtherWallets = otherWallets,
-                EstablishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A"
+                EstablishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A",
+                FirstName = User.FindFirstValue("FirstName") ?? ""
             });
+        }
+
+        [HttpPut("profile")]
+        [Authorize]
+        public async Task<ActionResult<UserProfileDetailsDto>> UpdateProfile(UpdateUserProfileDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("Utilisateur introuvable.");
+
+            // Check uniqueness for Username and Email (excluding current user)
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Username == request.Username))
+            {
+                return BadRequest("Ce nom d'utilisateur est déjà pris.");
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Email == request.Email.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
+            user.FirstName = request.FirstName;
+            user.Username = request.Username;
+            user.Email = request.Email.ToLower();
+
+            await _context.SaveChangesAsync();
+
+            return await GetMyProfileDetails();
         }
 
         [HttpGet("profile-details")]
@@ -256,7 +292,7 @@ namespace GamifyMe.Api.Controllers
             // Fetch Active XP Boost
             var activeBoostItem = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
-                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "XP_BOOST_2X_24H" && (ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow));
+                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode != null && ui.StoreItem.DigitalActionCode.Contains("BOOST") && (ui.ExpiresAt == null || ui.ExpiresAt > DateTime.UtcNow));
             
             int activeBoostMultiplier = activeBoostItem != null ? 2 : 1;
             DateTime? boostEndsAt = activeBoostItem?.ExpiresAt;
@@ -303,6 +339,64 @@ namespace GamifyMe.Api.Controllers
                 BoostEndsAt = boostEndsAt,
                 Rank = userRank
             });
+        }
+
+        [HttpPost("inventory/{userInventoryId}/toggle")]
+        [Authorize]
+        public async Task<IActionResult> ToggleInventoryItem(Guid userInventoryId)
+        {
+            var userId = GetCurrentUserId();
+            var userInventory = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .FirstOrDefaultAsync(ui => ui.Id == userInventoryId && ui.UserId == userId);
+
+            if (userInventory == null) return NotFound("Objet non trouvé.");
+
+            // Toggle logic
+            if (userInventory.IsActive)
+            {
+                // Deactivate
+                userInventory.IsActive = false;
+            }
+            else
+            {
+                // Activate
+                // First, deactivate other items of the same "type" to ensure mutual exclusivity
+                var code = userInventory.StoreItem.DigitalActionCode;
+                if (!string.IsNullOrEmpty(code))
+                {
+                    // We need to fetch potential conflicts. 
+                    // Note: We can't easily do "StartsWith" on the joined table in a single update without fetching.
+                    // So we fetch active items that might conflict.
+                    
+                    var potentialConflicts = await _context.UserInventories
+                        .Include(ui => ui.StoreItem)
+                        .Where(ui => ui.UserId == userId && ui.IsActive && ui.Id != userInventoryId)
+                        .ToListAsync();
+
+                    foreach (var other in potentialConflicts)
+                    {
+                        var otherCode = other.StoreItem.DigitalActionCode;
+                        if (string.IsNullOrEmpty(otherCode)) continue;
+
+                        bool isConflict = false;
+
+                        if (code.StartsWith("UI_THEME_") && otherCode.StartsWith("UI_THEME_")) isConflict = true;
+                        else if (code.StartsWith("QR_STYLE_") && otherCode.StartsWith("QR_STYLE_")) isConflict = true;
+                        else if (code == "SCAN_SOUND" && otherCode == "SCAN_SOUND") isConflict = true;
+
+                        if (isConflict)
+                        {
+                            other.IsActive = false;
+                        }
+                    }
+                }
+
+                userInventory.IsActive = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         [HttpGet("inventory")]
@@ -386,13 +480,13 @@ namespace GamifyMe.Api.Controllers
                     });
                 }
             }
-
             return Ok(new ProfileScanDto
             {
                 UserProfile = new UserProfileDto
                 {
                     Id = user.Id,
                     Username = user.Username,
+                    FirstName = user.FirstName,
                     Email = user.Email,
                     Role = user.Role,
                     EstablishmentName = user.Establishment?.Name ?? "N/A",
@@ -402,6 +496,7 @@ namespace GamifyMe.Api.Controllers
                 PendingOrders = pendingOrders
             });
         }
+        
 
         [HttpDelete("me")]
         [Authorize]
@@ -431,6 +526,7 @@ namespace GamifyMe.Api.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
+                new Claim("FirstName", user.FirstName ?? ""),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim("EstablishmentId", user.EstablishmentId.ToString()),

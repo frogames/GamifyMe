@@ -2,16 +2,18 @@
 
 @attribute [Authorize]
 @using GamifyMe.Shared.Dtos
-@using GamifyMe.UI.Shared.Helpers @* INDISPENSABLE POUR LES ICÔNES *@
+@using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 @inject HttpClient Http
 @using System.Net.Http.Json
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDialogService DialogService
 
 
 <PageTitle>Mes Objectifs</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
 
     <MudText Typo="Typo.h4" Class="mb-6" Color="Color.Primary">Objectifs Disponibles</MudText>
 
@@ -28,12 +30,11 @@
         <MudGrid>
             @foreach (var obj in objectives)
             {
-                <MudItem xs="12" sm="6">
-                    <MudCard Elevation="3" Class="h-100 d-flex flex-column">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="3" Class="h-100 d-flex flex-column cursor-pointer hover-effect" @onclick="@(() => OpenDetails(obj))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
-                                    @* UTILISATION DE L'HELPER ICI *@
                                     <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" />
                                 </MudAvatar>
                             </CardHeaderAvatar>
@@ -44,7 +45,6 @@
                                     {
                                         <div class="d-flex align-center">
                                             <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" />
-                                            @* 'g' est un format standard : 15/10/2025 14:30 *@
                                             <span>@obj.EventDate.Value.ToString("g")</span>
                                         </div>
                                     }
@@ -53,7 +53,7 @@
                                     {
                                         <div class="d-flex align-center mt-1">
                                             <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-1" />
-                                            <span>Expire : @obj.EndDate.Value.ToString("g")</span>
+                                            <span>Fin : @obj.EndDate.Value.ToString("g")</span>
                                         </div>
                                     }
                                     else if (!obj.EventDate.HasValue)
@@ -73,7 +73,7 @@
                         </MudCardHeader>
 
                         <MudCardContent Class="flex-grow-1">
-                            <MudText Typo="Typo.body2" Class="mb-2">@obj.Description</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2 description-clamp">@obj.Description</MudText>
 
                             @if (!string.IsNullOrEmpty(obj.Location))
                             {
@@ -87,9 +87,9 @@
 
                         <MudCardActions Class="d-flex justify-end pa-3 bg-gray-light">
                             <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small">
-                                @obj.XpReward XP</MudChip>
+                                +@obj.XpReward XP</MudChip>
                             <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info"
-                                Size="Size.Small">@obj.DocPointsReward Crédits</MudChip>
+                                Size="Size.Small">+@obj.DocPointsReward Crédits</MudChip>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -98,25 +98,30 @@
     }
 </MudContainer>
 
-
+<style>
+    .hover-effect {
+        transition: transform 0.2s;
+    }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+    }
+    .description-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
 
 @code {
     private List<ObjectiveDto> objectives = new();
     private bool isLoading = true;
 
-    // ON SUPPRIME OnInitializedAsync
-    // protected override async Task OnInitializedAsync()
-    // {
-    // await LoadObjectives();
-    // }
-
-    // ON REMPLACE PAR CECI :
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // On attend que l'authentification soit bien en place
-            // (Petite astuce : GetAuthenticationStateAsync force la vérification du token)
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
             if (authState.User.Identity != null && authState.User.Identity.IsAuthenticated)
@@ -125,18 +130,17 @@
             }
             else
             {
-                // Si pas connecté, on arrête le chargement (ou on redirige)
                 isLoading = false;
             }
 
-            StateHasChanged(); // Indispensable pour rafraîchir l'affichage après le chargement
+            StateHasChanged();
         }
     }
 
     private async Task LoadObjectives()
     {
         isLoading = true;
-        StateHasChanged(); // Affiche le spinner
+        StateHasChanged();
 
         try
         {
@@ -144,13 +148,18 @@
         }
         catch (Exception ex)
         {
-            // On peut logger l'erreur ou juste laisser la liste vide si 401
             Console.WriteLine($"Erreur chargement objectifs : {ex.Message}");
         }
         finally
         {
             isLoading = false;
-            // Pas besoin de StateHasChanged ici car il est appelé dans OnAfterRenderAsync juste après
         }
+    }
+
+    private void OpenDetails(ObjectiveDto obj)
+    {
+        var parameters = new DialogParameters<ObjectiveDetailsDialog> { { x => x.Objective, obj } };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ObjectiveDetailsDialog>("Détails de l'objectif", parameters, options);
     }
 }

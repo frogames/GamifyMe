@@ -2,79 +2,75 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.Shared.Models
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 @using System.Net.Http.Json
 @using MudBlazor
 @using Microsoft.JSInterop
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
     <div class="d-flex justify-space-between align-center mb-6">
         <MudText Typo="Typo.h4" Color="Color.Primary">Boutique</MudText>
+        
+        <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">
+            @userCurrencyBalance
+        </MudChip>
     </div>
-    <MudPaper Class="mb-4 p-4" Elevation="1">
-        <MudText Typo="Typo.h6">Votre solde : @userCurrencyBalance Crédits</MudText>
+
+    <MudPaper Class="mb-6 pa-4" Elevation="1">
+        <MudText Typo="Typo.subtitle1" Class="mb-2">Filtrer par type :</MudText>
+        <MudChipSet T="string" @bind-SelectedValue="selectedFilter" CheckMark SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" Variant="Variant.Outlined">
+            <MudChip Text="All" Default="true">Tout</MudChip>
+            <MudChip Text="Physical">Objets Physiques</MudChip>
+            <MudChip Text="Interfaces">Interfaces</MudChip>
+            <MudChip Text="Sounds">Sons</MudChip>
+            <MudChip Text="QRCode">QR Codes</MudChip>
+            <MudChip Text="Boost">Boosts</MudChip>
+        </MudChipSet>
     </MudPaper>
 
     @if (isLoading)
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
     }
-    else if (storeItems == null || !storeItems.Any())
+    else if (!FilteredItems.Any())
     {
-        <MudAlert Severity="Severity.Info">La boutique est vide pour le moment.</MudAlert>
+        <MudAlert Severity="Severity.Info">Aucun article ne correspond à votre recherche.</MudAlert>
     }
     else
     {
         <MudGrid>
-            @foreach (var item in storeItems)
+            @foreach (var item in FilteredItems)
             {
-                <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="3" Class="d-flex flex-column h-100" Style="@(item.IsOwned && item.IsUnique ? "opacity: 0.6; filter: grayscale(100%);" : "")">
+                <MudItem xs="6" sm="4" md="3">
+                    <MudCard Elevation="3" Class="d-flex flex-column h-100 cursor-pointer hover-effect" 
+                             Style="@(item.IsOwned && item.IsUnique ? "opacity: 0.6; filter: grayscale(100%);" : "")"
+                             @onclick="@(() => OpenItemDetails(item))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Color="Color.Primary" />
                             </CardHeaderAvatar>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h6">@item.Name</MudText>
+                                <MudText Typo="Typo.body1" Style="font-weight:bold;">@item.Name</MudText>
                                 @if (item.IsOwned && item.IsUnique)
                                 {
-                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="mt-1">Déjà possédé</MudChip>
+                                    <MudText Typo="Typo.caption" Color="Color.Success">Déjà possédé</MudText>
                                 }
                             </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent Class="flex-grow-1">
-                            <MudText Typo="Typo.body2" Class="mb-2">@item.Description</MudText>
-                            <MudText Typo="Typo.h6" Color="Color.Secondary">@item.Price Crédits</MudText>
-                            @if (item.Stock < 10 && item.Stock > 0)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Warning">Plus que @item.Stock en stock !</MudText>
-                            }
-                            else if (item.Stock == 0)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Error">Rupture de stock</MudText>
-                            }
+                        <MudCardContent Class="flex-grow-1 pt-0">
+                            <MudText Typo="Typo.caption" Class="mb-2 description-clamp">@item.Description</MudText>
+                            <div class="d-flex justify-space-between align-end mt-2">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-weight:bold;">@item.Price Cr</MudText>
+                                @if (item.ItemType != StoreItemType.Digital && item.Stock == 0)
+                                {
+                                     <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Size="Size.Small" />
+                                }
+                            </div>
                         </MudCardContent>
-                        <MudCardActions>
-                            @if (item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(item.DigitalAssetUrl))
-                            {
-                                <MudButton Variant="Variant.Text" 
-                                           Color="Color.Info" 
-                                           StartIcon="@Icons.Material.Filled.PlayArrow" 
-                                           OnClick="@(() => PreviewSound(item.DigitalAssetUrl))"
-                                           Size="Size.Small">
-                                    Écouter
-                                </MudButton>
-                            }
-                            <MudSpacer />
-                            <MudButton Variant="Variant.Filled" 
-                                       Color="Color.Primary" 
-                                       OnClick="@(() => PurchaseItem(item))" 
-                                       Disabled="@(item.Stock == 0 || (item.IsOwned && item.IsUnique) || isBusy)">
-                                @(item.IsOwned && item.IsUnique ? "Acquis" : "Acheter")
-                            </MudButton>
-                        </MudCardActions>
                     </MudCard>
                 </MudItem>
             }
@@ -82,11 +78,48 @@
     }
 </MudContainer>
 
+<style>
+    .hover-effect { transition: transform 0.2s; }
+    .hover-effect:hover { transform: translateY(-5px); }
+    .description-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
 @code {
     private List<StoreItemDto> storeItems = new();
     private bool isLoading = true;
-    private bool isBusy = false;
     private int userCurrencyBalance = 0;
+    private string selectedFilter = "All";
+
+    private IEnumerable<StoreItemDto> FilteredItems
+    {
+        get
+        {
+            if (storeItems == null) return Enumerable.Empty<StoreItemDto>();
+            
+            return selectedFilter switch
+            {
+                "Physical" => storeItems.Where(i => i.ItemType == StoreItemType.Physical),
+                "Interfaces" => storeItems.Where(i => i.ItemType == StoreItemType.Digital && 
+                                                      i.DigitalActionCode != null && 
+                                                      i.DigitalActionCode.StartsWith("UI_THEME_", StringComparison.OrdinalIgnoreCase)),
+                "Sounds" => storeItems.Where(i => i.ItemType == StoreItemType.Digital && 
+                                                 i.DigitalActionCode == "SCAN_SOUND"),
+                "QRCode" => storeItems.Where(i => i.ItemType == StoreItemType.Digital && 
+                                                  i.DigitalActionCode != null && 
+                                                  i.DigitalActionCode.StartsWith("QR_STYLE_", StringComparison.OrdinalIgnoreCase)),
+                "Boost" => storeItems.Where(i => i.ItemType == StoreItemType.Digital && 
+                                                 i.DigitalActionCode != null && 
+                                                 i.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)),
+                _ => storeItems
+            };
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,7 +131,6 @@
         isLoading = true;
         try
         {
-            // On charge les items ET les infos utilisateur (pour le solde) en parallèle
             var itemsTask = Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active");
             var infoTask = Http.GetFromJsonAsync<InfoBarDto>("api/users/info-bar");
 
@@ -107,7 +139,6 @@
             storeItems = itemsTask.Result ?? new List<StoreItemDto>();
             var info = infoTask.Result;
 
-            // On récupère le solde de la monnaie principale (pas l'XP)
             if (info?.OtherWallets != null && info.OtherWallets.Any())
             {
                 userCurrencyBalance = info.OtherWallets.First().Balance;
@@ -123,10 +154,44 @@
         }
     }
 
+    private async Task OpenItemDetails(StoreItemDto item)
+    {
+        var parameters = new DialogParameters<StoreItemDetailsDialog> 
+        { 
+            { x => x.Item, item },
+            { x => x.OnPlaySound, EventCallback.Factory.Create<string>(this, PreviewSound) }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        
+        var dialog = DialogService.Show<StoreItemDetailsDialog>("Détails", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool confirmed && confirmed)
+        {
+            await OpenPurchaseConfirmation(item);
+        }
+    }
+
+    private async Task OpenPurchaseConfirmation(StoreItemDto item)
+    {
+        var parameters = new DialogParameters<PurchaseConfirmationDialog> 
+        { 
+            { x => x.Item, item },
+            { x => x.UserBalance, userCurrencyBalance }
+        };
+        var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<PurchaseConfirmationDialog>("Confirmation", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool confirmed && confirmed)
+        {
+            await PurchaseItem(item);
+        }
+    }
+
     private async Task PurchaseItem(StoreItemDto item)
     {
-        if (isBusy) return;
-        isBusy = true;
         try
         {
             var response = await Http.PostAsync($"api/store/purchase/{item.Id}", null);
@@ -134,8 +199,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add($"Vous avez acheté : {item.Name} !", Severity.Success);
-                // On recharge pour mettre à jour le solde et le stock
-                await LoadStoreItems();
+                await LoadStoreItems(); // Refresh balance and stock
             }
             else
             {
@@ -147,10 +211,6 @@
         {
             Snackbar.Add($"Erreur technique : {ex.Message}", Severity.Error);
         }
-        finally
-        {
-            isBusy = false;
-        }
     }
 
     private async Task PreviewSound(string url)
@@ -161,12 +221,10 @@
             {
                 url = new Uri(Http.BaseAddress, url).ToString();
             }
-            Console.WriteLine($"[Store] Playing sound from URL: {url}");
             await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{url}').play()");
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error playing sound: {ex.Message}");
             Snackbar.Add("Impossible de lire l'audio", Severity.Error);
         }
     }

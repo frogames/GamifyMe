@@ -1,0 +1,30 @@
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string" Label="Prénom" @bind-Value="Model.FirstName" Required="true" RequiredError="Le prénom est requis." Class="mb-3" />
+            <MudTextField T="string" Label="Nom d'utilisateur" @bind-Value="Model.Username" Required="true" RequiredError="Le nom d'utilisateur est requis." Class="mb-3" />
+            <MudTextField T="string" Label="Email" @bind-Value="Model.Email" Required="true" RequiredError="L'email est requis." InputType="InputType.Email" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!success)">Enregistrer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public UpdateUserProfileDto Model { get; set; } = new();
+
+    private bool success;
+    private MudForm form;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+}

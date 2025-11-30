@@ -1,0 +1,49 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+
+<MudCard Elevation="3" Class="inventory-card d-flex flex-column" @onclick="OnClick">
+    <div class="d-flex justify-center align-center pa-4"
+         style="background-color: var(--mud-palette-background-grey); height: 120px;">
+        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Style="font-size: 3rem;"
+                 Color="@(Item.IsActive ? Color.Success : Color.Default)" />
+    </div>
+
+    <MudCardContent Class="flex-grow-1 pt-2 px-3 pb-3">
+        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1 text-truncate"><b>@Item.ItemName</b></MudText>
+        
+        <div class="d-flex justify-center">
+            @if (Item.ItemType == "Physical")
+            {
+                if (Item.IsActive)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">Retiré</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">À retirer</MudChip>
+                }
+            }
+            else if (Item.IsActive)
+            {
+                if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
+                {
+                     <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">En cours</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">Actif</MudChip>
+                }
+            }
+            else if (Item.ExpiresAt.HasValue && Item.ExpiresAt.Value < DateTime.UtcNow)
+            {
+                 <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">Expiré</MudChip>
+            }
+        </div>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public UserInventoryDto Item { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+}

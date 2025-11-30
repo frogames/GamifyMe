@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\GamifyMe.Api.props" />
-</Project>

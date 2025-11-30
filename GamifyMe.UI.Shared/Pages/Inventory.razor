@@ -1,15 +1,17 @@
 @page "/inventory"
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
+@inject IDialogService DialogService
 
 <PageTitle>Mon Inventaire</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-16">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
     <div class="d-flex justify-space-between align-center mb-6">
         <MudText Typo="Typo.h4" Color="Color.Primary">Mon Inventaire</MudText>
     </div>
@@ -24,85 +26,156 @@
     }
     else
     {
-        <MudGrid>
-            @foreach (var item in inventoryItems)
-            {
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="3" Class="h-100 d-flex flex-column">
-                        @* ZONE IMAGE / ICÔNE *@
-                        <div class="d-flex justify-center align-center pa-6"
-                             style="background-color: var(--mud-palette-background-grey);">
-                            <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Style="font-size: 4rem;"
-                                     Color="Color.Success" />
-                        </div>
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel Text="@($"Objets Physiques ({PhysicalItems.Count()})")" Expanded="false">
+                @if (PhysicalItems.Any())
+                {
+                    <div class="horizontal-scroll-container mb-2">
+                        @foreach (var item in PhysicalItems)
+                        {
+                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun objet physique.</MudText>
+                }
+            </MudExpansionPanel>
 
-                        <MudCardContent Class="flex-grow-1 pt-4">
-                            <MudText Typo="Typo.subtitle1" Align="Align.Center"><b>@item.ItemName</b></MudText>
-                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
-                                @(string.IsNullOrEmpty(item.Description) ? "Aucune description" : item.Description)
-                            </MudText>
-                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-2" Color="Color.Info">
-                                Acquis le : @item.AcquiredDate.ToString("dd/MM/yyyy")
-                            </MudText>
+            <MudExpansionPanel Text="@($"Interfaces ({InterfaceItems.Count()})")" Expanded="false">
+                @if (InterfaceItems.Any())
+                {
+                    <div class="horizontal-scroll-container mb-2">
+                        @foreach (var item in InterfaceItems)
+                        {
+                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucune interface.</MudText>
+                }
+            </MudExpansionPanel>
 
-                            @if (item.ItemType == "Physical")
-                            {
-                                <div class="d-flex justify-center mt-2">
-                                    @if (item.IsActive)
-                                    {
-                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Retiré</MudChip>
-                                    }
-                                    else
-                                    {
-                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled">À retirer</MudChip>
-                                    }
-                                </div>
-                            }
-                            else if (!string.IsNullOrEmpty(item.DigitalActionCode))
-                            {
-                                <div class="d-flex flex-column align-center mt-3">
-                                    @if (!string.IsNullOrEmpty(item.DigitalAssetUrl) && item.DigitalActionCode == "SCAN_SOUND")
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" 
-                                                       Color="Color.Info" 
-                                                       Variant="Variant.Filled"
-                                                       Size="Size.Small"
-                                                       Class="mb-2"
-                                                       OnClick="@(() => PreviewSound(item.DigitalAssetUrl))"
-                                                       Title="Écouter" />
-                                    }
+            <MudExpansionPanel Text="@($"Sons ({SoundItems.Count()})")" Expanded="false">
+                @if (SoundItems.Any())
+                {
+                    <div class="horizontal-scroll-container mb-2">
+                        @foreach (var item in SoundItems)
+                        {
+                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun son.</MudText>
+                }
+            </MudExpansionPanel>
 
-                                    @if (item.DigitalActionCode == "XP_BOOST_2X_24H")
-                                    {
-                                         <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.RocketLaunch">Boost Actif</MudChip>
-                                         <MudText Typo="Typo.caption" Color="Color.Default">Expire le : @item.ExpiresAt?.ToLocalTime().ToString("g")</MudText>
-                                    }
-                                    else if (item.IsActive)
-                                    {
-                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" Class="mb-2">Actif</MudChip>
-                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => ToggleItem(item))">
-                                            Déséquiper
-                                        </MudButton>
-                                    }
-                                    else
-                                    {
-                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => ToggleItem(item))">
-                                            Équiper
-                                        </MudButton>
-                                    }
-                                </div>
-                            }
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            }
-        </MudGrid>
+            <MudExpansionPanel Text="@($"Styles QR Code ({QrCodeItems.Count()})")" Expanded="false">
+                @if (QrCodeItems.Any())
+                {
+                    <div class="horizontal-scroll-container mb-2">
+                        @foreach (var item in QrCodeItems)
+                        {
+                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun style QR code.</MudText>
+                }
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="@($"Boosts ({BoostItems.Count()})")" Expanded="false">
+                @if (BoostItems.Any())
+                {
+                    <div class="horizontal-scroll-container mb-2">
+                        @foreach (var item in BoostItems)
+                        {
+                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun boost.</MudText>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
     }
 </MudContainer>
+
+<style>
+    .horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 16px;
+        padding-bottom: 8px; /* Space for scrollbar */
+        scrollbar-width: thin; /* Firefox */
+    }
+    
+    .horizontal-scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .horizontal-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .horizontal-scroll-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .inventory-card {
+        min-width: 160px;
+        width: 160px;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .inventory-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
 
 @code {
     private List<UserInventoryDto> inventoryItems = new();
     private bool isLoading = true;
+
+    private IEnumerable<UserInventoryDto> PhysicalItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Physical"));
+    
+    private IEnumerable<UserInventoryDto> InterfaceItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
+                                                                           i.DigitalActionCode != null && 
+                                                                           i.DigitalActionCode.StartsWith("UI_THEME_", StringComparison.OrdinalIgnoreCase)));
+
+    private IEnumerable<UserInventoryDto> SoundItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
+                                                                           i.DigitalActionCode == "SCAN_SOUND"));
+
+    private IEnumerable<UserInventoryDto> QrCodeItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
+                                                                           i.DigitalActionCode != null && 
+                                                                           i.DigitalActionCode.StartsWith("QR_STYLE_", StringComparison.OrdinalIgnoreCase)));
+                                                                           
+    private IEnumerable<UserInventoryDto> BoostItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
+                                                                          i.DigitalActionCode != null && 
+                                                                          i.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)));
+
+    private IEnumerable<UserInventoryDto> GetSortedItems(IEnumerable<UserInventoryDto> items)
+    {
+        return items.OrderByDescending(i => i.IsActive)
+                    .ThenByDescending(i => i.AcquiredDate);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,6 +199,23 @@
         }
     }
 
+    private async Task OpenItemDetails(UserInventoryDto item)
+    {
+        var parameters = new DialogParameters<InventoryItemDetailsDialog> 
+        { 
+            { x => x.Item, item },
+            { x => x.OnPlaySound, EventCallback.Factory.Create<string>(this, PreviewSound) }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        
+        var dialog = DialogService.Show<InventoryItemDetailsDialog>("Détails", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool confirmed && confirmed)
+        {
+            await ToggleItem(item);
+        }
+    }
 
     private async Task ToggleItem(UserInventoryDto item)
     {
@@ -146,7 +236,7 @@
                 // Update Theme if we toggled a UI Theme
                 if (item.DigitalActionCode != null && item.DigitalActionCode.StartsWith("UI_THEME_"))
                 {
-                    if (!item.IsActive) // Was inactive, now active
+                    if (!item.IsActive) // Was inactive, now active (logic inverted because we reload inventory after, but here we use the old item state)
                     {
                         ThemeService.SetTheme(item.DigitalActionCode);
                     }
@@ -176,7 +266,6 @@
             {
                 url = new Uri(Http.BaseAddress, url).ToString();
             }
-            Console.WriteLine($"[Inventory] Playing sound: {url}");
             await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{url}').play()");
         }
         catch (Exception ex)

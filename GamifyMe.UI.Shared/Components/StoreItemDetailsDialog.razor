@@ -1,0 +1,105 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
+            <div class="d-flex flex-column align-center mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="width: 80px; height: 80px;">
+                    <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="font-size: 3rem;" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Align="Align.Center">@Item.Name</MudText>
+                
+                <div class="d-flex gap-2 mt-2">
+                    @if (Item.IsUnique)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Objet Unique</MudChip>
+                    }
+                    @if (Item.IsOwned && Item.IsUnique)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Déjà possédé</MudChip>
+                    }
+                </div>
+            </div>
+
+            <MudText Typo="Typo.body1" Class="mb-4 text-justify">@Item.Description</MudText>
+
+            @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
+            }
+
+            <MudDivider Class="mb-4" />
+
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.body1"><strong>Prix :</strong></MudText>
+                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Medium">
+                    @Item.Price Crédits
+                </MudChip>
+            </div>
+
+            @if (Item.ItemType != StoreItemType.Digital)
+            {
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.body1"><strong>Stock :</strong></MudText>
+                    @if (Item.Stock == 0)
+                    {
+                        <MudText Color="Color.Error"><strong>Épuisé</strong></MudText>
+                    }
+                    else if (Item.Stock < 10)
+                    {
+                        <MudText Color="Color.Warning"><strong>Plus que @Item.Stock !</strong></MudText>
+                    }
+                    else
+                    {
+                        <MudText Color="Color.Success">@Item.Stock disponibles</MudText>
+                    }
+                </div>
+            }
+
+            @if (Item.ItemType == StoreItemType.Digital && Item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(Item.DigitalAssetUrl))
+            {
+                <div class="d-flex justify-center mb-4">
+                     <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Info" 
+                               StartIcon="@Icons.Material.Filled.PlayArrow" 
+                               OnClick="PlaySound">
+                        Écouter l'extrait
+                    </MudButton>
+                </div>
+            }
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="Buy" 
+                   Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique))">
+            @(Item.IsOwned && Item.IsUnique ? "Acquis" : "Acheter")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public StoreItemDto Item { get; set; }
+    [Parameter] public EventCallback<string> OnPlaySound { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+    
+    private void Buy() => MudDialog.Close(DialogResult.Ok(true));
+
+    private async Task PlaySound()
+    {
+        if (OnPlaySound.HasDelegate)
+        {
+            await OnPlaySound.InvokeAsync(Item.DigitalAssetUrl);
+        }
+    }
+}

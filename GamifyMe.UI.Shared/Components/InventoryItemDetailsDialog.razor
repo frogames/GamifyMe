@@ -1,0 +1,85 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
+            <div class="d-flex flex-column align-center mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="width: 80px; height: 80px;">
+                    <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="font-size: 3rem;" />
+                </MudAvatar>
+                <MudText Typo="Typo.h5" Align="Align.Center">@Item.ItemName</MudText>
+                
+                <div class="d-flex gap-2 mt-2">
+                    @if (Item.IsActive)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Actif</MudChip>
+                    }
+                    @if (Item.ExpiresAt.HasValue)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Expire le @Item.ExpiresAt.Value.ToLocalTime().ToString("g")</MudChip>
+                    }
+                </div>
+            </div>
+
+            <MudText Typo="Typo.body1" Class="mb-4 text-justify">@Item.Description</MudText>
+
+            <MudDivider Class="mb-4" />
+
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Acquis le :</MudText>
+                <MudText Typo="Typo.body2">@Item.AcquiredDate.ToLocalTime().ToString("d")</MudText>
+            </div>
+
+            @if (Item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(Item.DigitalAssetUrl))
+            {
+                <div class="d-flex justify-center mb-4 mt-4">
+                     <MudButton Variant="Variant.Outlined" 
+                                Color="Color.Info" 
+                                StartIcon="@Icons.Material.Filled.PlayArrow" 
+                                OnClick="PlaySound">
+                        Écouter l'extrait
+                    </MudButton>
+                </div>
+            }
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+        <MudSpacer />
+        
+        @if (Item.ItemType != "Physical" && Item.DigitalActionCode != "XP_BOOST_2X_24H") // Boosts auto-activate or have specific logic? Usually manual activation. Assuming toggle for now unless it's auto.
+        {
+             @if (Item.IsActive)
+             {
+                 <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Toggle">Déséquiper</MudButton>
+             }
+             else
+             {
+                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Toggle">Équiper</MudButton>
+             }
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public UserInventoryDto Item { get; set; }
+    [Parameter] public EventCallback<string> OnPlaySound { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+    
+    private void Toggle() => MudDialog.Close(DialogResult.Ok(true));
+
+    private async Task PlaySound()
+    {
+        if (OnPlaySound.HasDelegate)
+        {
+            await OnPlaySound.InvokeAsync(Item.DigitalAssetUrl);
+        }
+    }
+}

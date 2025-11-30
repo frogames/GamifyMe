@@ -6,6 +6,7 @@ namespace GamifyMe.Shared.Dtos
     public class InfoBarDto
     {
         public string? EstablishmentName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         // --- Section XP (Niveau) ---
         public int Level { get; set; }
