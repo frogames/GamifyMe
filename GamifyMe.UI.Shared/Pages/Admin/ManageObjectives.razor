@@ -89,6 +89,19 @@
                     {
                         <MudTextField T="int?" Label="Fréquence (Heures)" @bind-Value="newObjective.FrequencyHours" HelperText="Délai minimum entre deux validations (en heures)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                     }
+
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Onboarding</MudText>
+                    <MudSwitch T="bool" @bind-Value="newObjective.IsOnboarding" Label="Est une étape d'onboarding" Color="Color.Info" Class="mb-2" />
+                    @if (newObjective.IsOnboarding)
+                    {
+                        <MudSelect T="Guid?" Label="Objectif suivant (Onboarding)" @bind-Value="newObjective.NextOnboardingObjectiveId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-3">
+                            @foreach (var objective in allObjectivesList.Where(o => o.Id != editingObjectiveId))
+                            {
+                                <MudSelectItem Value="@((Guid?)objective.Id)">@objective.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+
                     <MudSwitch T="bool" @bind-Value="newObjective.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
 
                     @if (!string.IsNullOrEmpty(successMessageObjective))
@@ -132,6 +145,10 @@
                             <div class="d-flex align-center">
                                 <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-2" Size="Size.Small" />
                                 <MudText Typo="Typo.body2">@obj.Title</MudText>
+                                @if (obj.IsOnboarding)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                }
                             </div>
                         </MudTd>
                         <MudTd DataLabel="Lieu">@obj.Location</MudTd>
@@ -161,7 +178,7 @@
                             </div>
                         </MudTd>
                         <MudTd DataLabel="Actions">
-                            <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Small" Color="Color.Primary" OnClick="() => scanModal.Show(obj)" />
+
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEditObjective(obj))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(obj))" />
                         </MudTd>
@@ -276,7 +293,9 @@
             DisplayStartDate = objectiveToEdit.DisplayStartDate,
             DisplayEndDate = objectiveToEdit.DisplayEndDate,
             PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>(),
-            LifespanHours = objectiveToEdit.LifespanHours
+            LifespanHours = objectiveToEdit.LifespanHours,
+            IsOnboarding = objectiveToEdit.IsOnboarding,
+            NextOnboardingObjectiveId = objectiveToEdit.NextOnboardingObjectiveId
         };
         showForm = true;
     }

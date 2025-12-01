@@ -4,5 +4,6 @@
     {
         public UserProfileDto UserProfile { get; set; } = null!;
         public List<PendingOrderDto> PendingOrders { get; set; } = new();
+        public List<ObjectiveDto> ActiveObjectives { get; set; } = new();
     }
 }

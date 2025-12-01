@@ -56,15 +56,66 @@ namespace GamifyMe.Api.Services
                 validObjectives.Add(obj);
             }
 
+            // --- ONBOARDING LOGIC ---
+            var onboardingObjectives = validObjectives.Where(o => o.IsOnboarding).ToList();
+            var standardObjectives = validObjectives.Where(o => !o.IsOnboarding).ToList();
+
+            Objective? currentOnboardingObjective = null;
+
+            if (onboardingObjectives.Any())
+            {
+                // Find roots (objectives that are not anyone's NextOnboardingObjectiveId)
+                var pointedToIds = new HashSet<Guid>(onboardingObjectives
+                    .Where(o => o.NextOnboardingObjectiveId.HasValue)
+                    .Select(o => o.NextOnboardingObjectiveId.Value));
+
+                var roots = onboardingObjectives.Where(o => !pointedToIds.Contains(o.Id)).ToList();
+
+                foreach (var root in roots)
+                {
+                    var current = root;
+                    while (current != null)
+                    {
+                        // Check if validated
+                        if (!lastValidationDates.ContainsKey(current.Id))
+                        {
+                            // Found the first unvalidated step!
+                            currentOnboardingObjective = current;
+                            break;
+                        }
+
+                        // Move to next
+                        if (current.NextOnboardingObjectiveId.HasValue)
+                        {
+                            current = onboardingObjectives.FirstOrDefault(o => o.Id == current.NextOnboardingObjectiveId.Value);
+                        }
+                        else
+                        {
+                            current = null; // End of chain
+                        }
+                    }
+                    if (currentOnboardingObjective != null) break; // Found one
+                }
+            }
+
+            if (currentOnboardingObjective != null)
+            {
+                // Onboarding Mode: Return ONLY this objective
+                var dto = MapToDto(currentOnboardingObjective, false);
+                return new List<ObjectiveDto> { dto };
+            }
+
+            // --- STANDARD LOGIC ---
+
             // Build Chain Info (x/y)
             // We assume a linear chain for simplicity as requested ("single prerequisite")
             // But we must handle the graph structure safely.
             var objectiveDtos = new List<ObjectiveDto>();
             
             // Helper dictionary for quick lookup
-            var objMap = validObjectives.ToDictionary(o => o.Id);
+            var objMap = standardObjectives.ToDictionary(o => o.Id);
 
-            foreach (var obj in validObjectives)
+            foreach (var obj in standardObjectives)
             {
                 // Check prerequisites (Locking logic)
                 bool isLocked = false;
@@ -111,7 +162,7 @@ namespace GamifyMe.Api.Services
                     // Take the first prerequisite (assuming single chain)
                     var parentId = current.Prerequisites.First().Id;
                     // We need to look up the parent in our loaded list to continue traversing
-                    // Note: Parent might not be in 'validObjectives' if it's expired/inactive, 
+                    // Note: Parent might not be in 'standardObjectives' if it's expired/inactive, 
                     // but usually it should be. If not found, we stop.
                     var parent = allActiveObjectives.FirstOrDefault(o => o.Id == parentId);
                     if (parent == null || visited.Contains(parent.Id)) break;
@@ -231,7 +282,9 @@ namespace GamifyMe.Api.Services
                 Location = request.Location ?? string.Empty,
                 IconName = request.IconName ?? "Star",
                 Prerequisites = prerequisiteObjectives,
-                LifespanHours = request.LifespanHours
+                LifespanHours = request.LifespanHours,
+                IsOnboarding = request.IsOnboarding,
+                NextOnboardingObjectiveId = request.NextOnboardingObjectiveId
             };
 
             _context.Objectives.Add(objective);
@@ -271,6 +324,8 @@ namespace GamifyMe.Api.Services
             objective.Location = request.Location ?? string.Empty;
             objective.IconName = request.IconName ?? "Star";
             objective.LifespanHours = request.LifespanHours;
+            objective.IsOnboarding = request.IsOnboarding;
+            objective.NextOnboardingObjectiveId = request.NextOnboardingObjectiveId;
 
             await _context.SaveChangesAsync();
             return true;
@@ -306,7 +361,9 @@ namespace GamifyMe.Api.Services
                 IsActive = obj.IsActive,
                 IsAlreadyCompleted = isAlreadyCompleted,
                 PrerequisiteObjectiveIds = obj.Prerequisites?.Select(p => p.Id).ToList() ?? new List<Guid>(),
-                LifespanHours = obj.LifespanHours
+                LifespanHours = obj.LifespanHours,
+                IsOnboarding = obj.IsOnboarding,
+                NextOnboardingObjectiveId = obj.NextOnboardingObjectiveId
             };
         }
     }

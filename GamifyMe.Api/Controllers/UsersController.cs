@@ -20,12 +20,14 @@ namespace GamifyMe.Api.Controllers
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly ObjectiveService _objectiveService;
 
-        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService)
+        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService, ObjectiveService objectiveService)
         {
             _context = context;
             _configuration = configuration;
             _emailService = emailService;
+            _objectiveService = objectiveService;
         }
 
         [HttpPost("register")]
@@ -442,7 +444,6 @@ namespace GamifyMe.Api.Controllers
             {
                 bool isPhysical = o.StoreItem.ItemType == StoreItemType.Physical;
                 bool isPending = o.Status == OrderStatus.Pending;
-                
                 // Detection of bugged orders: Physical items that were auto-completed at purchase time
                 // We check if DateCompleted is very close to DatePurchased (e.g. within 10 seconds)
                 // This allows us to show these items as "Pending" to the admin so they can be validated.
@@ -462,6 +463,10 @@ namespace GamifyMe.Api.Controllers
                     });
                 }
             }
+
+            // Fetch Active Objectives for this user
+            var activeObjectives = await _objectiveService.GetActiveObjectivesAsync(user.Id, user.EstablishmentId);
+
             return Ok(new ProfileScanDto
             {
                 UserProfile = new UserProfileDto
@@ -475,10 +480,10 @@ namespace GamifyMe.Api.Controllers
                     QrCode = user.QrCode,
                     CreatedAt = user.CreatedAt
                 },
-                PendingOrders = pendingOrders
+                PendingOrders = pendingOrders,
+                ActiveObjectives = activeObjectives
             });
         }
-        
 
         [HttpDelete("me")]
         [Authorize]

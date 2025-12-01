@@ -40,11 +40,12 @@ namespace GamifyMe.Shared.Models
         public Guid? GroupId { get; set; }
         public Group? Group { get; set; }
 
-        // --- PROPRIÉTÉS CALCULÉES / NON MAPPÉES (CORRECTION) ---
-        [NotMapped] // <-- INDIQUE À EF CORE D'IGNORER CES CHAMPS EN BASE DE DONNÉES
+        public List<UserObjective> UserObjectives { get; set; } = new();
+
+        // --- PROPRIÉTÉS CALCULÉES / NON MAPPÉES ---
+        [NotMapped]
         public int Level { get; set; }
 
-        [NotMapped]
         public int CurrentXp { get; set; }
 
         [NotMapped]

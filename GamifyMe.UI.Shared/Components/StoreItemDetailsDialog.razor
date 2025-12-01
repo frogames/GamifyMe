@@ -26,6 +26,13 @@
 
             <MudText Typo="Typo.body1" Class="mb-4 text-justify">@Item.Description</MudText>
 
+            @if (!string.IsNullOrEmpty(Item.ImageUrl))
+            {
+                <div class="d-flex justify-center mb-4">
+                    <MudImage Src="@Item.ImageUrl" Alt="@Item.Name" Elevation="25" Class="rounded-lg" Style="max-width: 100%; max-height: 200px;" />
+                </div>
+            }
+
             @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
             {
                 <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>

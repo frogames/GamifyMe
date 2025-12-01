@@ -159,6 +159,9 @@ namespace GamifyMe.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsOnboarding")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsUnique")
                         .HasColumnType("boolean");
 
@@ -169,6 +172,9 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("NextOnboardingObjectiveId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -177,6 +183,8 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("NextOnboardingObjectiveId");
 
                     b.ToTable("Objectives");
                 });
@@ -193,7 +201,7 @@ namespace GamifyMe.Api.Migrations
 
                     b.HasIndex("PrerequisitesId");
 
-                    b.ToTable("ObjectiveObjective", (string)null);
+                    b.ToTable("ObjectiveObjective");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.Order", b =>
@@ -258,6 +266,9 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -296,6 +307,9 @@ namespace GamifyMe.Api.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("CurrentXp")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -382,6 +396,39 @@ namespace GamifyMe.Api.Migrations
                     b.ToTable("UserInventories");
                 });
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.UserObjective", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ObjectiveId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectiveId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserObjectives");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.Validation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -460,6 +507,16 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Establishment");
+                });
+
+            modelBuilder.Entity("GamifyMe.Shared.Models.Objective", b =>
+                {
+                    b.HasOne("GamifyMe.Shared.Models.Objective", "NextOnboardingObjective")
+                        .WithMany()
+                        .HasForeignKey("NextOnboardingObjectiveId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("NextOnboardingObjective");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.ObjectiveObjective", b =>
@@ -547,6 +604,25 @@ namespace GamifyMe.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.UserObjective", b =>
+                {
+                    b.HasOne("GamifyMe.Shared.Models.Objective", "Objective")
+                        .WithMany("UserObjectives")
+                        .HasForeignKey("ObjectiveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GamifyMe.Shared.Models.User", "User")
+                        .WithMany("UserObjectives")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Objective");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.Validation", b =>
                 {
                     b.HasOne("GamifyMe.Shared.Models.Objective", "Objective")
@@ -595,6 +671,8 @@ namespace GamifyMe.Api.Migrations
 
             modelBuilder.Entity("GamifyMe.Shared.Models.Objective", b =>
                 {
+                    b.Navigation("UserObjectives");
+
                     b.Navigation("Validations");
                 });
 
@@ -610,6 +688,8 @@ namespace GamifyMe.Api.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("UserObjectives");
 
                     b.Navigation("ValidationsReceived");
 

@@ -20,9 +20,8 @@
         </MudChip>
     </div>
 
-    <MudPaper Class="mb-6 pa-4" Elevation="1">
-        <MudText Typo="Typo.subtitle1" Class="mb-2">Filtrer par type :</MudText>
-        <MudSelect T="string" @bind-Value="selectedFilter" Label="Catégorie" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+    <div class="d-flex justify-end mb-4">
+        <MudSelect T="string" @bind-Value="selectedFilter" Label="Catégorie" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="d-inline-flex" Style="min-width: 200px;">
             <MudSelectItem Value="@("All")">Tout</MudSelectItem>
             <MudSelectItem Value="@("Physical")">Objets Physiques</MudSelectItem>
             <MudSelectItem Value="@("Interfaces")">Interfaces</MudSelectItem>
@@ -30,7 +29,7 @@
             <MudSelectItem Value="@("QRCode")">QR Codes</MudSelectItem>
             <MudSelectItem Value="@("Boost")">Boosts</MudSelectItem>
         </MudSelect>
-    </MudPaper>
+    </div>
 
     @if (isLoading)
     {

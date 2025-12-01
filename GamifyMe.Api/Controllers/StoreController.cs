@@ -4,6 +4,7 @@ using GamifyMe.Shared.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Hosting;
 
 namespace GamifyMe.Api.Controllers
 {
@@ -13,10 +14,12 @@ namespace GamifyMe.Api.Controllers
     public class StoreController : ControllerBase
     {
         private readonly StoreService _storeService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public StoreController(StoreService storeService)
+        public StoreController(StoreService storeService, IWebHostEnvironment webHostEnvironment)
         {
             _storeService = storeService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet("active")]
@@ -65,8 +68,6 @@ namespace GamifyMe.Api.Controllers
             
             if (!success)
             {
-                // Determine status code based on message or just return BadRequest/500
-                // For simplicity, using BadRequest for logic errors and 500 for exceptions caught in service
                 if (message.StartsWith("Erreur d'achat")) return StatusCode(500, message);
                 return BadRequest(message);
             }
@@ -90,6 +91,37 @@ namespace GamifyMe.Api.Controllers
             var success = await _storeService.DeleteStoreItemAsync(id);
             if (!success) return NotFound("Objet non trouvé.");
             return NoContent();
+        }
+
+        [HttpPost("upload-image")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Aucun fichier sélectionné.");
+
+            if (file.Length > 2 * 1024 * 1024) // 2MB limit
+                return BadRequest("L'image est trop lourde (max 2Mo).");
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest("Format non supporté (jpg, png, webp).");
+
+            var fileName = $"product_{Guid.NewGuid()}{extension}";
+            var uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            var filePath = Path.Combine(uploadPath, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var url = $"/images/products/{fileName}";
+            return Ok(new { Url = url });
         }
     }
 }

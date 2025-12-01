@@ -76,6 +76,26 @@
                     </div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
 
+                    @* IMAGE DU PRODUIT *@
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Image du produit (facultatif)</MudText>
+                    <div class="d-flex align-center gap-4 mb-4">
+                        @if (!string.IsNullOrEmpty(newStoreItem.ImageUrl))
+                        {
+                            <MudImage Src="@newStoreItem.ImageUrl" Alt="Product Image" Elevation="25" Class="rounded-lg" Style="width: 100px; height: 100px; object-fit: cover;" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => newStoreItem.ImageUrl = null)" />
+                        }
+                        else
+                        {
+                            <MudFileUpload T="IBrowserFile" Accept=".jpg, .jpeg, .png, .webp" FilesChanged="UploadImage">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                                        Uploader une image
+                                    </MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                        }
+                    </div>
+
                     @* DATES DE DISPONIBILITÉ *@
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Disponibilité (facultatif)</MudText>
                     <div class="d-flex gap-4 mb-3">
@@ -287,7 +307,8 @@
             StartDate = itemToEdit.StartDate,
             EndDate = itemToEdit.EndDate,
             DigitalAssetUrl = itemToEdit.DigitalAssetUrl,
-            IsUnique = itemToEdit.IsUnique
+            IsUnique = itemToEdit.IsUnique,
+            ImageUrl = itemToEdit.ImageUrl
         };
 
         if (newStoreItem.ItemType == StoreItemType.Digital)
@@ -348,5 +369,54 @@
         var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
         var result = await dialog.Result;
         if (!result.Canceled && result.Data is string iconName) newStoreItem.IconName = iconName;
+    }
+
+    private async Task UploadImage(IBrowserFile file)
+    {
+        if (file == null) return;
+
+        // Validation client-side
+        if (file.Size > 2 * 1024 * 1024)
+        {
+            errorMessageStore = "L'image est trop lourde (max 2Mo).";
+            return;
+        }
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(file.OpenReadStream(2 * 1024 * 1024));
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+        content.Add(fileContent, "file", file.Name);
+
+        isBusyStore = true;
+        try
+        {
+            var response = await Http.PostAsync("api/store/upload-image", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ImageUploadResult>();
+                if (result != null)
+                {
+                    newStoreItem.ImageUrl = result.Url;
+                    successMessageStore = "Image uploadée !";
+                }
+            }
+            else
+            {
+                errorMessageStore = $"Erreur upload : {await response.Content.ReadAsStringAsync()}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessageStore = $"Erreur upload : {ex.Message}";
+        }
+        finally
+        {
+            isBusyStore = false;
+        }
+    }
+
+    public class ImageUploadResult
+    {
+        public string Url { get; set; }
     }
 }

@@ -37,5 +37,9 @@ namespace GamifyMe.Shared.Dtos
         public List<Guid> PrerequisiteObjectiveIds { get; set; } = new List<Guid>();
 
         public int? LifespanHours { get; set; }
+
+        // Onboarding
+        public bool IsOnboarding { get; set; }
+        public Guid? NextOnboardingObjectiveId { get; set; }
     }
 }

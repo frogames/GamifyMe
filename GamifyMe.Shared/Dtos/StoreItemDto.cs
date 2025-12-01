@@ -24,7 +24,8 @@ namespace GamifyMe.Shared.Dtos
 
         public StoreItemType ItemType { get; set; } = StoreItemType.Physical;
         public bool IsActive { get; set; } = true;
-        public DateTime? StartDate { get; set; }
+        public string? ImageUrl { get; set; }
+    public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? DigitalActionCode { get; set; }
         public string? DigitalAssetUrl { get; set; }

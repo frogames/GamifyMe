@@ -37,5 +37,9 @@ namespace GamifyMe.Shared.Dtos
         public int? ChainPosition { get; set; }
         public int? ChainLength { get; set; }
         public DateTime? ExpirationDate { get; set; }
+
+        // Onboarding
+        public bool IsOnboarding { get; set; }
+        public Guid? NextOnboardingObjectiveId { get; set; }
     }
 }

@@ -6,9 +6,9 @@ namespace GamifyMe.Api.Data
 {
     public class DataContext : DbContext
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
-        public DataContext(DbContextOptions<DataContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
+        public DataContext(DbContextOptions<DataContext> options, IHttpContextAccessor? httpContextAccessor = null) : base(options)
         {
             _httpContextAccessor = httpContextAccessor;
         }
@@ -22,39 +22,44 @@ namespace GamifyMe.Api.Data
         public DbSet<StoreItem> StoreItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
-        public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; }
+        // public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; } // Removed to avoid conflict
         public DbSet<Group> Groups { get; set; }
         public DbSet<BonusPeriod> BonusPeriods { get; set; }
+        public DbSet<UserObjective> UserObjectives { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // --- CORRECTION : Configuration Many-to-Many (Objectif -> Prérequis) ---
-            // On dit à EF que Prerequisites est lié à IsPrerequisiteFor
-            // en utilisant la table de jointure ObjectiveObjective
             modelBuilder.Entity<Objective>()
                 .HasMany(o => o.Prerequisites)
-                .WithMany(o => o.IsPrerequisiteFor) // <-- LA CORRECTION CLÉ
+                .WithMany(o => o.IsPrerequisiteFor)
                 .UsingEntity<ObjectiveObjective>(
-                    // L'entité de droite (Prerequisites)
-                    j => j
-                        .HasOne(oo => oo.PrerequisiteObjective)
-                        .WithMany() // Pas besoin de navigation retour sur la jointure
-                        .HasForeignKey(oo => oo.PrerequisitesId)
-                        .OnDelete(DeleteBehavior.Cascade),
-                    // L'entité de gauche (IsPrerequisiteFor)
-                    j => j
-                        .HasOne(oo => oo.IsPrerequisiteForObjective)
-                        .WithMany() // Pas besoin de navigation retour sur la jointure
-                        .HasForeignKey(oo => oo.IsPrerequisiteForId)
-                        .OnDelete(DeleteBehavior.Cascade),
-                    // Configuration de la table de jointure
-                    j =>
-                    {
-                        j.HasKey(oo => new { oo.IsPrerequisiteForId, oo.PrerequisitesId });
-                        j.ToTable("ObjectiveObjective");
-                    });
+                    l => l.HasOne(oo => oo.PrerequisiteObjective).WithMany().HasForeignKey(oo => oo.PrerequisitesId),
+                    r => r.HasOne(oo => oo.IsPrerequisiteForObjective).WithMany().HasForeignKey(oo => oo.IsPrerequisiteForId),
+                    j => j.HasKey(oo => new { oo.IsPrerequisiteForId, oo.PrerequisitesId })
+                );
+
+            // --- Configuration Onboarding (Self-referencing) ---
+            modelBuilder.Entity<Objective>()
+                .HasOne(o => o.NextOnboardingObjective)
+                .WithMany()
+                .HasForeignKey(o => o.NextOnboardingObjectiveId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // --- Configuration UserObjective ---
+            modelBuilder.Entity<UserObjective>()
+                .HasOne(uo => uo.User)
+                .WithMany(u => u.UserObjectives)
+                .HasForeignKey(uo => uo.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserObjective>()
+                .HasOne(uo => uo.Objective)
+                .WithMany(o => o.UserObjectives)
+                .HasForeignKey(uo => uo.ObjectiveId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // --- Filtre Global de Sécurité (Multi-Tenant) ---
             ApplyEstablishmentFilter(modelBuilder);

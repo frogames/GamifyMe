@@ -36,7 +36,8 @@ namespace GamifyMe.Shared.Models
 
         public bool IsUnique { get; set; } = false; // Si vrai, l'utilisateur ne peut l'acheter qu'une seule fois
 
-        public DateTime? StartDate { get; set; } // Date de début de disponibilité
+        public string? ImageUrl { get; set; }
+    public DateTime? StartDate { get; set; } // Date de début de disponibilité
         public DateTime? EndDate { get; set; }   // Date de fin de disponibilité
 
         // --- Pour les items Numériques ---

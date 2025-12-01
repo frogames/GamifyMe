@@ -1,7 +1,10 @@
 services:
   # --- BACKEND ---
   gamifyme-api:
-    image: ghcr.io/frogames/gamifyme-api:latest
+    image: gamifyme-api:prod
+    build:
+      context: .
+      dockerfile: GamifyMe.Api/Dockerfile
     container_name: gamifyme-api
     restart: always
     ports:
@@ -14,10 +17,15 @@ services:
       - Smtp__Port=${SMTP_PORT}
       - Smtp__SenderEmail=${SMTP_SENDER_EMAIL}
       - Smtp__Password=${SMTP_PASSWORD}
+    volumes:
+      - gamifyme_images:/app/wwwroot/images
 
   # --- FRONTEND ---
   gamifyme-web:
-    image: ghcr.io/frogames/gamifyme-web:latest
+    image: gamifyme-web:prod
+    build:
+      context: .
+      dockerfile: GamifyMe.Web/Dockerfile
     container_name: gamifyme-web
     restart: always
     ports:
@@ -29,3 +37,8 @@ services:
     depends_on:
       gamifyme-api:
         condition: service_started
+    volumes:
+      - gamifyme_images:/app/wwwroot/images
+
+volumes:
+  gamifyme_images:

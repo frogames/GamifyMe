@@ -1,4 +1,4 @@
-﻿using MudBlazor;
+using MudBlazor;
 
 namespace GamifyMe.UI.Shared.Helpers
 {
@@ -37,46 +37,78 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Basketball", Icons.Material.Filled.SportsBasketball },
             { "Tennis", Icons.Material.Filled.SportsTennis },
 
-            // --- ÉTUDES & TRAVAIL ---
+            // --- ÉTUDES, TRAVAIL & BUREAU ---
             { "Book", Icons.Material.Filled.MenuBook },
             { "School", Icons.Material.Filled.School },
             { "Pen", Icons.Material.Filled.Edit },
+            { "Pencil", Icons.Material.Filled.Edit }, // Alias
             { "Laptop", Icons.Material.Filled.Laptop },
             { "Computer", Icons.Material.Filled.Computer },
             { "Brain", Icons.Material.Filled.Psychology },
             { "Library", Icons.Material.Filled.LocalLibrary },
             { "Briefcase", Icons.Material.Filled.Work },
             { "Lightbulb", Icons.Material.Filled.Lightbulb },
+            { "Notebook", Icons.Material.Filled.Book }, // Alias
+            { "Scissors", Icons.Material.Filled.ContentCut },
+            { "Ruler", Icons.Material.Filled.Straighten },
+            { "Calculator", Icons.Material.Filled.Calculate },
 
             // --- BOUTIQUE & CONSO ---
             { "ShoppingBag", Icons.Material.Filled.ShoppingBag },
             { "Cart", Icons.Material.Filled.ShoppingCart },
             { "Tag", Icons.Material.Filled.LocalOffer },
             { "Ticket", Icons.Material.Filled.LocalActivity },
-            { "QrCode", Icons.Material.Filled.QrCode },
-            { "Shirt", Icons.Material.Filled.Checkroom },
-            { "Coffee", Icons.Material.Filled.LocalCafe },
-            { "Pizza", Icons.Material.Filled.LocalPizza },
-            { "Drink", Icons.Material.Filled.LocalDrink },
-            { "Restaurant", Icons.Material.Filled.Restaurant },
-            { "Euro", Icons.Material.Filled.Euro },
-            { "Money", Icons.Material.Filled.AttachMoney },
-
-            // --- LOISIRS & TECH ---
-            { "Gamepad", Icons.Material.Filled.VideogameAsset },
-            { "Headphones", Icons.Material.Filled.Headphones },
-            { "Music", Icons.Material.Filled.MusicNote },
-            { "Camera", Icons.Material.Filled.PhotoCamera },
             { "Phone", Icons.Material.Filled.Smartphone },
-            { "Palette", Icons.Material.Filled.Palette },
-            { "Brush", Icons.Material.Filled.Brush },
             { "Map", Icons.Material.Filled.Map },
             { "Explore", Icons.Material.Filled.Explore },
             { "Home", Icons.Material.Filled.Home },
             { "Lock", Icons.Material.Filled.Lock },
             { "Key", Icons.Material.Filled.VpnKey },
             { "Time", Icons.Material.Filled.AccessTime },
-            { "Calendar", Icons.Material.Filled.CalendarToday }
+            { "Calendar", Icons.Material.Filled.CalendarToday },
+
+            // --- VÊTEMENTS & ACCESSOIRES ---
+            { "Tshirt", Icons.Material.Filled.Checkroom },
+            { "Polo", Icons.Material.Filled.SportsTennis }, // Distinct: Tennis shirt
+            { "Shirt", Icons.Material.Filled.Work }, // Distinct: Work shirt
+            { "Pants", Icons.Material.Filled.DirectionsWalk }, // Distinct: Legs/Walking
+            { "Shoes", Icons.Material.Filled.Hiking }, // Distinct: Boots/Hiking
+            { "Hat", Icons.Material.Filled.Face },
+            { "Scarf", Icons.Material.Filled.AcUnit },
+            { "Glasses", Icons.Material.Filled.Visibility },
+            { "Sunglasses", Icons.Material.Filled.VisibilityOff },
+            { "Watch", Icons.Material.Filled.Watch },
+            { "Bag", Icons.Material.Filled.Backpack },
+            { "Backpack", Icons.Material.Filled.Backpack },
+            { "Umbrella", Icons.Material.Filled.Umbrella },
+
+            // --- NOURRITURE & BOISSONS ---
+            { "Mug", Icons.Material.Filled.EmojiFoodBeverage },
+            { "Cup", Icons.Material.Filled.LocalCafe },
+            { "Glass", Icons.Material.Filled.LocalBar },
+            { "Bottle", Icons.Material.Filled.LocalDrink },
+            { "Camera", Icons.Material.Filled.PhotoCamera },
+            { "Mouse", Icons.Material.Filled.Mouse },
+            { "Keyboard", Icons.Material.Filled.Keyboard },
+            { "Gamepad", Icons.Material.Filled.VideogameAsset },
+            { "Battery", Icons.Material.Filled.BatteryFull },
+            { "Ball", Icons.Material.Filled.SportsSoccer },
+            { "Racket", Icons.Material.Filled.SportsTennis },
+            { "Skateboard", Icons.Material.Filled.Skateboarding },
+            { "Guitar", Icons.Material.Filled.MusicNote },
+            { "Piano", Icons.Material.Filled.Piano },
+            { "Palette", Icons.Material.Filled.Palette },
+            { "Brush", Icons.Material.Filled.Brush },
+
+            // --- DIVERS & FINANCE ---
+            { "Euro", Icons.Material.Filled.Euro },
+            { "Dollar", Icons.Material.Filled.AttachMoney },
+            { "Money", Icons.Material.Filled.AttachMoney },
+            { "CreditCard", Icons.Material.Filled.CreditCard },
+            { "Wallet", Icons.Material.Filled.AccountBalanceWallet },
+            { "Unlock", Icons.Material.Filled.LockOpen },
+            { "StarOutline", Icons.Material.Filled.StarOutline },
+            { "HeartOutline", Icons.Material.Filled.FavoriteBorder }
         };
 
         // Méthode utilitaire pour récupérer l'icône (avec fallback si introuvable)

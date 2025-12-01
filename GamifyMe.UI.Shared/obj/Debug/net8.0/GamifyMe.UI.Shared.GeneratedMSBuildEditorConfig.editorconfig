@@ -111,8 +111,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cTWFuYWdlU3RvcmUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/ScanProfile.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU2NhblByb2ZpbGUucmF6b3I=
+[D:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/Scanner.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU2Nhbm5lci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/GamifyMe/GamifyMe.UI.Shared/Pages/ConfirmEmail.razor]

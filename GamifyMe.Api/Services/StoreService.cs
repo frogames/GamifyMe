@@ -46,7 +46,8 @@ namespace GamifyMe.Api.Services
                 DigitalActionCode = item.DigitalActionCode,
                 DigitalAssetUrl = item.DigitalAssetUrl,
                 IsUnique = item.IsUnique,
-                IsOwned = ownedItemIds.Contains(item.Id)
+                IsOwned = ownedItemIds.Contains(item.Id),
+                ImageUrl = item.ImageUrl
             }).ToList();
         }
 
@@ -65,7 +66,8 @@ namespace GamifyMe.Api.Services
                     IconName = item.IconName,
                     IsActive = item.IsActive,
                     DigitalActionCode = item.DigitalActionCode,
-                    DigitalAssetUrl = item.DigitalAssetUrl
+                    DigitalAssetUrl = item.DigitalAssetUrl,
+                    ImageUrl = item.ImageUrl
                 })
                 .ToListAsync();
         }
@@ -86,7 +88,8 @@ namespace GamifyMe.Api.Services
                 IconName = storeItem.IconName,
                 IsActive = storeItem.IsActive,
                 DigitalActionCode = storeItem.DigitalActionCode,
-                DigitalAssetUrl = storeItem.DigitalAssetUrl
+                DigitalAssetUrl = storeItem.DigitalAssetUrl,
+                ImageUrl = storeItem.ImageUrl
             };
         }
 
@@ -107,7 +110,8 @@ namespace GamifyMe.Api.Services
                 IsActive = request.IsActive,
                 IsUnique = request.IsUnique,
                 StartDate = request.StartDate,
-                EndDate = request.EndDate
+                EndDate = request.EndDate,
+                ImageUrl = request.ImageUrl
             };
 
             _dbContext.StoreItems.Add(storeItem);
@@ -134,6 +138,7 @@ namespace GamifyMe.Api.Services
             storeItem.IsUnique = request.IsUnique;
             storeItem.StartDate = request.StartDate;
             storeItem.EndDate = request.EndDate;
+            storeItem.ImageUrl = request.ImageUrl;
 
             await _dbContext.SaveChangesAsync();
             return true;
