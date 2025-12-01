@@ -1,10 +1,7 @@
 services:
   # --- BACKEND ---
   gamifyme-api:
-    image: gamifyme-api:prod
-    build:
-      context: .
-      dockerfile: GamifyMe.Api/Dockerfile
+    image: ghcr.io/frogames/gamifyme-api:latest
     container_name: gamifyme-api
     restart: always
     ports:
@@ -22,10 +19,7 @@ services:
 
   # --- FRONTEND ---
   gamifyme-web:
-    image: gamifyme-web:prod
-    build:
-      context: .
-      dockerfile: GamifyMe.Web/Dockerfile
+    image: ghcr.io/frogames/gamifyme-web:latest
     container_name: gamifyme-web
     restart: always
     ports:

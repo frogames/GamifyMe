@@ -1,4 +1,4 @@
-using MudBlazor;
+﻿using MudBlazor;
 
 namespace GamifyMe.UI.Shared.Helpers
 {
@@ -64,21 +64,6 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Home", Icons.Material.Filled.Home },
             { "Lock", Icons.Material.Filled.Lock },
             { "Key", Icons.Material.Filled.VpnKey },
-            { "Time", Icons.Material.Filled.AccessTime },
-            { "Calendar", Icons.Material.Filled.CalendarToday },
-
-            // --- VÊTEMENTS & ACCESSOIRES ---
-            { "Tshirt", Icons.Material.Filled.Checkroom },
-            { "Polo", Icons.Material.Filled.SportsTennis }, // Distinct: Tennis shirt
-            { "Shirt", Icons.Material.Filled.Work }, // Distinct: Work shirt
-            { "Pants", Icons.Material.Filled.DirectionsWalk }, // Distinct: Legs/Walking
-            { "Shoes", Icons.Material.Filled.Hiking }, // Distinct: Boots/Hiking
-            { "Hat", Icons.Material.Filled.Face },
-            { "Scarf", Icons.Material.Filled.AcUnit },
-            { "Glasses", Icons.Material.Filled.Visibility },
-            { "Sunglasses", Icons.Material.Filled.VisibilityOff },
-            { "Watch", Icons.Material.Filled.Watch },
-            { "Bag", Icons.Material.Filled.Backpack },
             { "Backpack", Icons.Material.Filled.Backpack },
             { "Umbrella", Icons.Material.Filled.Umbrella },
 

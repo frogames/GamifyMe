@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2baaf4da3c047ad329154503314bcec35641499")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd874e00e3cb35fa8d472493f92c8ed921450cbf")]
 [assembly: System.Reflection.AssemblyProductAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

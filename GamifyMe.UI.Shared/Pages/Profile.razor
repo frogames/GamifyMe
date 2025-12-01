@@ -197,7 +197,7 @@
         var dialog = await DialogService.ShowAsync<DialogConfirmation>("Suppression de compte", parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             try
             {
