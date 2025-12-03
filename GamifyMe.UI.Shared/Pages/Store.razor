@@ -46,11 +46,11 @@
             {
                 <MudItem xs="6" sm="4" md="3">
                     <MudCard Elevation="3" Class="d-flex flex-column h-100 cursor-pointer hover-effect" 
-                             Style="@(item.IsOwned && item.IsUnique ? "opacity: 0.6; filter: grayscale(100%);" : "")"
+                             Style="@GetCardStyle(item)"
                              @onclick="@(() => OpenItemDetails(item))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Color="Color.Primary" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(item.Color) ? $"color:{item.Color};" : "")" Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" />
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.body1" Style="font-weight:bold;">@item.Name</MudText>
@@ -226,5 +226,26 @@
         {
             Snackbar.Add("Impossible de lire l'audio", Severity.Error);
         }
+    }
+
+    private string GetCardStyle(StoreItemDto item)
+    {
+        var style = "";
+        if (item.IsOwned && item.IsUnique)
+        {
+            style += "opacity: 0.6; filter: grayscale(100%);";
+        }
+        
+        // Affordability Border
+        if (userCurrencyBalance >= item.Price)
+        {
+            style += "border: 2px solid var(--mud-palette-success);";
+        }
+        else
+        {
+            style += "border: 2px solid var(--mud-palette-error);";
+        }
+        
+        return style;
     }
 }

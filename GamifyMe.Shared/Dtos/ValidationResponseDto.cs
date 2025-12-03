@@ -13,5 +13,8 @@
 
         // --- DIGITAL REWARDS ---
         public string? ScanSoundUrl { get; set; }
+
+        // --- OVERRIDE LOGIC ---
+        public bool RequiresConfirmation { get; set; }
     }
 }

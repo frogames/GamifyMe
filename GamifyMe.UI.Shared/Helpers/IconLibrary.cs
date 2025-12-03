@@ -36,6 +36,8 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Soccer", Icons.Material.Filled.SportsSoccer },
             { "Basketball", Icons.Material.Filled.SportsBasketball },
             { "Tennis", Icons.Material.Filled.SportsTennis },
+            { "Sports", Icons.Material.Filled.Sports },
+            { "SportsScore", Icons.Material.Filled.SportsScore },
 
             // --- ÉTUDES, TRAVAIL & BUREAU ---
             { "Book", Icons.Material.Filled.MenuBook },
@@ -81,9 +83,13 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Racket", Icons.Material.Filled.SportsTennis },
             { "Skateboard", Icons.Material.Filled.Skateboarding },
             { "Guitar", Icons.Material.Filled.MusicNote },
+            { "Music", Icons.Material.Filled.MusicNote },
             { "Piano", Icons.Material.Filled.Piano },
             { "Palette", Icons.Material.Filled.Palette },
             { "Brush", Icons.Material.Filled.Brush },
+            { "Tshirt", Icons.Material.Filled.Accessibility },
+            { "Cake", Icons.Material.Filled.Cake },
+            { "LunchDining", Icons.Material.Filled.LunchDining },
 
             // --- DIVERS & FINANCE ---
             { "Euro", Icons.Material.Filled.Euro },
@@ -93,7 +99,8 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Wallet", Icons.Material.Filled.AccountBalanceWallet },
             { "Unlock", Icons.Material.Filled.LockOpen },
             { "StarOutline", Icons.Material.Filled.StarOutline },
-            { "HeartOutline", Icons.Material.Filled.FavoriteBorder }
+            { "HeartOutline", Icons.Material.Filled.FavoriteBorder },
+            { "DarkMode", Icons.Material.Filled.DarkMode },
         };
 
         // Méthode utilitaire pour récupérer l'icône (avec fallback si introuvable)

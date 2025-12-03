@@ -69,12 +69,15 @@
                         <MudTooltip Text="Cliquez pour changer l'icône">
                             <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                 <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                    <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(newStoreItem.Color) ? $"color:{newStoreItem.Color};" : "")}")" Color="@(string.IsNullOrEmpty(newStoreItem.Color) ? Color.Primary : Color.Default)" />
                                 </MudPaper>
                             </MudBadge>
                         </MudTooltip>
                     </div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
+
+                    @* COULEUR *@
+                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="newStoreItem.Color" Style="@($"color: {newStoreItem.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
 
                     @* IMAGE DU PRODUIT *@
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Image du produit (facultatif)</MudText>
@@ -145,7 +148,7 @@
                     <RowTemplate Context="item">
                         <MudTd DataLabel="Nom">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(item.Color) ? $"color:{item.Color};" : "")" Color="@(string.IsNullOrEmpty(item.Color) ? Color.Default : Color.Default)" />
                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                             </div>
                         </MudTd>
@@ -308,7 +311,8 @@
             EndDate = itemToEdit.EndDate,
             DigitalAssetUrl = itemToEdit.DigitalAssetUrl,
             IsUnique = itemToEdit.IsUnique,
-            ImageUrl = itemToEdit.ImageUrl
+            ImageUrl = itemToEdit.ImageUrl,
+            Color = itemToEdit.Color
         };
 
         if (newStoreItem.ItemType == StoreItemType.Digital)

@@ -15,6 +15,8 @@ namespace GamifyMe.Shared.Dtos
         // Le QR Code du joueur qui a été scanné
         public string UserQrCode { get; set; } = string.Empty;
 
+        // Force validation (Admin override)
+        public bool Force { get; set; }
 
         // --- ANCIENS CHAMPS (Pour compatibilité temporaire) ---
         // On peut les garder pour éviter des erreurs de build si d'autres fichiers les utilisent encore,

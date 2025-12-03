@@ -1,5 +1,6 @@
 ﻿using GamifyMe.Api.Constants;
 using GamifyMe.Api.Data;
+using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,10 +16,12 @@ namespace GamifyMe.Api.Controllers
     public class DashboardController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly ObjectiveService _objectiveService;
 
-        public DashboardController(DataContext context)
+        public DashboardController(DataContext context, ObjectiveService objectiveService)
         {
             _context = context;
+            _objectiveService = objectiveService;
         }
 
         [HttpGet("activity-logs")]
@@ -81,7 +84,7 @@ namespace GamifyMe.Api.Controllers
 
             if (request.Type == "Objective")
             {
-                return await ProcessObjectiveScan(request.QrCode, request.UserQrCode, establishmentId);
+                return await ProcessObjectiveScan(request, establishmentId);
             }
             else if (request.Type == "Profile")
             {
@@ -121,8 +124,11 @@ namespace GamifyMe.Api.Controllers
             });
         }
 
-        private async Task<ActionResult<ValidationResponseDto>> ProcessObjectiveScan(string objectiveIdString, string userQrCode, Guid establishmentId)
+        private async Task<ActionResult<ValidationResponseDto>> ProcessObjectiveScan(CreateValidationDto request, Guid establishmentId)
         {
+            var objectiveIdString = request.QrCode;
+            var userQrCode = request.UserQrCode;
+
             // 1. Trouver l'utilisateur et l'objectif
             var user = await _context.Users.FirstOrDefaultAsync(u => u.QrCode == userQrCode);
             if (user == null) return NotFound("Joueur introuvable (QR Code invalide).");
@@ -135,6 +141,30 @@ namespace GamifyMe.Api.Controllers
             // 2. Récupérer le portefeuille XP et Monnaie (pour la mise à jour)
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "XP");
             var docWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "DOC");
+
+            // --- CHECK ACCESSIBILITY (New Requirement) ---
+            if (!request.Force)
+            {
+                var activeObjectives = await _objectiveService.GetActiveObjectivesAsync(user.Id, establishmentId);
+                var isAccessible = activeObjectives.Any(o => o.Id == objectiveId);
+                
+                if (!isAccessible)
+                {
+                    // Check if it's already validated to distinguish between "Done" and "Not Accessible"
+                    var alreadyValidated = await _context.Validations.AnyAsync(v => v.UserId == user.Id && v.ObjectiveId == objectiveId);
+                    
+                    if (!alreadyValidated || !objective.IsUnique)
+                    {
+                         return Ok(new ValidationResponseDto
+                         {
+                             Success = false,
+                             RequiresConfirmation = true,
+                             Message = "Cet objectif n'est pas accessible au joueur (prérequis, dates, ou verrouillé). Voulez-vous forcer ?",
+                             ScanSoundUrl = "/sounds/scan-error.mp3"
+                         });
+                    }
+                }
+            }
 
             // --- 3. VÉRIFICATION DES DOUBLONS ET DE L'UNICITÉ ---
 

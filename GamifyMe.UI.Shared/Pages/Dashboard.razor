@@ -112,7 +112,7 @@
                 <MudTd DataLabel="Action">
                     <div class="d-flex align-center">
                         @{
-                            var color = context.Color switch
+                            var color = (context.Color ?? "Default") switch
                             {
                                 "Success" => Color.Success,
                                 "Warning" => Color.Warning,
@@ -120,14 +120,14 @@
                                 _ => Color.Default
                             };
                         }
-                        <MudIcon Icon="@context.Icon" Color="@color" Size="Size.Small" Class="mr-2" />
-                        <MudText Typo="Typo.body2">@context.ActionType</MudText>
+                        <MudIcon Icon="@(context.Icon ?? "")" Color="@color" Size="Size.Small" Class="mr-2" />
+                        <MudText Typo="Typo.body2">@(context.ActionType ?? "")</MudText>
                     </div>
                 </MudTd>
-                <MudTd DataLabel="Détails"><b>@context.Details</b></MudTd>
+                <MudTd DataLabel="Détails"><b>@(context.Details ?? "")</b></MudTd>
                 <MudTd DataLabel="Joueur">
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                        @(context.ScannedUserName ?? context.ActorName)
+                        @(context.ScannedUserName ?? context.ActorName ?? "")
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Validé par">

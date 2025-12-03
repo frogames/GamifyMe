@@ -81,7 +81,6 @@
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Groupe</MudTh>
-                        <MudTh>Membres</MudTh>
                         <MudTh>XP Total</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="group">
@@ -92,7 +91,6 @@
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
                         </MudTd>
-                        <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
                         <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -111,7 +109,6 @@
                         <MudTh>Rang</MudTh>
                         <MudTh>Groupe</MudTh>
                         <MudTh>Membres</MudTh>
-                        <MudTh>XP Total</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="group">
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
@@ -122,7 +119,6 @@
                             </div>
                         </MudTd>
                         <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
-                        <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
                     </RowTemplate>
                 </MudTable>
             }

@@ -96,6 +96,38 @@
         </MudGrid>
 
         @* 5. HISTORIQUE RÉCENT *@
+        @if (profile.RecentActivity != null && profile.RecentActivity.Any())
+        {
+            <MudList T="string" Clickable="false" Dense="true" DisablePadding="true">
+                @foreach (var activity in profile.RecentActivity)
+                {
+                    <MudListItem Icon="@activity.Icon" IconColor="Color.Primary">
+                        <div class="d-flex justify-space-between align-center width-100">
+                            <div>
+                                <MudText Typo="Typo.body2">@activity.Description</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Date.ToLocalTime().ToString("g")</MudText>
+                            </div>
+                            <div class="d-flex flex-column align-end">
+                                @if (activity.XpChange != 0)
+                                {
+                                    <MudText Typo="Typo.caption" Color="@(activity.XpChange > 0 ? Color.Success : Color.Error)">
+                                        @(activity.XpChange > 0 ? "+" : "")@activity.XpChange XP
+                                    </MudText>
+                                }
+                                @if (activity.CurrencyChange != 0)
+                                {
+                                    <MudText Typo="Typo.caption" Color="@(activity.CurrencyChange > 0 ? Color.Success : Color.Error)">
+                                        @(activity.CurrencyChange > 0 ? "+" : "")@activity.CurrencyChange Cr
+                                    </MudText>
+                                }
+                            </div>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+                }
+            </MudList>
+        }
+        else
         {
             <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">Aucune activité récente.</MudText>
         }

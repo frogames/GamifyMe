@@ -281,6 +281,7 @@ namespace GamifyMe.Api.Services
                 DisplayEndDate = displayEndUtc,
                 Location = request.Location ?? string.Empty,
                 IconName = request.IconName ?? "Star",
+                Color = request.Color,
                 Prerequisites = prerequisiteObjectives,
                 LifespanHours = request.LifespanHours,
                 IsOnboarding = request.IsOnboarding,
@@ -323,6 +324,7 @@ namespace GamifyMe.Api.Services
             objective.DisplayEndDate = request.DisplayEndDate?.ToUniversalTime();
             objective.Location = request.Location ?? string.Empty;
             objective.IconName = request.IconName ?? "Star";
+            objective.Color = request.Color;
             objective.LifespanHours = request.LifespanHours;
             objective.IsOnboarding = request.IsOnboarding;
             objective.NextOnboardingObjectiveId = request.NextOnboardingObjectiveId;
@@ -349,6 +351,7 @@ namespace GamifyMe.Api.Services
                 Title = obj.Title,
                 Description = obj.Description,
                 IconName = obj.IconName,
+                Color = obj.Color,
                 XpReward = obj.XpReward,
                 DocPointsReward = obj.DocPointsReward,
                 Location = obj.Location,

@@ -30,6 +30,7 @@ namespace GamifyMe.Shared.Dtos
         // 2. CORRECTION : Rendu obligatoire, comme tu l'as demandé.
         [Required(ErrorMessage = "L'icône est requise.")]
         public string IconName { get; set; } = "fas fa-star"; // Garde une icône par défaut
+        public string? Color { get; set; }
 
         public bool IsActive { get; set; } = true;
 

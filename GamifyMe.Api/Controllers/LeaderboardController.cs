@@ -27,7 +27,7 @@ namespace GamifyMe.Api.Controllers
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
 
             var users = await _context.Users
-                .Where(u => u.EstablishmentId == establishmentId) 
+                .Where(u => u.EstablishmentId == establishmentId && u.Role == Roles.User) 
                 .Include(u => u.Wallets)
                 .Include(u => u.Group)
                 .ToListAsync();
@@ -63,7 +63,7 @@ namespace GamifyMe.Api.Controllers
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
 
             var users = await _context.Users
-                .Where(u => u.EstablishmentId == establishmentId) 
+                .Where(u => u.EstablishmentId == establishmentId && u.Role == Roles.User) 
                 .Include(u => u.Wallets)
                 .Include(u => u.Group)
                 .ToListAsync();

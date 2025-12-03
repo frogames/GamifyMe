@@ -43,12 +43,15 @@
                         <MudTooltip Text="Cliquez pour changer l'icône">
                             <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                 <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                    <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(newObjective.Color) ? $"color:{newObjective.Color};" : "")}")" Color="@(string.IsNullOrEmpty(newObjective.Color) ? Color.Primary : Color.Default)" />
                                 </MudPaper>
                             </MudBadge>
                         </MudTooltip>
                     </div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newObjective.IconName</MudText>
+
+                    @* COULEUR *@
+                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="newObjective.Color" Style="@($"color: {newObjective.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
 
                     <MudTextField T="string" Label="Lieu" @bind-Value="newObjective.Location" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
 
@@ -143,7 +146,7 @@
                     <RowTemplate Context="obj">
                         <MudTd DataLabel="Titre">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(obj.Color) ? $"color:{obj.Color};" : "")" Color="@(string.IsNullOrEmpty(obj.Color) ? Color.Default : Color.Default)" />
                                 <MudText Typo="Typo.body2">@obj.Title</MudText>
                                 @if (obj.IsOnboarding)
                                 {
@@ -295,7 +298,8 @@
             PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>(),
             LifespanHours = objectiveToEdit.LifespanHours,
             IsOnboarding = objectiveToEdit.IsOnboarding,
-            NextOnboardingObjectiveId = objectiveToEdit.NextOnboardingObjectiveId
+            NextOnboardingObjectiveId = objectiveToEdit.NextOnboardingObjectiveId,
+            Color = objectiveToEdit.Color
         };
         showForm = true;
     }

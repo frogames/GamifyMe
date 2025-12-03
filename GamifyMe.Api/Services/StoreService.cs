@@ -47,7 +47,8 @@ namespace GamifyMe.Api.Services
                 DigitalAssetUrl = item.DigitalAssetUrl,
                 IsUnique = item.IsUnique,
                 IsOwned = ownedItemIds.Contains(item.Id),
-                ImageUrl = item.ImageUrl
+                ImageUrl = item.ImageUrl,
+                Color = item.Color
             }).ToList();
         }
 
@@ -67,7 +68,8 @@ namespace GamifyMe.Api.Services
                     IsActive = item.IsActive,
                     DigitalActionCode = item.DigitalActionCode,
                     DigitalAssetUrl = item.DigitalAssetUrl,
-                    ImageUrl = item.ImageUrl
+                    ImageUrl = item.ImageUrl,
+                    Color = item.Color
                 })
                 .ToListAsync();
         }
@@ -89,7 +91,8 @@ namespace GamifyMe.Api.Services
                 IsActive = storeItem.IsActive,
                 DigitalActionCode = storeItem.DigitalActionCode,
                 DigitalAssetUrl = storeItem.DigitalAssetUrl,
-                ImageUrl = storeItem.ImageUrl
+                ImageUrl = storeItem.ImageUrl,
+                Color = storeItem.Color
             };
         }
 
@@ -111,7 +114,8 @@ namespace GamifyMe.Api.Services
                 IsUnique = request.IsUnique,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                ImageUrl = request.ImageUrl
+                ImageUrl = request.ImageUrl,
+                Color = request.Color
             };
 
             _dbContext.StoreItems.Add(storeItem);
@@ -139,6 +143,7 @@ namespace GamifyMe.Api.Services
             storeItem.StartDate = request.StartDate;
             storeItem.EndDate = request.EndDate;
             storeItem.ImageUrl = request.ImageUrl;
+            storeItem.Color = request.Color;
 
             await _dbContext.SaveChangesAsync();
             return true;
@@ -175,6 +180,14 @@ namespace GamifyMe.Api.Services
                 var storeItem = await _dbContext.StoreItems.FindAsync(itemId);
                 if (storeItem == null || !storeItem.IsActive) return (false, "Objet non disponible.");
                 if (storeItem.Stock <= 0) return (false, "Stock épuisé.");
+
+                if (storeItem.IsUnique)
+                {
+                    var alreadyOwned = await _dbContext.UserInventories
+                        .AnyAsync(ui => ui.UserId == userId && ui.StoreItemId == itemId);
+                    
+                    if (alreadyOwned) return (false, "Vous possédez déjà cet objet unique.");
+                }
 
                 var userWallet = await _dbContext.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP");
                 if (userWallet == null)

@@ -11,6 +11,7 @@ namespace GamifyMe.Shared.Dtos
 
         // Iconographie (comme tu l'as mentionné dans ta V1)
         public string? IconName { get; set; }
+        public string? Color { get; set; }
 
         // Récompenses
         public int XpReward { get; set; }
