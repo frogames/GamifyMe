@@ -42,5 +42,8 @@ namespace GamifyMe.Shared.Dtos
         // Onboarding
         public bool IsOnboarding { get; set; }
         public Guid? NextOnboardingObjectiveId { get; set; }
+
+        public double ActiveMultiplier { get; set; } = 1.0;
+        public string? BonusLabel { get; set; }
     }
 }

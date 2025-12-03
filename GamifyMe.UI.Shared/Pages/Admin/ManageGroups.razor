@@ -10,6 +10,7 @@
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
 <PageTitle>Gestion des Groupes</PageTitle>
 
@@ -36,6 +37,8 @@
 
                     <MudTextField T="string" Label="Nom" @bind-Value="groupModel.Name" For="@(() => groupModel.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                     <MudTextField T="string" Label="Description" @bind-Value="groupModel.Description" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
+                    
+                    <MudNumericField T="int?" Label="Durée d'inscription (heures, 0 = illimité)" @bind-Value="groupModel.RegistrationDurationHours" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Min="0" />
 
                     @* SÉLECTEUR D'ICÔNE *@
                     <div class="d-flex justify-center mb-4">
@@ -83,6 +86,7 @@
                         <MudTh>Description</MudTh>
                         <MudTh>Membres</MudTh>
                         <MudTh>XP Total</MudTh>
+                        <MudTh>Durée Inscr.</MudTh>
                         <MudTh>Actions</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="group">
@@ -95,7 +99,11 @@
                         <MudTd DataLabel="Description">@group.Description</MudTd>
                         <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
                         <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
+                        <MudTd DataLabel="Durée Inscr.">@(group.RegistrationDurationHours.HasValue && group.RegistrationDurationHours > 0 ? $"{group.RegistrationDurationHours} h" : "Illimité")</MudTd>
                         <MudTd DataLabel="Actions">
+                            <MudTooltip Text="Télécharger QR Code">
+                                <MudIconButton Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Color="Color.Primary" OnClick="@(() => DownloadQrCode(group))" />
+                            </MudTooltip>
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEdit(group))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteGroup(group))" />
                         </MudTd>
@@ -109,7 +117,7 @@
 @code {
     private bool showForm = false;
     private Guid? editingGroupId;
-    private UpdateGroupDto groupModel = new(); // Using UpdateGroupDto for both create and update as they are similar enough here, or map accordingly
+    private UpdateGroupDto groupModel = new(); 
     private List<GroupDto> groupsList = new();
     private bool isBusy = false;
     private string? successMessage;
@@ -150,7 +158,8 @@
             { 
                 Name = groupModel.Name, 
                 Description = groupModel.Description, 
-                IconName = groupModel.IconName 
+                IconName = groupModel.IconName,
+                RegistrationDurationHours = groupModel.RegistrationDurationHours
             };
             var response = await Http.PostAsJsonAsync("api/groups", createDto);
             if (response.IsSuccessStatusCode)
@@ -173,7 +182,8 @@
         {
             Name = group.Name,
             Description = group.Description,
-            IconName = group.IconName
+            IconName = group.IconName,
+            RegistrationDurationHours = group.RegistrationDurationHours
         };
         showForm = true;
     }
@@ -224,5 +234,11 @@
         var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
         var result = await dialog.Result;
         if (!result.Canceled && result.Data is string iconName) groupModel.IconName = iconName;
+    }
+
+    private async Task DownloadQrCode(GroupDto group)
+    {
+        var url = $"{Navigation.BaseUri}join-group/{group.Id}";
+        await JSRuntime.InvokeVoidAsync("generateAndDownloadQrCode", url, $"Groupe_{group.Name}.png");
     }
 }

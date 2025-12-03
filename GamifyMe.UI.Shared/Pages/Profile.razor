@@ -36,11 +36,19 @@
             <MudAvatar Style="width:80px; height:80px; font-size:2rem;" Color="Color.Primary" Class="mb-2">
                 @profile.FirstName.Substring(0, 1).ToUpper()
             </MudAvatar>
+            
+            @* NOM & PRÉNOM *@
             <div class="d-flex align-center">
                 <MudText Typo="Typo.h5">@profile.FirstName @profile.Username</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditProfile" Class="ml-2" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditName" Class="ml-2" Title="Modifier nom/prénom" />
             </div>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.Email</MudText>
+
+            @* EMAIL *@
+            <div class="d-flex align-center mt-1">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.Email</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditEmail" Class="ml-1" Title="Modifier l'email" />
+            </div>
+
             <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.EstablishmentName</MudText>
             <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-1">@profile.Role</MudChip>
         </div>
@@ -132,8 +140,12 @@
             <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">Aucune activité récente.</MudText>
         }
 
-        @* 6. DÉCONNEXION *@
+        @* 6. ACTIONS & DÉCONNEXION *@
         <div class="mt-8 d-flex flex-column gap-2">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Lock" OnClick="ChangePassword" FullWidth="true">
+                Changer mot de passe
+            </MudButton>
+
             <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true">
                 Se déconnecter
             </MudButton>
@@ -151,9 +163,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
         try
         {
-            // On charge les détails complets
+            isLoading = true;
             profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
         }
         catch (Exception ex)
@@ -168,40 +185,34 @@
 
     private async Task Logout()
     {
-        // 1. Supprimer le token
         await TokenService.RemoveTokenAsync();
-
-        // 2. Notifier le provider d'auth (si la méthode existe, sinon force reload)
-        // (Ici on fait un rechargement complet pour nettoyer l'état)
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 
-    private async Task EditProfile()
+    private async Task EditName()
     {
         if (profile == null) return;
 
-        var model = new UpdateUserProfileDto
+        var model = new UpdateUserNameDto
         {
             FirstName = profile.FirstName,
-            Username = profile.Username,
-            Email = profile.Email
+            Username = profile.Username
         };
 
-        var parameters = new DialogParameters<DialogEditProfile> { { x => x.Model, model } };
-        var dialog = await DialogService.ShowAsync<DialogEditProfile>("Modifier mon profil", parameters);
+        var parameters = new DialogParameters<DialogEditName> { { x => x.Model, model } };
+        var dialog = await DialogService.ShowAsync<DialogEditName>("Modifier mon nom", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            var updatedModel = (UpdateUserProfileDto)result.Data;
+            var updatedModel = (UpdateUserNameDto)result.Data;
             try
             {
-                var response = await Http.PutAsJsonAsync("api/users/profile", updatedModel);
+                var response = await Http.PutAsJsonAsync("api/users/profile/name", updatedModel);
                 if (response.IsSuccessStatusCode)
                 {
-                    // Refresh profile
                     profile = await response.Content.ReadFromJsonAsync<UserProfileDetailsDto>();
-                    Snackbar.Add("Profil mis à jour avec succès !", Severity.Success);
+                    Snackbar.Add("Profil mis à jour !", Severity.Success);
                 }
                 else
                 {
@@ -211,8 +222,71 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur update profil : {ex.Message}");
-                Snackbar.Add("Une erreur est survenue.", Severity.Error);
+                Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task EditEmail()
+    {
+        if (profile == null) return;
+
+        var model = new UpdateUserEmailDto { NewEmail = profile.Email };
+
+        var parameters = new DialogParameters<DialogEditEmail> { { x => x.Model, model } };
+        var dialog = await DialogService.ShowAsync<DialogEditEmail>("Modifier mon email", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var updatedModel = (UpdateUserEmailDto)result.Data;
+            try
+            {
+                var response = await Http.PutAsJsonAsync("api/users/profile/email", updatedModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Email mis à jour. Veuillez vérifier votre messagerie.", Severity.Success);
+                    await Logout(); // Force logout for re-confirmation
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Erreur : {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task ChangePassword()
+    {
+        var model = new ChangePasswordDto();
+        var parameters = new DialogParameters<DialogChangePassword> { { x => x.Model, model } };
+        var dialog = await DialogService.ShowAsync<DialogChangePassword>("Changer mot de passe", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var updatedModel = (ChangePasswordDto)result.Data;
+            try
+            {
+                var response = await Http.PutAsJsonAsync("api/users/profile/password", updatedModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Mot de passe modifié avec succès.", Severity.Success);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Erreur : {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
             }
         }
     }
@@ -221,7 +295,7 @@
     {
         var parameters = new DialogParameters<DialogConfirmation>
         {
-            { x => x.ContentText, "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible et toutes vos données seront perdues." },
+            { x => x.ContentText, "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible." },
             { x => x.ButtonText, "Supprimer" },
             { x => x.Color, Color.Error }
         };
@@ -240,8 +314,7 @@
                 }
                 else
                 {
-                    // Gérer l'erreur (ex: afficher un snackbar si disponible, ou juste log)
-                    Console.WriteLine("Erreur lors de la suppression du compte.");
+                    Snackbar.Add("Erreur lors de la suppression.", Severity.Error);
                 }
             }
             catch (Exception ex)

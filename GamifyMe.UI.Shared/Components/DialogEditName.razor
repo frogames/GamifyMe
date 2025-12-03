@@ -1,0 +1,21 @@
+@using GamifyMe.Shared.Dtos
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Model.FirstName" Label="Prénom" Required="true" />
+        <MudTextField @bind-Value="Model.Username" Label="Nom d'utilisateur" Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Enregistrer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public UpdateUserNameDto Model { get; set; } = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    void Cancel() => MudDialog.Cancel();
+}

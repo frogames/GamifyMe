@@ -41,6 +41,51 @@ namespace GamifyMe.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
+            // 3. Get Active Bonus Periods
+            var activeBonuses = await _context.BonusPeriods
+                .Where(b => b.EstablishmentId == establishmentId
+                            && b.IsActive
+                            && b.Type == BonusType.Xp
+                            && b.StartDate <= now
+                            && b.EndDate >= now)
+                .ToListAsync();
+
+            // 4. Get User Active Boosts
+            var userBoosts = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .Where(ui => ui.UserId == userId
+                             && ui.IsActive
+                             && (ui.ExpiresAt == null || ui.ExpiresAt > now)
+                             && ui.StoreItem.ItemType == StoreItemType.Digital
+                             && ui.StoreItem.DigitalActionCode != null
+                             && ui.StoreItem.DigitalActionCode.StartsWith("BOOST_XP_"))
+                .ToListAsync();
+
+            double totalMultiplier = 1.0;
+            var bonusLabels = new List<string>();
+
+            foreach (var bonus in activeBonuses)
+            {
+                totalMultiplier *= bonus.Multiplier;
+                bonusLabels.Add(bonus.Name);
+            }
+
+            foreach (var boost in userBoosts)
+            {
+                // Parse multiplier from code like "BOOST_XP_2X" or "BOOST_XP_1.5X"
+                var code = boost.StoreItem.DigitalActionCode!;
+                var parts = code.Split('_');
+                if (parts.Length >= 3)
+                {
+                    var valPart = parts[2].Replace("X", "").Replace("x", "");
+                    if (double.TryParse(valPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double m))
+                    {
+                        totalMultiplier *= m;
+                        bonusLabels.Add(boost.StoreItem.Name);
+                    }
+                }
+            }
+
             // Filter out expired by Lifespan
             var validObjectives = new List<Objective>();
             foreach (var obj in allActiveObjectives)
@@ -102,6 +147,8 @@ namespace GamifyMe.Api.Services
             {
                 // Onboarding Mode: Return ONLY this objective
                 var dto = MapToDto(currentOnboardingObjective, false);
+                dto.ActiveMultiplier = totalMultiplier;
+                dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
                 return new List<ObjectiveDto> { dto };
             }
 
@@ -184,6 +231,8 @@ namespace GamifyMe.Api.Services
 
                 var dto = MapToDto(obj, isAlreadyCompleted);
                 dto.NextAvailableDate = nextAvailableDate;
+                dto.ActiveMultiplier = totalMultiplier;
+                dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
 
                 if (obj.LifespanHours.HasValue)
                 {

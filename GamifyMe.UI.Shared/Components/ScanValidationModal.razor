@@ -92,6 +92,21 @@
 
     public void Show(ObjectiveDto objective) => _ = ShowAsync(objective);
 
+    public async Task ValidateManually(ObjectiveDto objective, string userQrCode)
+    {
+        objectiveToScan = objective;
+        scanMessage = null;
+        isScanError = false;
+        isConfirmationMode = false;
+        pendingUserQrCode = null;
+        IsOpen = true;
+        _isScannerComponentActive = false; // Pas de caméra pour validation manuelle
+        await InvokeAsync(StateHasChanged);
+        
+        // Appel direct à la validation
+        await ProcessScan(userQrCode, false);
+    }
+
     public async void Close()
     {
         if (qrScannerRef != null) try { await qrScannerRef.StopAsync(); } catch { }

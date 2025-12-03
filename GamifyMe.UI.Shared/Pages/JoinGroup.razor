@@ -1,0 +1,74 @@
+@page "/join-group/{GroupId:guid}"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Services
+@using System.Net.Http
+@using System.Net.Http.Json
+@using MudBlazor
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Rejoindre un Groupe</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-16 d-flex flex-column align-center">
+    <MudPaper Elevation="3" Class="pa-8 d-flex flex-column align-center" Style="width: 100%;">
+        <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+        
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-2">Rejoindre le groupe</MudText>
+        
+        @if (isLoading)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="my-4" />
+            <MudText Typo="Typo.body1">Traitement en cours...</MudText>
+        }
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="my-4">@errorMessage</MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/dashboard" FullWidth="true" Class="mt-4">Retour au tableau de bord</MudButton>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Success" Class="my-4">@successMessage</MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/dashboard" FullWidth="true" Class="mt-4">Continuer</MudButton>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter] public Guid GroupId { get; set; }
+
+    private bool isLoading = true;
+    private string? successMessage;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ExecuteJoinGroup();
+    }
+
+    private async Task ExecuteJoinGroup()
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"api/groups/join/{GroupId}");
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var message = await response.Content.ReadAsStringAsync();
+                successMessage = message;
+            }
+            else
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur : {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

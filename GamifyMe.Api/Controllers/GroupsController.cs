@@ -35,7 +35,8 @@ namespace GamifyMe.Api.Controllers
                     Description = g.Description,
                     IconName = g.IconName,
                     TotalXp = g.TotalXp,
-                    MemberCount = g.Members.Count
+                    MemberCount = g.Members.Count,
+                    RegistrationDurationHours = g.RegistrationDurationHours
                 })
                 .ToListAsync();
 
@@ -59,7 +60,8 @@ namespace GamifyMe.Api.Controllers
                 Description = group.Description,
                 IconName = group.IconName,
                 TotalXp = group.TotalXp,
-                MemberCount = group.Members.Count
+                MemberCount = group.Members.Count,
+                RegistrationDurationHours = group.RegistrationDurationHours
             });
         }
 
@@ -76,7 +78,9 @@ namespace GamifyMe.Api.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 IconName = request.IconName,
-                TotalXp = 0
+                TotalXp = 0,
+                RegistrationDurationHours = request.RegistrationDurationHours,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Groups.Add(group);
@@ -89,7 +93,8 @@ namespace GamifyMe.Api.Controllers
                 Description = group.Description,
                 IconName = group.IconName,
                 TotalXp = group.TotalXp,
-                MemberCount = 0
+                MemberCount = 0,
+                RegistrationDurationHours = group.RegistrationDurationHours
             });
         }
 
@@ -105,6 +110,7 @@ namespace GamifyMe.Api.Controllers
             group.Name = request.Name;
             group.Description = request.Description;
             group.IconName = request.IconName;
+            group.RegistrationDurationHours = request.RegistrationDurationHours;
 
             await _context.SaveChangesAsync();
 
@@ -115,7 +121,8 @@ namespace GamifyMe.Api.Controllers
                 Description = group.Description,
                 IconName = group.IconName,
                 TotalXp = group.TotalXp,
-                MemberCount = await _context.Users.CountAsync(u => u.GroupId == group.Id)
+                MemberCount = await _context.Users.CountAsync(u => u.GroupId == group.Id),
+                RegistrationDurationHours = group.RegistrationDurationHours
             });
         }
 
@@ -149,6 +156,16 @@ namespace GamifyMe.Api.Controllers
 
             var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId && g.EstablishmentId == establishmentId);
             if (group == null) return NotFound("Groupe introuvable.");
+
+            // Check Registration Duration
+            if (group.RegistrationDurationHours.HasValue && group.RegistrationDurationHours.Value > 0)
+            {
+                var expirationDate = group.CreatedAt.AddHours(group.RegistrationDurationHours.Value);
+                if (DateTime.UtcNow > expirationDate)
+                {
+                    return BadRequest("Les inscriptions pour ce groupe sont closes.");
+                }
+            }
 
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return NotFound("Utilisateur introuvable.");

@@ -529,5 +529,95 @@ namespace GamifyMe.Api.Controllers
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        [HttpPut("profile/name")]
+        [Authorize]
+        public async Task<ActionResult<UserProfileDetailsDto>> UpdateName(UpdateUserNameDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("Utilisateur introuvable.");
+
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Username == request.Username))
+            {
+                return BadRequest("Ce nom d'utilisateur est déjà pris.");
+            }
+
+            user.FirstName = request.FirstName;
+            user.Username = request.Username;
+
+            await _context.SaveChangesAsync();
+            return await GetMyProfileDetails();
+        }
+
+        [HttpPut("profile/email")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEmail(UpdateUserEmailDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("Utilisateur introuvable.");
+
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Email == request.NewEmail.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
+            if (user.Email.ToLower() == request.NewEmail.ToLower())
+            {
+                return Ok("L'email est identique.");
+            }
+
+            // Update email and require re-confirmation
+            user.Email = request.NewEmail.ToLower();
+            user.IsEmailConfirmed = false;
+            user.EmailConfirmationToken = Guid.NewGuid().ToString();
+
+            await _context.SaveChangesAsync();
+
+            // Send confirmation email
+            try 
+            {
+                var appUrl = _configuration["AppUrl"];
+                var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
+                var subject = "Confirmez votre nouvel email GamifyMe";
+                var body = $@"
+                    <h1>Modification d'email</h1>
+                    <p>Vous avez demandé à changer votre adresse email. Veuillez cliquer sur le lien ci-dessous pour confirmer cette nouvelle adresse :</p>
+                    <p><a href='{confirmationLink}'>Confirmer mon nouvel email</a></p>";
+
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UpdateEmail] Error sending email: {ex.Message}");
+            }
+
+            return Ok("Email mis à jour. Veuillez vérifier vos emails pour confirmer votre nouvelle adresse.");
+        }
+
+        [HttpPut("profile/password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("Utilisateur introuvable.");
+
+            if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
+            {
+                return BadRequest("L'ancien mot de passe est incorrect.");
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok("Mot de passe modifié avec succès.");
+        }
     }
 }

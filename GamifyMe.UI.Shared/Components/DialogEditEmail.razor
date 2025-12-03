@@ -1,0 +1,24 @@
+@using GamifyMe.Shared.Dtos
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Attention : Changer votre email nécessitera une nouvelle confirmation. 
+            Vous ne pourrez plus vous connecter tant que le nouvel email n'aura pas été validé.
+        </MudText>
+        <MudTextField @bind-Value="Model.NewEmail" Label="Nouvel Email" InputType="InputType.Email" Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Warning" OnClick="Submit">Changer l'email</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public UpdateUserEmailDto Model { get; set; } = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    void Cancel() => MudDialog.Cancel();
+}

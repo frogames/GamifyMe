@@ -110,8 +110,17 @@
                         </MudCardContent>
 
                         <MudCardActions Class="d-flex justify-end pa-3 bg-gray-light">
-                            <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small">
-                                +@obj.XpReward XP</MudChip>
+                            <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="@(obj.ActiveMultiplier > 1.0 ? Color.Secondary : Color.Warning)" Size="Size.Small">
+                                @if (obj.ActiveMultiplier > 1.0)
+                                {
+                                    <span style="font-weight:bold;">+@(obj.XpReward * obj.ActiveMultiplier) XP</span>
+                                    <span class="ml-1" style="font-size: 0.8em;">(x@(obj.ActiveMultiplier) @obj.BonusLabel)</span>
+                                }
+                                else
+                                {
+                                    <span>+@obj.XpReward XP</span>
+                                }
+                            </MudChip>
                             <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info"
                                 Size="Size.Small">+@obj.DocPointsReward Crédits</MudChip>
                         </MudCardActions>

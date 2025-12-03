@@ -8,5 +8,6 @@ namespace GamifyMe.Shared.Dtos
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string IconName { get; set; } = "Group";
+        public int? RegistrationDurationHours { get; set; }
     }
 }

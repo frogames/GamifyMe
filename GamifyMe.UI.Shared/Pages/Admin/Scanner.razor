@@ -112,7 +112,8 @@
                                                 <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Size="Size.Small" Class="mr-2" />
                                                 <MudText>@obj.Title</MudText>
                                             </div>
-                                            <div class="d-flex gap-2">
+                                            <div class="d-flex gap-2 align-center">
+                                                <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="() => ValidateObjectiveManually(obj)">Valider</MudButton>
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Warning">@obj.XpReward XP</MudChip>
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info">@obj.DocPointsReward Cr</MudChip>
                                             </div>
@@ -361,5 +362,13 @@
     private void OpenObjectiveScanner(ObjectiveDto obj)
     {
         scanModal.Show(obj);
+    }
+
+    private void ValidateObjectiveManually(ObjectiveDto obj)
+    {
+        if (scanResultDto?.UserProfile?.QrCode != null)
+        {
+            scanModal.ValidateManually(obj, scanResultDto.UserProfile.QrCode);
+        }
     }
 }
