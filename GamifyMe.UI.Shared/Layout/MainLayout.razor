@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using GamifyMe.UI.Shared.Components
 @using MudBlazor
+@using GamifyMe.UI.Shared.Helpers
 
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
@@ -46,7 +47,7 @@
                                     <MudIcon Icon="@Icons.Material.Filled.RocketLaunch" Color="Color.Error" Class="mr-2"/>
                                     <div class="d-flex flex-column">
                                         <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight:bold; line-height:1;">BOOST XP x@(userStats.ActiveBoostMultiplier)</MudText>
-                                        <MudText Typo="Typo.body2" Color="Color.Error" Style="font-weight:bold; line-height:1;">@_timeLeft.ToString(@"hh\:mm\:ss")</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Error" Style="font-weight:bold; line-height:1;">@TimeFormatter.GetTimeRemaining(_timeLeft)</MudText>
                                     </div>
                                 </div>
                             }

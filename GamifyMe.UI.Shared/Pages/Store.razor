@@ -50,7 +50,9 @@
                              @onclick="@(() => OpenItemDetails(item))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(item.Color) ? $"color:{item.Color};" : "")" Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" />
+                                <MudAvatar Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Style="@(!string.IsNullOrEmpty(item.Color) ? $"background-color:{item.Color};" : "")">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="color: white;" />
+                                </MudAvatar>
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.body1" Style="font-weight:bold;">@item.Name</MudText>

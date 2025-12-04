@@ -321,6 +321,8 @@ namespace GamifyMe.Api.Controllers
                 CurrencyName = currencyWallet?.CurrencyCode ?? "DOC",
                 GroupId = user.GroupId,
                 GroupName = user.Group?.Name,
+                GroupIcon = user.Group?.IconName,
+                GroupColor = user.Group?.Color,
                 RecentActivity = sortedLogs,
                 ActiveUiTheme = activeTheme,
                 ActiveQrCodeStyle = activeQrStyle,
@@ -397,6 +399,14 @@ namespace GamifyMe.Api.Controllers
                             .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode.StartsWith("QR_STYLE_"))
                             .ToListAsync();
                         foreach (var item in otherStyles) item.IsActive = false;
+                    }
+                    else if (code == "SCAN_SOUND")
+                    {
+                        var otherSounds = await _context.UserInventories
+                            .Include(ui => ui.StoreItem)
+                            .Where(ui => ui.UserId == userId && ui.IsActive && ui.StoreItem.DigitalActionCode == "SCAN_SOUND")
+                            .ToListAsync();
+                        foreach (var item in otherSounds) item.IsActive = false;
                     }
                     // Add other exclusive categories here if needed
                 }

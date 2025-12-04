@@ -1,13 +1,15 @@
 @using GamifyMe.Shared.Dtos
 @using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Helpers
 @inject HttpClient Http
+@implements IDisposable
 
 @if (activeBonus != null)
 {
     <div class="bonus-banner d-flex justify-center align-center pa-2">
         <MudIcon Icon="@GetIcon()" Class="mr-2 pulse-animation" Size="Size.Large" />
         <MudText Typo="Typo.h6" Class="pulse-text">
-            <strong>BONUS ACTIF :</strong> @activeBonus.Name (@GetMultiplierText())
+            <strong>BONUS ACTIF :</strong> @activeBonus.Name (@GetMultiplierText()) - @TimeFormatter.GetTimeRemaining(activeBonus.EndDate)
         </MudText>
         <MudIcon Icon="@GetIcon()" Class="ml-2 pulse-animation" Size="Size.Large" />
     </div>
@@ -43,10 +45,25 @@
 
 @code {
     private BonusPeriodDto? activeBonus;
+    private System.Timers.Timer? _timer;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadBonus();
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+
+    private void StartTimer()
+    {
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += (s, e) => InvokeAsync(StateHasChanged);
+        _timer.AutoReset = true;
+        _timer.Start();
     }
 
     private async Task LoadBonus()
@@ -61,6 +78,10 @@
             else if (response.IsSuccessStatusCode)
             {
                 activeBonus = await response.Content.ReadFromJsonAsync<BonusPeriodDto>();
+                if (activeBonus != null)
+                {
+                    StartTimer();
+                }
             }
         }
         catch (Exception ex)

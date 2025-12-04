@@ -160,7 +160,7 @@ namespace GamifyMe.Api.Controllers
                              Success = false,
                              RequiresConfirmation = true,
                              Message = "Cet objectif n'est pas accessible au joueur (prérequis, dates, ou verrouillé). Voulez-vous forcer ?",
-                             ScanSoundUrl = "/sounds/scan-error.mp3"
+                             ScanSoundUrl = "/sounds/scan-validation.mp3"
                          });
                     }
                 }

@@ -27,7 +27,10 @@
         @if (currentGroupId.HasValue)
         {
             <MudAlert Severity="Severity.Info" Class="mb-6" Icon="@Icons.Material.Filled.Group">
-                Vous êtes membre du groupe <strong>@currentGroupName</strong>. Si vous changez de groupe, vos futurs gains d'XP iront au nouveau groupe.
+                <div class="d-flex justify-space-between align-center">
+                    <MudText>Vous êtes membre du groupe <strong>@currentGroupName</strong>. Si vous changez de groupe, vos futurs gains d'XP iront au nouveau groupe.</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Class="ml-2" OnClick="LeaveCurrentGroup">Quitter</MudButton>
+                </div>
             </MudAlert>
         }
 
@@ -38,7 +41,7 @@
                     <MudCard Elevation="3" Class="@(group.Id == currentGroupId ? "border-primary" : "")">
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Color="Color.Primary" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6">@group.Name</MudText>
@@ -54,15 +57,24 @@
                         <MudCardContent>
                             <MudText Typo="Typo.body2" Class="mb-2">@group.Description</MudText>
                             <MudText Typo="Typo.body2"><strong>XP Total :</strong> @group.TotalXp</MudText>
+                            @if (group.RegistrationDurationHours.HasValue && group.RegistrationDurationHours > 0)
+                            {
+                                <MudText Typo="Typo.caption" Color="@(IsExpired(group) ? Color.Error : Color.Warning)" Class="d-block mt-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-1" style="vertical-align:middle" />
+                                    @TimeFormatter.GetTimeRemaining(group.CreatedAt.AddHours(group.RegistrationDurationHours.Value))
+                                </MudText>
+                            }
                         </MudCardContent>
                         <MudCardActions>
                             @if (group.Id != currentGroupId)
                             {
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@(() => JoinGroup(group))">Rejoindre</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@(() => JoinGroup(group))" Disabled="@IsExpired(group)">
+                                    @(IsExpired(group) ? "Fermé" : "Rejoindre")
+                                </MudButton>
                             }
                             else
                             {
-                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" Disabled="true">Membre</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true" OnClick="LeaveCurrentGroup">Quitter</MudButton>
                             }
                         </MudCardActions>
                     </MudCard>
@@ -115,8 +127,25 @@
         }
     }
 
+
+
+    private bool IsExpired(GroupDto group)
+    {
+        if (!group.RegistrationDurationHours.HasValue || group.RegistrationDurationHours <= 0)
+            return false;
+
+        var expirationDate = group.CreatedAt.AddHours(group.RegistrationDurationHours.Value);
+        return DateTime.UtcNow > expirationDate;
+    }
+
     private async Task JoinGroup(GroupDto group)
     {
+        if (IsExpired(group))
+        {
+            Snackbar.Add("Les inscriptions pour ce groupe sont closes.", Severity.Warning);
+            return;
+        }
+
         bool confirmed = await DialogService.ShowMessageBox(
             "Changer de groupe ?",
             $"Voulez-vous vraiment rejoindre le groupe '{group.Name}' ? Vos futurs points d'XP iront à ce groupe.",
@@ -130,6 +159,35 @@
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add($"Bienvenue dans le groupe {group.Name} !", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Erreur : {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LeaveCurrentGroup()
+    {
+        bool confirmed = await DialogService.ShowMessageBox(
+            "Quitter le groupe ?",
+            "Voulez-vous vraiment quitter votre groupe actuel ? Vous ne gagnerez plus d'XP pour ce groupe.",
+            yesText: "Oui, quitter", cancelText: "Annuler") ?? false;
+
+        if (!confirmed) return;
+
+        try
+        {
+            var response = await Http.PostAsync("api/groups/leave", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Vous avez quitté le groupe.", Severity.Success);
                 await LoadData();
             }
             else

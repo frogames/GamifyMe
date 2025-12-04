@@ -20,9 +20,11 @@
 
         // Monnaie
         public int CurrencyBalance { get; set; }
-        public string CurrencyName { get; set; } = "Points"; // "DOC", "Gold", etc.
+        public string CurrencyName { get; set; } = "Crédits"; // "DOC", "Gold", etc.
         public Guid? GroupId { get; set; }
         public string? GroupName { get; set; }
+        public string? GroupIcon { get; set; }
+        public string? GroupColor { get; set; }
 
         // Historique
         public List<UserActivityLogDto> RecentActivity { get; set; } = new();

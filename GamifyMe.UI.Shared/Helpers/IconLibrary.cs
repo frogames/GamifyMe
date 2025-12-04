@@ -101,6 +101,9 @@ namespace GamifyMe.UI.Shared.Helpers
             { "StarOutline", Icons.Material.Filled.StarOutline },
             { "HeartOutline", Icons.Material.Filled.FavoriteBorder },
             { "DarkMode", Icons.Material.Filled.DarkMode },
+            { "Google", Icons.Custom.Brands.Google },
+            { "QrCode", Icons.Material.Filled.QrCode },
+            { "QrCodeScanner", Icons.Material.Filled.QrCodeScanner }
         };
 
         // Méthode utilitaire pour récupérer l'icône (avec fallback si introuvable)

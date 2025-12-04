@@ -5,9 +5,11 @@ namespace GamifyMe.Shared.Dtos
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string IconName { get; set; } = string.Empty;
+        public string IconName { get; set; } = "Groups";
+        public string? Color { get; set; }
         public int TotalXp { get; set; }
         public int MemberCount { get; set; }
         public int? RegistrationDurationHours { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

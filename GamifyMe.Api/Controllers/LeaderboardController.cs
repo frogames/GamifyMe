@@ -111,6 +111,7 @@ namespace GamifyMe.Api.Controllers
                 GroupId = g.Id,
                 Name = g.Name,
                 IconName = g.IconName,
+                Color = g.Color,
                 MemberCount = g.Members.Count,
                 TotalXp = g.TotalXp
             }).ToList();
@@ -136,6 +137,7 @@ namespace GamifyMe.Api.Controllers
                 GroupId = g.Id,
                 Name = g.Name,
                 IconName = g.IconName,
+                Color = g.Color,
                 MemberCount = g.Members.Count,
                 TotalXp = g.TotalXp
             }).ToList();

@@ -45,12 +45,15 @@
                         <MudTooltip Text="Cliquez pour changer l'icône">
                             <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                 <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="font-size: 3rem;" Color="Color.Primary" />
+                                    <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(groupModel.Color) ? $"color:{groupModel.Color};" : "")}")" Color="@(string.IsNullOrEmpty(groupModel.Color) ? Color.Primary : Color.Default)" />
                                 </MudPaper>
                             </MudBadge>
                         </MudTooltip>
                     </div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @groupModel.IconName</MudText>
+
+                    @* COULEUR *@
+                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="groupModel.Color" Style="@($"color: {groupModel.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
 
                     @if (!string.IsNullOrEmpty(successMessage))
                     {
@@ -92,7 +95,7 @@
                     <RowTemplate Context="group">
                         <MudTd DataLabel="Nom">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
                         </MudTd>
@@ -159,6 +162,7 @@
                 Name = groupModel.Name, 
                 Description = groupModel.Description, 
                 IconName = groupModel.IconName,
+                Color = groupModel.Color,
                 RegistrationDurationHours = groupModel.RegistrationDurationHours
             };
             var response = await Http.PostAsJsonAsync("api/groups", createDto);
@@ -183,6 +187,7 @@
             Name = group.Name,
             Description = group.Description,
             IconName = group.IconName,
+            Color = group.Color,
             RegistrationDurationHours = group.RegistrationDurationHours
         };
         showForm = true;

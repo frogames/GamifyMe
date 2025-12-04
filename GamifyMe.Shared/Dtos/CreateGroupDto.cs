@@ -7,7 +7,8 @@ namespace GamifyMe.Shared.Dtos
         [Required(ErrorMessage = "Le nom est requis")]
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string IconName { get; set; } = "Group";
+        public string IconName { get; set; } = "Groups";
+        public string? Color { get; set; }
         public int? RegistrationDurationHours { get; set; }
     }
 }

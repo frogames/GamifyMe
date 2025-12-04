@@ -18,6 +18,7 @@ namespace GamifyMe.Shared.Dtos
         public Guid GroupId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? IconName { get; set; }
+        public string? Color { get; set; }
         public int MemberCount { get; set; }
         public int TotalXp { get; set; }
     }

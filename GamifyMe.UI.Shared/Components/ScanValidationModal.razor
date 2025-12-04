@@ -71,6 +71,9 @@
     private bool isConfirmationMode = false;
     private string? pendingUserQrCode;
     private string? confirmationMessage;
+    
+    // Track if validation was initiated manually
+    private bool _isManualValidation = false;
 
     public async Task ShowAsync(ObjectiveDto objective)
     {
@@ -81,6 +84,7 @@
         pendingUserQrCode = null;
         IsOpen = true;
         _isScannerComponentActive = true;
+        _isManualValidation = false; // Reset manual flag
         await InvokeAsync(StateHasChanged);
         await Task.Yield(); // Laisser le temps au rendu HTML
         
@@ -101,6 +105,7 @@
         pendingUserQrCode = null;
         IsOpen = true;
         _isScannerComponentActive = false; // Pas de caméra pour validation manuelle
+        _isManualValidation = true; // Set manual flag
         await InvokeAsync(StateHasChanged);
         
         // Appel direct à la validation
@@ -214,11 +219,19 @@
         // 4. Relance (si toujours ouvert et pas en mode confirmation)
         if (IsOpen && !isConfirmationMode)
         {
-            scanMessage = null;
-            _isScannerComponentActive = true;
-            await InvokeAsync(StateHasChanged);
-            await Task.Yield();
-            if (qrScannerRef != null) await qrScannerRef.StartAsync();
+            if (!_isManualValidation)
+            {
+                scanMessage = null;
+                _isScannerComponentActive = true;
+                await InvokeAsync(StateHasChanged);
+                await Task.Yield();
+                if (qrScannerRef != null) await qrScannerRef.StartAsync();
+            }
+            else
+            {
+                // Si c'était une validation manuelle, on ferme la modal après le succès/échec
+                Close();
+            }
         }
     }
 
@@ -243,12 +256,19 @@
         
         await Task.Delay(1000);
 
-        // Relance scanner
-        scanMessage = null;
-        _isScannerComponentActive = true;
-        await InvokeAsync(StateHasChanged);
-        await Task.Yield();
-        if (qrScannerRef != null) await qrScannerRef.StartAsync();
+        // Relance scanner (si pas manuel)
+        if (!_isManualValidation)
+        {
+            scanMessage = null;
+            _isScannerComponentActive = true;
+            await InvokeAsync(StateHasChanged);
+            await Task.Yield();
+            if (qrScannerRef != null) await qrScannerRef.StartAsync();
+        }
+        else
+        {
+            Close();
+        }
     }
 
     private const string DefaultSuccessSound = "/sounds/scan-success.mp3";

@@ -30,14 +30,14 @@
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
                         <MudTh>Niveau</MudTh>
-                        <MudTh>Groupe</MudTh>
+
                         <MudTh>XP Total</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
                         <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
-                        <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
+
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -56,14 +56,14 @@
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
                         <MudTh>Niveau</MudTh>
-                        <MudTh>Groupe</MudTh>
+
                         <MudTh>Crédits</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
                         <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
-                        <MudTd DataLabel="Groupe">@(user.GroupName ?? "-")</MudTd>
+
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -87,7 +87,7 @@
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
                         </MudTd>
@@ -114,7 +114,7 @@
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" />
+                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
                         </MudTd>

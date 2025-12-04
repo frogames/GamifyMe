@@ -361,14 +361,22 @@
 
     private void OpenObjectiveScanner(ObjectiveDto obj)
     {
+        StopScanner();
         scanModal.Show(obj);
     }
 
-    private void ValidateObjectiveManually(ObjectiveDto obj)
+    private async Task ValidateObjectiveManually(ObjectiveDto obj)
     {
         if (scanResultDto?.UserProfile?.QrCode != null)
         {
-            scanModal.ValidateManually(obj, scanResultDto.UserProfile.QrCode);
+            await scanModal.ValidateManually(obj, scanResultDto.UserProfile.QrCode);
+            // Refresh profile data to remove validated objective from "ActiveObjectives"
+            if (scanResultDto?.UserProfile?.QrCode != null)
+            {
+                 scanResultDto = await Http.GetFromJsonAsync<ProfileScanDto>($"api/Users/profile-scan/{scanResultDto.UserProfile.QrCode}");
+            }
+            // Refresh global objectives list (optional, but good practice if counts change)
+            await LoadObjectives();
         }
     }
 }

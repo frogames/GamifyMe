@@ -65,31 +65,10 @@
             </MudText>
         </MudCard>
 
-        @* 3. GROUPE *@
-        <MudCard Elevation="3" Class="mb-6 pa-4">
-            <div class="d-flex justify-space-between align-center">
-                <div>
-                    <MudText Typo="Typo.h6">Mon Groupe</MudText>
-                    @if (!string.IsNullOrEmpty(profile.GroupName))
-                    {
-                        <MudText Typo="Typo.body1" Color="Color.Primary"><b>@profile.GroupName</b></MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Aucun groupe</MudText>
-                    }
-                </div>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/groups">
-                    @(string.IsNullOrEmpty(profile.GroupName) ? "Rejoindre" : "Changer")
-                </MudButton>
-            </div>
-        </MudCard>
-
         @* 4. PORTEFEUILLE *@
         <MudGrid Class="mb-6">
             <MudItem xs="6">
                 <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
-                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h5">@profile.CurrentXp</MudText>
                     <MudText Typo="Typo.caption">XP Total</MudText>
                 </MudPaper>
@@ -106,7 +85,7 @@
         @* 5. HISTORIQUE RÉCENT *@
         @if (profile.RecentActivity != null && profile.RecentActivity.Any())
         {
-            <MudList T="string" Clickable="false" Dense="true" DisablePadding="true">
+            <MudList T="string" Dense="true" DisablePadding="true">
                 @foreach (var activity in profile.RecentActivity)
                 {
                     <MudListItem Icon="@activity.Icon" IconColor="Color.Primary">

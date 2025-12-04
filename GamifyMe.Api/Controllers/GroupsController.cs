@@ -34,9 +34,11 @@ namespace GamifyMe.Api.Controllers
                     Name = g.Name,
                     Description = g.Description,
                     IconName = g.IconName,
+                    Color = g.Color,
                     TotalXp = g.TotalXp,
                     MemberCount = g.Members.Count,
-                    RegistrationDurationHours = g.RegistrationDurationHours
+                    RegistrationDurationHours = g.RegistrationDurationHours,
+                    CreatedAt = g.CreatedAt
                 })
                 .ToListAsync();
 
@@ -59,9 +61,11 @@ namespace GamifyMe.Api.Controllers
                 Name = group.Name,
                 Description = group.Description,
                 IconName = group.IconName,
+                Color = group.Color,
                 TotalXp = group.TotalXp,
                 MemberCount = group.Members.Count,
-                RegistrationDurationHours = group.RegistrationDurationHours
+                RegistrationDurationHours = group.RegistrationDurationHours,
+                CreatedAt = group.CreatedAt
             });
         }
 
@@ -78,6 +82,7 @@ namespace GamifyMe.Api.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 IconName = request.IconName,
+                Color = request.Color,
                 TotalXp = 0,
                 RegistrationDurationHours = request.RegistrationDurationHours,
                 CreatedAt = DateTime.UtcNow
@@ -92,9 +97,11 @@ namespace GamifyMe.Api.Controllers
                 Name = group.Name,
                 Description = group.Description,
                 IconName = group.IconName,
+                Color = group.Color,
                 TotalXp = group.TotalXp,
                 MemberCount = 0,
-                RegistrationDurationHours = group.RegistrationDurationHours
+                RegistrationDurationHours = group.RegistrationDurationHours,
+                CreatedAt = group.CreatedAt
             });
         }
 
@@ -110,6 +117,7 @@ namespace GamifyMe.Api.Controllers
             group.Name = request.Name;
             group.Description = request.Description;
             group.IconName = request.IconName;
+            group.Color = request.Color;
             group.RegistrationDurationHours = request.RegistrationDurationHours;
 
             await _context.SaveChangesAsync();
@@ -120,9 +128,11 @@ namespace GamifyMe.Api.Controllers
                 Name = group.Name,
                 Description = group.Description,
                 IconName = group.IconName,
+                Color = group.Color,
                 TotalXp = group.TotalXp,
                 MemberCount = await _context.Users.CountAsync(u => u.GroupId == group.Id),
-                RegistrationDurationHours = group.RegistrationDurationHours
+                RegistrationDurationHours = group.RegistrationDurationHours,
+                CreatedAt = group.CreatedAt
             });
         }
 

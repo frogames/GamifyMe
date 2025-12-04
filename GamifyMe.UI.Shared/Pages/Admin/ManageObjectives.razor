@@ -146,7 +146,9 @@
                     <RowTemplate Context="obj">
                         <MudTd DataLabel="Titre">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(obj.Color) ? $"color:{obj.Color};" : "")" Color="@(string.IsNullOrEmpty(obj.Color) ? Color.Default : Color.Default)" />
+                                <MudAvatar Color="@(string.IsNullOrEmpty(obj.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(obj.Color) ? $"background-color:{obj.Color};" : "")">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Size="Size.Small" Style="color: white;" />
+                                </MudAvatar>
                                 <MudText Typo="Typo.body2">@obj.Title</MudText>
                                 @if (obj.IsOnboarding)
                                 {
