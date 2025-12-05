@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GamifyMe.Web.Client",
   "resources": {
-    "hash": "sha256-Y8skPeHwJFGynhGoGWN1Qrn/QUDBgKEU5QgAQjY0ygM=",
+    "hash": "sha256-MD8TVGqs2RG4oKrnY4y5hcPeNEX9PjVJWnykR1lrm9k=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-9Fzd5We95Rp03dEKIAbYjPDR3eWyLbmjMlYStvxyiok="
     },
@@ -221,14 +221,14 @@
       "mscorlib.wasm": "sha256-MZJ1V6miMP318lQowft4FPkcszcibPLDTwKj235fSAc=",
       "netstandard.wasm": "sha256-RYAURbR1AHkUZYjKgu+B/i3N3VP4abnAaH+vxwJ8d3c=",
       "System.Private.CoreLib.wasm": "sha256-4YzdATaWUDkUkRpe+hl+T61TaCjRVapVUtqTIai3Gd8=",
-      "GamifyMe.Shared.wasm": "sha256-WiUyEkBuGhochJB93qQLGLihUYPfi8qkLGiGjEJtlA8=",
-      "GamifyMe.UI.Shared.wasm": "sha256-4CP+fVFU2CLclZ95LkaLRGO6oSjcux0Bzj894yEBE2I=",
-      "GamifyMe.Web.Client.wasm": "sha256-gMMH+BLSbnnkuzAO3H3wQv4U7vc7Lz7BMWwkdscLfp4="
+      "GamifyMe.Shared.wasm": "sha256-kGoSgKgV3WTO7WFnjK4Pa68imGnXK8aHpbzFubuauRc=",
+      "GamifyMe.UI.Shared.wasm": "sha256-o2wTIbHWtA6Wd4YI3lPpSlK7cgZXqa+X/WqtLyUcU3c=",
+      "GamifyMe.Web.Client.wasm": "sha256-WztiWtRLnCHQdtF8DlT9lJPqu6RKfH9Q+4laEhTYfWw="
     },
     "pdb": {
-      "GamifyMe.UI.Shared.pdb": "sha256-wHbiYcWwlHwTTcCDPIrNUbjhOBIlqg5+Yrf8CnHjljM=",
-      "GamifyMe.Shared.pdb": "sha256-0GkJNrbcuxXbsG2pXB43n6WypN4v5/Ofq9SC5jG9hrY=",
-      "GamifyMe.Web.Client.pdb": "sha256-VDXC4eAgIHo75rUtOBSMi7qkoTld5NndxK+nQ6Kyoao="
+      "GamifyMe.UI.Shared.pdb": "sha256-KExnbIfusPgNcM3HvMa6S8Ddb/6gUSGQCA8HPXwuZoc=",
+      "GamifyMe.Shared.pdb": "sha256-pFz7bYArlL86jQY4iUlcLR1rwvzFLg+dxxcn5aaCs2w=",
+      "GamifyMe.Web.Client.pdb": "sha256-hxOehWiKpImnoxW5G0+QkKqlJ9yg+C7fh1Xf5z/Nbnc="
     }
   },
   "cacheBootResources": true,

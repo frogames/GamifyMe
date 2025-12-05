@@ -21,13 +21,22 @@
             box-shadow: 0 4px 15px rgba(255, 53, 122, 0.4);
             position: sticky;
             top: 0;
-            z-index: 2000; /* Above MudLayout appbar if possible, or just below */
+            z-index: 10; /* Lower than MudDrawer (typically 1100+) */
             width: 100%;
+        }
+
+        @@media (max-width: 600px) {
+            .bonus-banner h6 {
+                font-size: 0.9rem !important;
+            }
+            .bonus-banner .mud-icon-root {
+                font-size: 1.25rem !important;
+            }
         }
 
         @@keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.05); } /* Reduced pulse scale for mobile comfort */
             100% { transform: scale(1); }
         }
 

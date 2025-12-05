@@ -52,7 +52,7 @@
                                 <div class="d-flex align-center">
                                     <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-3" Style="@iconStyle" />
                                     <div style="flex-grow: 1;">
-                                        <div class="d-flex align-center" style="width: 100%;">
+                                        <div class="d-flex align-center title-wrapper" style="width: 100%;">
                                              <MudText Typo="Typo.subtitle1" Class="mr-3" Style="@($"font-weight: bold; color: {textColor};")">@obj.Title</MudText>
                                         
                                             @if (obj.ChainLength > 1)
@@ -166,8 +166,12 @@
         .col-location, .col-rewards, .col-status {
             display: flex; /* Or hide/stack */
         }
+        
+        .title-wrapper {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
     }
-
 
 </style>
 

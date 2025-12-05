@@ -86,7 +86,7 @@
                      <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
                          <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
-                            <strong>Fréquence :</strong> Réalisable toutes les @Objective.FrequencyHours heures
+                            <strong>Fréquence :</strong> Réalisable toutes les @FormatFrequency(Objective.FrequencyHours.Value)
                         </MudText>
                     </div>
                 }
@@ -129,4 +129,17 @@
     [Parameter] public ObjectiveDto Objective { get; set; }
 
     private void Cancel() => MudDialog.Cancel();
+
+    private string FormatFrequency(int hours)
+    {
+        if (hours <= 24) return $"{hours} heures";
+        
+        int days = hours / 24;
+        int remHours = hours % 24;
+        
+        if (remHours > 0)
+            return $"{days} jours et {remHours} heures";
+        else
+            return $"{days} jours";
+    }
 }

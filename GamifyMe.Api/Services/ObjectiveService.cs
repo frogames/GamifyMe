@@ -267,9 +267,13 @@ namespace GamifyMe.Api.Services
             if (!children.Any()) return 1;
 
             int maxChildDepth = 0;
-            foreach (var child in children)
+            foreach (var childRef in children)
             {
-                int depth = GetMaxChainDepth(child, allObjectives, new HashSet<Guid>(visited));
+                // VITAL FIX: We must use the instance from 'allObjectives' which has relations populated.
+                // The 'childRef' from navigation property might not have its own 'IsPrerequisiteFor' loaded.
+                var fullChild = allObjectives.First(o => o.Id == childRef.Id);
+
+                int depth = GetMaxChainDepth(fullChild, allObjectives, new HashSet<Guid>(visited));
                 if (depth > maxChildDepth) maxChildDepth = depth;
             }
 
