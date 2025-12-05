@@ -7,6 +7,7 @@ namespace GamifyMe.Shared.Constants
         public const string Summer = "UI_THEME_SUMMER";
         public const string Autumn = "UI_THEME_AUTUMN";
         public const string Spring = "UI_THEME_SPRING";
+        public const string Night = "UI_THEME_NIGHT";
 
         // QR Code Styles
         public const string QrStyleDefault = "QR_STYLE_DEFAULT";
@@ -20,6 +21,7 @@ namespace GamifyMe.Shared.Constants
             { Summer, "Été" },
             { Autumn, "Automne" },
             { Spring, "Printemps" },
+            { Night, "Mode Nuit" },
             { QrStyleDefault, "Classique" },
             { QrStyleGold, "Doré" },
             { QrStyleInverted, "Inversé" }

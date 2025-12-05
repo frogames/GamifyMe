@@ -18,30 +18,29 @@
     }
     else if (profile != null)
     {
-        <MudCard Elevation="4" Class="pa-8 d-flex flex-column align-center rounded-xl" Style="width: 100%; max-width: 350px;">
-            
-            @{
-                string color = "000000";
-                string bgcolor = "FFFFFF";
+        string color = "000000";
+        string bgcolor = "FFFFFF";
 
-                if (profile.ActiveQrCodeStyle == "QR_STYLE_GOLD")
-                {
-                    color = "000000";
-                    bgcolor = "D4AF37";
-                }
-                else if (profile.ActiveQrCodeStyle == "QR_STYLE_INVERTED")
-                {
-                    color = "FFFFFF";
-                    bgcolor = "000000";
-                }
+        if (profile.ActiveQrCodeStyle == "QR_STYLE_GOLD")
+        {
+            color = "000000";
+            bgcolor = "D4AF37";
+        }
+        else if (profile.ActiveQrCodeStyle == "QR_STYLE_INVERTED")
+        {
+            color = "FFFFFF";
+            bgcolor = "000000";
+        }
 
-                string qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}&color={color}&bgcolor={bgcolor}";
-            }
+        string qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={profile.QrCode}&color={color}&bgcolor={bgcolor}";
+        string style = $"width: 100%; max-width: 350px; background-color: #{bgcolor}; color: {(bgcolor == "000000" ? "white" : "black")}; border: 1px solid #e0e0e0;";
+
+        <MudCard Elevation="4" Class="pa-8 d-flex flex-column align-center rounded-xl" Style="@style">
 
             <MudImage Src="@qrUrl" Alt="QR Code" Class="mb-6 rounded-lg" Style="width: 250px; height: 250px;" />
 
-            <MudText Typo="Typo.h5" Class="mb-1">@profile.FirstName @profile.Username</MudText>
-            <MudText Typo="Typo.body2" Class="mb-6 text-muted">@profile.EstablishmentName</MudText>
+            <MudText Typo="Typo.h5" Class="mb-1" Style="@($"color: {(bgcolor == "000000" ? "white" : "black")}; font-weight: bold;")">@profile.FirstName @profile.Username</MudText>
+            <MudText Typo="Typo.body2" Class="mb-6" Style="@($"color: {(bgcolor == "000000" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")};")">@profile.EstablishmentName</MudText>
 
             <div class="d-flex gap-4 w-100">
                 <MudButton Variant="Variant.Filled"
@@ -67,7 +66,6 @@
     {
         <MudAlert Severity="Severity.Error">Impossible de charger votre pass.</MudAlert>
     }
-
 </MudContainer>
 
 @code {

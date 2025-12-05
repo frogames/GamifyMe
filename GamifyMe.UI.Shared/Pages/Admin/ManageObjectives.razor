@@ -21,7 +21,18 @@
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
         }
+        else
+        {
+             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp" Class="ml-4">Estimation Richesse</MudButton>
+        }
     </div>
+    
+    @if (!showForm && allObjectivesFullList.Any())
+    {
+         <div class="d-flex justify-end mb-4" style="margin-top: -48px; margin-right: 60px;">
+             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp">Estimation Richesse</MudButton>
+         </div>
+    }
 
     @if (showForm)
     {
@@ -375,6 +386,13 @@
         var dialog = await DialogService.ShowAsync<IconPickerDialog>("Choisir une icône", options);
         var result = await dialog.Result;
         if (!result.Canceled && result.Data is string iconName) newObjective.IconName = iconName;
+    }
+
+    private async Task ShowWealthEstimation()
+    {
+        var parameters = new DialogParameters { ["Objectives"] = allObjectivesFullList };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        await DialogService.ShowAsync<WealthEstimationDialog>("Estimation Richesse", parameters, options);
     }
 
     private void MergeDatesAndTimes()

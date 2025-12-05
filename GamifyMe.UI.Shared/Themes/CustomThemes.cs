@@ -51,6 +51,24 @@ namespace GamifyMe.UI.Shared.Themes
             }
         };
 
+        public static MudTheme NightTheme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = Colors.Yellow.Accent4,
+                Secondary = Colors.Yellow.Darken1,
+                AppbarBackground = "#0f0f0f", // Almost black
+                Background = "#121212",      // Very dark background
+                Surface = "#1e1e1e",         // Slightly lighter for cards/surfaces
+                TextPrimary = Colors.Shades.White,
+                TextSecondary = Colors.Gray.Lighten2,
+                ActionDefault = Colors.Yellow.Accent2,
+                DrawerBackground = "#1a1a1a",
+                DrawerText = Colors.Shades.White,
+                DrawerIcon = Colors.Yellow.Accent2
+            }
+        };
+
         public static MudTheme GetThemeByCode(string code)
         {
             return code switch
@@ -59,6 +77,7 @@ namespace GamifyMe.UI.Shared.Themes
                 ThemeConstants.Summer => SummerTheme,
                 ThemeConstants.Autumn => AutumnTheme,
                 ThemeConstants.Spring => SpringTheme,
+                ThemeConstants.Night => NightTheme,
                 _ => DefaultTheme
             };
         }

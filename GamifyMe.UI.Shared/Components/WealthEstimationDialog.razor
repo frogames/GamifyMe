@@ -1,0 +1,114 @@
+@using GamifyMe.Shared.Dtos
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h5" Class="mb-4">Estimation de la richesse maximale</MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Ces estimations représentent le maximum théorique qu'un joueur peut gagner s'il accomplit tous les objectifs dès qu'ils sont disponibles.
+        </MudText>
+
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2" Class="pa-3">
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center">Par Semaine</MudText>
+                    <MudDivider Class="my-2"/>
+                    <div class="d-flex flex-column align-center">
+                        <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)WeeklyXp) XP</MudChip>
+                        <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)WeeklyCurrency) Crédits</MudChip>
+                    </div>
+                </MudCard>
+            </MudItem>
+             <MudItem xs="12" sm="4">
+                <MudCard Elevation="2" Class="pa-3">
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center">Par Mois</MudText>
+                    <MudDivider Class="my-2"/>
+                    <div class="d-flex flex-column align-center">
+                         <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)MonthlyXp) XP</MudChip>
+                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)MonthlyCurrency) Crédits</MudChip>
+                    </div>
+                </MudCard>
+            </MudItem>
+             <MudItem xs="12" sm="4">
+                <MudCard Elevation="2" Class="pa-3">
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center">Par An</MudText>
+                    <MudDivider Class="my-2"/>
+                    <div class="d-flex flex-column align-center">
+                         <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)YearlyXp) XP</MudChip>
+                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)YearlyCurrency) Crédits</MudChip>
+                    </div>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public List<ObjectiveDto> Objectives { get; set; } = new();
+
+    private double WeeklyXp;
+    private double WeeklyCurrency;
+    private double MonthlyXp;
+    private double MonthlyCurrency;
+    private double YearlyXp;
+    private double YearlyCurrency;
+
+    protected override void OnInitialized()
+    {
+        CalculateWealth();
+    }
+
+    private void CalculateWealth()
+    {
+        double dailyXp = 0;
+        double dailyCurrency = 0;
+
+        foreach (var obj in Objectives)
+        {
+            // Skip inactive objectives
+            if (!obj.IsActive) continue;
+            
+            // Skip "Unique" objectives for recurring calculation as requested (wealth production flow)
+            // Or maybe keep them? The prompt asks for "wealth production", usually implies flow.
+            // Let's stick to recurring ones for the "flow", but maybe adding unique/one-shot as a separate line or ignoring them for "per year" stats if they can happen only once.
+            // Decision: Ignore unique objectives for "production" metrics.
+            if (obj.IsUnique) continue;
+
+            double executionsPerDay = 0;
+
+            if (obj.FrequencyHours.HasValue && obj.FrequencyHours.Value > 0)
+            {
+                executionsPerDay = 24.0 / obj.FrequencyHours.Value;
+            }
+            else
+            {
+                // If no frequency, assume once? No, usually that means unique or unlimited.
+                // If it's not unique but has no frequency, it might be spammable?
+                // For safety/logic, let's assume if FrequencyHours is null/0 but not unique, it might be once a day or unlimited.
+                // In GamifyMe logic, usually FrequencyHours is required for recurring.
+                // Let's assume 0 executions if unknown to avoid inflating numbers.
+                executionsPerDay = 0;
+            }
+
+            dailyXp += executionsPerDay * obj.XpReward;
+            dailyCurrency += executionsPerDay * obj.DocPointsReward;
+        }
+
+        WeeklyXp = dailyXp * 7;
+        WeeklyCurrency = dailyCurrency * 7;
+
+        MonthlyXp = dailyXp * 30;
+        MonthlyCurrency = dailyCurrency * 30;
+
+        YearlyXp = dailyXp * 365;
+        YearlyCurrency = dailyCurrency * 365;
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

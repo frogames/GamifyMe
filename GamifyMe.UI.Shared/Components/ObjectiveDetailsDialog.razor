@@ -38,7 +38,11 @@
                 }
             </div>
 
-            <MudText Typo="Typo.body1" Class="mb-4 text-justify" Style="@($"color: {textColor};")">@Objective.Description</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4 text-justify" Style="@($"color: {textColor};")">
+                @Objective.Description
+                <br /><br />
+                Présentez votre Pass à un membre du staff pour faire valider cet objectif.
+            </MudText>
 
             @if (Objective.UnlockedObjectiveTitles.Any())
             {
