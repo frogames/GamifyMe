@@ -45,32 +45,29 @@
             @foreach (var item in FilteredItems)
             {
                 <MudItem xs="6" sm="4" md="3">
-                    <MudCard Elevation="3" Class="d-flex flex-column h-100 cursor-pointer hover-effect" 
-                             Style="@GetCardStyle(item)"
+                    <MudCard Elevation="3" Class="d-flex flex-column h-100 cursor-pointer hover-effect rounded-lg" 
+                             Style="@($"border-radius: 16px; overflow: hidden; {GetCardStyle(item)}")"
                              @onclick="@(() => OpenItemDetails(item))">
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudAvatar Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Style="@(!string.IsNullOrEmpty(item.Color) ? $"background-color:{item.Color};" : "")">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="color: white;" />
+                                <MudAvatar Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Style="@(!string.IsNullOrEmpty(item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(item.Color)};" : "")">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(item.Color) ? $"color:{ColorHelper.GetContrastColor(item.Color)};" : "color:white;")" />
                                 </MudAvatar>
                             </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.body1" Style="font-weight:bold;">@item.Name</MudText>
-                                @if (item.IsOwned && item.IsUnique)
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Success">Déjà possédé</MudText>
-                                }
-                            </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent Class="flex-grow-1 pt-0">
-                            <MudText Typo="Typo.caption" Class="mb-2 description-clamp">@item.Description</MudText>
-                            <div class="d-flex justify-space-between align-end mt-2">
-                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-weight:bold;">@item.Price Cr</MudText>
-                                @if (item.ItemType != StoreItemType.Digital && item.Stock == 0)
-                                {
-                                     <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Size="Size.Small" />
-                                }
+                        <MudCardContent Class="d-flex flex-column align-center justify-center pt-2 pb-4" Style="height: 100%;">
+                            <div class="d-flex flex-column align-center">
+                                <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-2 text-truncate" Style="@($"font-weight:bold; color:{(string.IsNullOrEmpty(item.Color) ? "inherit" : ColorHelper.GetContrastColor(item.Color))}; width: 100%;")">@item.Name</MudText>
+                                
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" 
+                                         Style="@($"color:{(string.IsNullOrEmpty(item.Color) ? "inherit" : ColorHelper.GetContrastColor(item.Color))}; border-color:{(string.IsNullOrEmpty(item.Color) ? "inherit" : ColorHelper.GetContrastColor(item.Color))};")">
+                                    @(item.ItemType == StoreItemType.Digital ? "Numérique" : "Physique")
+                                </MudChip>
                             </div>
+                            
+                            <MudChip T="string" Size="Size.Medium" Icon="@Icons.Material.Filled.MonetizationOn" Variant="Variant.Filled" Color="Color.Info" Class="mt-3">
+                                @item.Price
+                            </MudChip>
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -93,6 +90,7 @@
 
 @code {
     private List<StoreItemDto> storeItems = new();
+    private List<UserInventoryDto> userInventory = new();
     private bool isLoading = true;
     private int userCurrencyBalance = 0;
     private string selectedFilter = "All";
@@ -134,11 +132,13 @@
         {
             var itemsTask = Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active");
             var infoTask = Http.GetFromJsonAsync<InfoBarDto>("api/users/info-bar");
+            var inventoryTask = Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory");
 
-            await Task.WhenAll(itemsTask, infoTask);
+            await Task.WhenAll(itemsTask, infoTask, inventoryTask);
 
             storeItems = itemsTask.Result ?? new List<StoreItemDto>();
             var info = infoTask.Result;
+            userInventory = inventoryTask.Result ?? new List<UserInventoryDto>();
 
             if (info?.OtherWallets != null && info.OtherWallets.Any())
             {
@@ -157,14 +157,22 @@
 
     private async Task OpenItemDetails(StoreItemDto item)
     {
+        // Prevent buying boost if one is already active
+        if (IsBoost(item) && HasActiveBoost())
+        {
+             Snackbar.Add("Vous avez déjà un boost actif. Attendez qu'il expire pour en acheter un autre.", Severity.Warning);
+             return;
+        }
+
         var parameters = new DialogParameters<StoreItemDetailsDialog> 
         { 
             { x => x.Item, item },
             { x => x.OnPlaySound, EventCallback.Factory.Create<string>(this, PreviewSound) }
         };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        // Removed title "Détails" (title ignored if NoHeader=true), set NoHeader=true
+        var options = new DialogOptions { NoHeader = true, CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true };
         
-        var dialog = DialogService.Show<StoreItemDetailsDialog>("Détails", parameters, options);
+        var dialog = DialogService.Show<StoreItemDetailsDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is bool confirmed && confirmed)
@@ -233,21 +241,48 @@
     private string GetCardStyle(StoreItemDto item)
     {
         var style = "";
+        
+        // Background Color
+        if (!string.IsNullOrEmpty(item.Color))
+        {
+            style += $"background-color: {item.Color}; ";
+        }
+
         if (item.IsOwned && item.IsUnique)
         {
             style += "opacity: 0.6; filter: grayscale(100%);";
         }
         
         // Affordability Border
-        if (userCurrencyBalance >= item.Price)
+        bool isBoostBlocked = IsBoost(item) && HasActiveBoost();
+
+        if (userCurrencyBalance >= item.Price && !isBoostBlocked)
         {
-            style += "border: 2px solid var(--mud-palette-success);";
+            style += "border: 8px solid var(--mud-palette-success);";
         }
         else
         {
-            style += "border: 2px solid var(--mud-palette-error);";
+            style += "border: 8px solid var(--mud-palette-error);";
         }
         
         return style;
+    }
+
+    private bool IsBoost(StoreItemDto item)
+    {
+        return item.DigitalActionCode != null && item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool HasActiveBoost()
+    {
+        // Check if user has any active boost in inventory that hasn't expired
+        // Assuming inventory items have ExpiresAt and IsActive (or we calculate active based on expiry)
+        // Based on UserInventory.cs, we have ExpiresAt.
+        // And usually a boost is considered active if ExpiresAt > DateTime.UtcNow.
+        // Let's check the DTO. I'll assume UserInventoryDto has ExpiresAt.
+        return userInventory.Any(i => i.DigitalActionCode != null && 
+                                      i.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase) && 
+                                      i.ExpiresAt.HasValue && 
+                                      i.ExpiresAt.Value > DateTime.UtcNow);
     }
 }

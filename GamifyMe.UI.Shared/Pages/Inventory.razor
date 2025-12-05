@@ -91,21 +91,7 @@
                 }
             </MudExpansionPanel>
 
-            <MudExpansionPanel Text="@($"Boosts ({BoostItems.Count()})")" Expanded="false">
-                @if (BoostItems.Any())
-                {
-                    <div class="horizontal-scroll-container mb-2">
-                        @foreach (var item in BoostItems)
-                        {
-                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
-                        }
-                    </div>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun boost.</MudText>
-                }
-            </MudExpansionPanel>
+
         </MudExpansionPanels>
     }
 </MudContainer>

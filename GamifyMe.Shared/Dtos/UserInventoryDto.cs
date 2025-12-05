@@ -19,5 +19,6 @@ namespace GamifyMe.Shared.Dtos
         // Digital specifics
         public string? DigitalActionCode { get; set; }
         public string? DigitalAssetUrl { get; set; }
+        public string? Color { get; set; }
     }
 }

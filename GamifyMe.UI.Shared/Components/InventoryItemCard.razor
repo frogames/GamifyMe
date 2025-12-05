@@ -2,15 +2,16 @@
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
 
-<MudCard Elevation="3" Class="inventory-card d-flex flex-column" @onclick="OnClick">
+<MudCard Elevation="3" Class="inventory-card d-flex flex-column" @onclick="OnClick" Style="@($"background-color: {(string.IsNullOrEmpty(Item.Color) ? "var(--mud-palette-surface)" : Item.Color)};")">
     <div class="d-flex justify-center align-center pa-4"
-         style="background-color: var(--mud-palette-background-grey); height: 120px;">
-        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Style="font-size: 3rem;"
-                 Color="@(Item.IsActive ? Color.Success : Color.Default)" />
+         style="height: 120px;">
+        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" 
+                 Color="@(string.IsNullOrEmpty(Item.Color) ? (Item.IsActive ? Color.Success : Color.Default) : Color.Inherit)"
+                 Style="@(!string.IsNullOrEmpty(Item.Color) ? $"color: {ColorHelper.GetContrastColor(Item.Color)}; font-size: 3rem;" : "font-size: 3rem;")" />
     </div>
 
     <MudCardContent Class="flex-grow-1 pt-2 px-3 pb-3">
-        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1 text-truncate"><b>@Item.ItemName</b></MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="mb-1 text-truncate" Style="@($"font-weight:bold; color:{(string.IsNullOrEmpty(Item.Color) ? "inherit" : ColorHelper.GetContrastColor(Item.Color))}")">@Item.ItemName</MudText>
         
         <div class="d-flex justify-center">
             @if (Item.ItemType == "Physical")

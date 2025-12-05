@@ -12,13 +12,14 @@
     <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="img/logo.png" />
 
     <HeadOutlet @rendermode="new InteractiveAutoRenderMode(prerender: false)" />
 </head>
 
 <body>
-    <GamifyMe.UI.Shared.Routes @rendermode="new Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode(prerender: false)" 
-                               AdditionalAssemblyNames="@(new[] { "GamifyMe.Web.Client", "GamifyMe.Web" })" />
+    <Routes @rendermode="new InteractiveAutoRenderMode(prerender: false)" 
+            AdditionalAssemblyNames="@(new[] { "GamifyMe.Web.Client", "GamifyMe.Web" })" />
 
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>

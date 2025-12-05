@@ -352,7 +352,8 @@ namespace GamifyMe.Api.Controllers
                     ExpiresAt = ui.ExpiresAt,
                     ItemType = ui.StoreItem.ItemType.ToString(),
                     DigitalActionCode = ui.StoreItem.DigitalActionCode,
-                    DigitalAssetUrl = ui.StoreItem.DigitalAssetUrl
+                    DigitalAssetUrl = ui.StoreItem.DigitalAssetUrl,
+                    Color = ui.StoreItem.Color
                 })
                 .ToListAsync();
 

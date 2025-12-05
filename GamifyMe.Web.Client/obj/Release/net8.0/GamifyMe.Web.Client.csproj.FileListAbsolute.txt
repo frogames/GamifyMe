@@ -2174,10 +2174,10 @@ D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\GamifyMe.Web.Client.dll
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\refint\GamifyMe.Web.Client.dll
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\GamifyMe.Web.Client.pdb
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\ref\GamifyMe.Web.Client.dll
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\4jznsv7qwr-64adbc1wsj.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s26znw9xt7-0lcsy6sukw.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\jnws3rxrj5-23v8lxrmm3.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\5jok4goms4-ptlb213www.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s2bx1g4s0h-c28ggg5ihl.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\kw5glj7kjy-9zgir6cx1v.gz
-d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s4pdoguo7b-4swsqzpx0n.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\4jznsv7qwr-fqxxrdzyp0.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s26znw9xt7-vgnq1i5q8r.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s2bx1g4s0h-y1l4367y6x.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\kw5glj7kjy-rp2hjqqk8o.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\jnws3rxrj5-14mjf35hzn.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\5jok4goms4-3ix4op2bj7.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s4pdoguo7b-zveak6qp87.gz
