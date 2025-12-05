@@ -67,7 +67,7 @@ namespace GamifyMe.Api.Services
             foreach (var bonus in activeBonuses)
             {
                 totalMultiplier *= bonus.Multiplier;
-                bonusLabels.Add(bonus.Name);
+                bonusLabels.Add($"{bonus.Name} (x{bonus.Multiplier})");
             }
 
             foreach (var boost in userBoosts)
@@ -81,7 +81,7 @@ namespace GamifyMe.Api.Services
                     if (double.TryParse(valPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double m))
                     {
                         totalMultiplier *= m;
-                        bonusLabels.Add(boost.StoreItem.Name);
+                        bonusLabels.Add($"{boost.StoreItem.Name} (x{m})");
                     }
                 }
             }
@@ -258,9 +258,11 @@ namespace GamifyMe.Api.Services
             if (visited.Contains(current.Id)) return 0; // Cycle detected
             visited.Add(current.Id);
 
-            // Find children: objectives that have 'current' as a prerequisite
-            // We can use IsPrerequisiteFor if loaded, or search the list
-            var children = allObjectives.Where(o => o.Prerequisites.Any(p => p.Id == current.Id)).ToList();
+            // Find children using the loaded navigation property
+            // We must filter to only include those present in 'allObjectives' (active ones)
+            var children = current.IsPrerequisiteFor
+                .Where(child => allObjectives.Any(active => active.Id == child.Id))
+                .ToList();
             
             if (!children.Any()) return 1;
 

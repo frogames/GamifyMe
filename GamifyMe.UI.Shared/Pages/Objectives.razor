@@ -58,7 +58,7 @@
                                             @if (obj.ChainLength > 1)
                                             {
                                                 <div class="d-flex align-center flex-grow-0" style="width: auto;">
-                                                    <MudProgressLinear Value="@((double)(obj.ChainPosition ?? 0))" Max="@((double)(obj.ChainLength ?? 1))" Rounded="true" Style="height: 20px; width: 100px; border-radius: 10px;" Color="@(textColor == "white" ? Color.Surface : Color.Dark)" Class="mr-2" />
+                                                    <MudProgressLinear Value="@((double)(obj.ChainPosition ?? 0))" Max="@((double)(obj.ChainLength ?? 1))" Rounded="true" Style="@($"height: 15px; width: 100px; border-radius: 8px; --mud-palette-primary: {textColor};")" Color="Color.Primary" Class="mr-2" />
                                                     <MudText Typo="Typo.caption" Style="@($"color: {textColor}; white-space: nowrap; font-weight: bold;")">@obj.ChainPosition / @obj.ChainLength</MudText>
                                                 </div>
                                             }
@@ -76,7 +76,13 @@
 
                             <!-- Column 2: Location -->
                             <div class="col-location">
-                                <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@obj.Location</MudText>
+                                @if (!string.IsNullOrEmpty(obj.Location))
+                                {
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
+                                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@obj.Location</MudText>
+                                    </div>
+                                }
                             </div>
 
                             <!-- Column 3: Rewards -->

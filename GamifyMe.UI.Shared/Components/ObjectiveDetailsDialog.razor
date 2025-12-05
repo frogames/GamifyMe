@@ -27,7 +27,7 @@
                 @if (Objective.ChainLength > 1)
                 {
                     <div class="d-flex align-center mt-2 flex-column">
-                         <MudProgressLinear Value="@((double)(Objective.ChainPosition ?? 0))" Max="@((double)(Objective.ChainLength ?? 1))" Style="height: 12px; width: 150px; border-radius: 6px;" Color="@(textColor == "white" ? Color.Surface : Color.Dark)" />
+                         <MudProgressLinear Value="@((double)(Objective.ChainPosition ?? 0))" Max="@((double)(Objective.ChainLength ?? 1))" Rounded="true" Style="@($"height: 12px; width: 150px; border-radius: 6px; --mud-palette-primary: {textColor};")" Color="Color.Primary" />
                          <MudText Typo="Typo.caption" Class="mt-1" Style="@($"color: {textColor}; font-weight: bold;")">Étape @Objective.ChainPosition sur @Objective.ChainLength</MudText>
                     </div>
                 }
