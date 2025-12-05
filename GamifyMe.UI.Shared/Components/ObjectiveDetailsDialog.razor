@@ -2,22 +2,57 @@
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
 
-<MudDialog>
+<MudDialog Class="custom-dialog-content" Style="background-color: transparent; box-shadow: none; overflow: visible;">
     <DialogContent>
-        <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
+        <style>
+            .custom-dialog-content .mud-dialog-content {
+                padding: 0 !important;
+            }
+        </style>
+        @{
+            var bgColor = !string.IsNullOrEmpty(Objective.Color) ? Objective.Color : "#ffffff";
+            var textColor = ColorHelper.GetContrastColor(bgColor);
+            var style = !string.IsNullOrEmpty(Objective.Color) ? $"background-color: {bgColor}; color: {textColor};" : "";
+            var iconColor = textColor == "white" ? Color.Surface : Color.Default;
+            var iconStyle = textColor == "white" ? "color: white;" : "";
+        }
+
+        <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px;")">
             <div class="d-flex flex-column align-center mb-4">
-                <MudAvatar Color="@(string.IsNullOrEmpty(Objective.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Objective.Color) ? $"background-color:{Objective.Color}; width: 80px; height: 80px;" : "width: 80px; height: 80px;")">
+                <MudAvatar Color="@(string.IsNullOrEmpty(Objective.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Objective.Color) ? $"background-color:{Objective.Color}; width: 80px; height: 80px; filter: brightness(0.9);" : "width: 80px; height: 80px;")">
                     <MudIcon Icon="@IconLibrary.GetIcon(Objective.IconName)" Size="Size.Large" Style="font-size: 3rem; color: white;" />
                 </MudAvatar>
-                <MudText Typo="Typo.h5" Align="Align.Center">@Objective.Title</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center" Style="@($"color: {textColor}; font-weight: bold;")">@Objective.Title</MudText>
                 
+                @if (Objective.ChainLength > 1)
+                {
+                    <div class="d-flex align-center mt-2 flex-column">
+                         <MudProgressLinear Value="@((double)(Objective.ChainPosition ?? 0))" Max="@((double)(Objective.ChainLength ?? 1))" Style="height: 12px; width: 150px; border-radius: 6px;" Color="@(textColor == "white" ? Color.Surface : Color.Dark)" />
+                         <MudText Typo="Typo.caption" Class="mt-1" Style="@($"color: {textColor}; font-weight: bold;")">Étape @Objective.ChainPosition sur @Objective.ChainLength</MudText>
+                    </div>
+                }
+
                 @if (Objective.IsUnique)
                 {
                     <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="mt-2">Objectif Unique</MudChip>
                 }
             </div>
 
-            <MudText Typo="Typo.body1" Class="mb-4 text-justify">@Objective.Description</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4 text-justify" Style="@($"color: {textColor};")">@Objective.Description</MudText>
+
+            @if (Objective.UnlockedObjectiveTitles.Any())
+            {
+                <div class="mb-4 p-2" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+                     <MudText Typo="Typo.subtitle2" Class="mb-1" Style="@($"color: {textColor}; font-weight: bold;")">Débloque :</MudText>
+                     @foreach(var title in Objective.UnlockedObjectiveTitles)
+                     {
+                         <div class="d-flex align-center">
+                             <MudIcon Icon="@Icons.Material.Filled.LockOpen" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                             <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@title</MudText>
+                         </div>
+                     }
+                </div>
+            }
 
             <MudDivider Class="mb-4" />
 
@@ -25,49 +60,67 @@
                 @if (Objective.EventDate.HasValue)
                 {
                     <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
-                        <MudText Typo="Typo.body2"><strong>Date :</strong> @Objective.EventDate.Value.ToString("g")</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")"><strong>Date :</strong> @Objective.EventDate.Value.ToString("g")</MudText>
                     </div>
                 }
 
                 @if (Objective.EndDate.HasValue)
                 {
                     <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-2" Color="Color.Error" />
-                        <MudText Typo="Typo.body2"><strong>Fin :</strong> @Objective.EndDate.Value.ToString("g")</MudText>
-                    </div>
-                }
-                else if (!Objective.EventDate.HasValue)
-                {
-                     <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.AllInclusive" Size="Size.Small" Class="mr-2" Color="Color.Success" />
-                        <MudText Typo="Typo.body2"><strong>Durée :</strong> Permanent</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")"><strong>Fin :</strong> @Objective.EndDate.Value.ToString("g")</MudText>
                     </div>
                 }
 
-                @if (!string.IsNullOrEmpty(Objective.Location))
+                 @if (!string.IsNullOrEmpty(Objective.Location))
                 {
                     <div class="d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-2" Color="Color.Default" />
-                        <MudText Typo="Typo.body2"><strong>Lieu :</strong> @Objective.Location</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")"><strong>Lieu :</strong> @Objective.Location</MudText>
+                    </div>
+                }
+
+                @if (Objective.FrequencyHours.HasValue && !Objective.IsUnique)
+                {
+                     <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                         <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
+                            <strong>Fréquence :</strong> Réalisable toutes les @Objective.FrequencyHours heures
+                        </MudText>
+                    </div>
+                }
+
+                @if (Objective.ExpirationDate.HasValue)
+                {
+                     <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
+                             <strong>Temps restant :</strong> @TimeFormatter.GetTimeRemaining(Objective.ExpirationDate.Value - DateTime.UtcNow)
+                        </MudText>
                     </div>
                 }
             </div>
+            
              <MudDivider Class="my-4" />
+             
+             @if (!string.IsNullOrEmpty(Objective.BonusLabel))
+             {
+                 <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-1" Style="@($"color: {textColor}; font-style: italic;")">
+                     Bonus actif : @Objective.BonusLabel (x@(Objective.ActiveMultiplier))
+                 </MudText>
+             }
+
              <div class="d-flex justify-center gap-4">
-                 <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning">
-                    +@Objective.XpReward XP
+                 <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
+                    +@(Objective.XpReward * Objective.ActiveMultiplier) XP
                 </MudChip>
-                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info">
+                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
                     +@Objective.DocPointsReward Crédits
                 </MudChip>
              </div>
-
-        </MudContainer>
+        </div>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Fermer</MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code {

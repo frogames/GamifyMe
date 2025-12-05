@@ -1,4 +1,5 @@
 ﻿using System;
+using GamifyMe.Shared.Models;
 
 namespace GamifyMe.Shared.Dtos
 {
@@ -45,5 +46,7 @@ namespace GamifyMe.Shared.Dtos
 
         public double ActiveMultiplier { get; set; } = 1.0;
         public string? BonusLabel { get; set; }
+        public ObjectiveCategory Category { get; set; }
+        public List<string> UnlockedObjectiveTitles { get; set; } = new();
     }
 }

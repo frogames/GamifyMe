@@ -39,5 +39,16 @@
 
         // --- Relations ---
         public virtual ICollection<UserObjective> UserObjectives { get; set; } = new List<UserObjective>();
+
+        public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
+    }
+
+    public enum ObjectiveCategory
+    {
+        Principal,
+        Evenement,
+        Secondaire,
+        Demarrage,
+        Rechargement
     }
 }

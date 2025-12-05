@@ -1,3 +1,4 @@
+using System;
 using GamifyMe.Api.Constants;
 using GamifyMe.Api.Data;
 using GamifyMe.Shared.Dtos;

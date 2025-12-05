@@ -2165,13 +2165,6 @@ D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\17saom4gxo-tjcz0u7
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\r50tkcwp74-tptq2av103.gz
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\c459asnwjx-lfu7j35m59.gz
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\dxqlru5bc4-oyz0vx2fzb.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\4jznsv7qwr-v7qfahdpst.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\jnws3rxrj5-fmjpp523qb.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\5jok4goms4-kr9p9y6f4t.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s26znw9xt7-lowdz41xah.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s2bx1g4s0h-4y9l6lzxcm.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\kw5glj7kjy-paz35uz7tn.gz
-D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s4pdoguo7b-ylv2r55b7b.gz
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\staticwebassets.build.json
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\staticwebassets.build.json.cache
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\staticwebassets.development.json
@@ -2181,3 +2174,10 @@ D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\GamifyMe.Web.Client.dll
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\refint\GamifyMe.Web.Client.dll
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\GamifyMe.Web.Client.pdb
 D:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\ref\GamifyMe.Web.Client.dll
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\4jznsv7qwr-90g3yvgabq.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\jnws3rxrj5-jc25f9j0pc.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\5jok4goms4-dw17w0okt5.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s26znw9xt7-471060fx2m.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s2bx1g4s0h-26gh34qatg.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\kw5glj7kjy-p4uub8b0yc.gz
+d:\GamifyMe\GamifyMe.Web.Client\obj\Release\net8.0\compressed\s4pdoguo7b-7ww3hlpgr4.gz

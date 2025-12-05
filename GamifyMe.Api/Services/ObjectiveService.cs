@@ -242,7 +242,7 @@ namespace GamifyMe.Api.Services
                 
                 if (chainLen > 1)
                 {
-                    dto.Title = $"{dto.Title} ({chainPos}/{chainLen})";
+                    // Title modification removed
                     dto.ChainPosition = chainPos;
                     dto.ChainLength = chainLen;
                 }
@@ -334,7 +334,8 @@ namespace GamifyMe.Api.Services
                 Prerequisites = prerequisiteObjectives,
                 LifespanHours = request.LifespanHours,
                 IsOnboarding = request.IsOnboarding,
-                NextOnboardingObjectiveId = request.NextOnboardingObjectiveId
+                NextOnboardingObjectiveId = request.NextOnboardingObjectiveId,
+                Category = DetermineCategory(request)
             };
 
             _context.Objectives.Add(objective);
@@ -377,6 +378,9 @@ namespace GamifyMe.Api.Services
             objective.LifespanHours = request.LifespanHours;
             objective.IsOnboarding = request.IsOnboarding;
             objective.NextOnboardingObjectiveId = request.NextOnboardingObjectiveId;
+            
+            // Automatic Categorization Logic
+            objective.Category = DetermineCategory(request);
 
             await _context.SaveChangesAsync();
             return true;
@@ -390,6 +394,23 @@ namespace GamifyMe.Api.Services
             _context.Objectives.Remove(objective);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        private static ObjectiveCategory DetermineCategory(CreateObjectiveDto request)
+        {
+            // 1. Onboarding -> Principal
+            if (request.IsOnboarding) return ObjectiveCategory.Principal;
+
+            // 2. Event -> Evenement (Unique + Start + End)
+            // The prompt says "Ce sont les objectifs uniques avec une date de début et de fin"
+            // We'll check if EventDate and EndDate are set. IsUnique is usually true for events but let's stick to dates.
+            if (request.EventDate.HasValue && request.EndDate.HasValue) return ObjectiveCategory.Evenement;
+
+            // 3. Reload -> Rechargement (Frequency) - REMOVED per new requirements
+            // if (request.FrequencyHours.HasValue) return ObjectiveCategory.Rechargement;
+
+            // 4. Default / Manual
+            return request.Category;
         }
 
         private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted)
@@ -415,7 +436,9 @@ namespace GamifyMe.Api.Services
                 PrerequisiteObjectiveIds = obj.Prerequisites?.Select(p => p.Id).ToList() ?? new List<Guid>(),
                 LifespanHours = obj.LifespanHours,
                 IsOnboarding = obj.IsOnboarding,
-                NextOnboardingObjectiveId = obj.NextOnboardingObjectiveId
+                NextOnboardingObjectiveId = obj.NextOnboardingObjectiveId,
+                Category = obj.Category,
+                UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>()
             };
         }
     }

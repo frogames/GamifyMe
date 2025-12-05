@@ -38,6 +38,16 @@
                     <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                     <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
 
+                    <MudSelect T="ObjectiveCategory" Label="Catégorie" @bind-Value="newObjective.Category" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Disabled="@IsCategoryAutomatic">
+                        @foreach (ObjectiveCategory cat in Enum.GetValues(typeof(ObjectiveCategory)))
+                        {
+                            if (cat != ObjectiveCategory.Rechargement)
+                            {
+                                <MudSelectItem Value="@cat">@cat</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+
                     @* SÉLECTEUR D'ICÔNE *@
                     <div class="d-flex justify-center mb-4">
                         <MudTooltip Text="Cliquez pour changer l'icône">
@@ -301,7 +311,8 @@
             LifespanHours = objectiveToEdit.LifespanHours,
             IsOnboarding = objectiveToEdit.IsOnboarding,
             NextOnboardingObjectiveId = objectiveToEdit.NextOnboardingObjectiveId,
-            Color = objectiveToEdit.Color
+            Color = objectiveToEdit.Color,
+            Category = objectiveToEdit.Category
         };
         showForm = true;
     }
@@ -377,4 +388,8 @@
             newObjective.EndDate = newObjective.EndDate.Value.Date + (endTime ?? TimeSpan.Zero);
         }
     }
+
+    private bool IsCategoryAutomatic => 
+        newObjective.IsOnboarding || 
+        (newObjective.EventDate.HasValue && newObjective.EndDate.HasValue);
 }

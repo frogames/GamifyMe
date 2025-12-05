@@ -14,64 +14,64 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mb-6">Bienvenue @firstName</MudText>
-    <MudGrid Class="mb-8">
+    <MudGrid Class="mb-8" Spacing="2">
         <!-- Mon Pass Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/my-qrcode"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.QrCode2" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Mon Pass</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Accéder à mon QR code</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/my-qrcode"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.QrCode2" Color="Color.Primary" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Mon Pass</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Accéder à mon QR code</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <!-- Objectifs Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Objectifs</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@objectiveCount objectifs disponibles</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Secondary" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Objectifs</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@objectiveCount objectifs disponibles</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <!-- Boutique Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/store"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Success" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Boutique</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@storeItemCount articles en boutique</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/store"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Success" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Boutique</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@storeItemCount articles en boutique</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <!-- Inventaire Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/inventory"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Info" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Inventaire</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">@inventoryCount éléments possédés</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/inventory"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Info" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Inventaire</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@inventoryCount éléments possédés</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <!-- Groupes Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/groups"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Groupes</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Rejoindre ou voir mon groupe</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/groups"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Tertiary" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Groupes</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Rejoindre ou voir mon groupe</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <!-- Classements Card -->
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/leaderboard"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Warning" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Classements</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Voir les meilleurs scores</MudText>
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/leaderboard"))">
+                <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Classements</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Voir les meilleurs scores</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -82,6 +82,24 @@
 <style>
     .hover-effect { transition: transform 0.2s; }
     .hover-effect:hover { transform: translateY(-5px); }
+
+    /* Mobile Styles (Default) */
+    .home-card-content {
+        padding: 12px !important;
+    }
+    .home-card-icon {
+        font-size: 2.5rem !important;
+    }
+
+    /* Desktop/Tablet Styles */
+    @@media (min-width: 600px) {
+        .home-card-content {
+            padding: 32px !important;
+        }
+        .home-card-icon {
+            font-size: 4rem !important;
+        }
+    }
 </style>
 
 @code {

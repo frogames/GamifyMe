@@ -2,6 +2,7 @@
 
 @attribute [Authorize]
 @using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Components
 @inject HttpClient Http
@@ -22,133 +23,151 @@
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
     }
-    else if (objectives == null || !objectives.Any())
+    else if (groupedObjectives == null || !groupedObjectives.Any())
     {
         <MudAlert Severity="Severity.Info">Aucun objectif disponible pour le moment.</MudAlert>
     }
     else
     {
-        <MudGrid>
-            @foreach (var obj in objectives)
+        @foreach (var group in groupedObjectives)
+        {
+            if (group.Value.Any())
             {
-                var isCooldown = obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow;
-                var isExpiring = obj.ExpirationDate.HasValue && obj.ExpirationDate > DateTime.UtcNow;
+                <div class="d-flex align-end mt-6 mb-3 gap-3">
+                    <MudText Typo="Typo.h5">@group.Key</MudText>
+                    <MudText Typo="Typo.caption" Class="mb-1" Color="Color.Secondary">@GetCategoryDescription(group.Key)</MudText>
+                </div>
                 
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="3" Class="h-100 d-flex flex-column cursor-pointer hover-effect" 
-                             Style="@(isCooldown ? "opacity: 0.6; filter: grayscale(100%); cursor: not-allowed;" : "")"
-                             @onclick="@(() => OpenDetails(obj))">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="@(string.IsNullOrEmpty(obj.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Style="@(!string.IsNullOrEmpty(obj.Color) ? $"background-color:{obj.Color};" : "")">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Style="color: white;" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">@obj.Title</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    @if (obj.EventDate.HasValue)
-                                    {
-                                        <div class="d-flex align-center">
-                                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" />
-                                            <span>@obj.EventDate.Value.ToString("g")</span>
+                <div class="objectives-table">
+                    @foreach (var obj in group.Value)
+                    {
+                        var bgColor = !string.IsNullOrEmpty(obj.Color) ? obj.Color : "#ffffff";
+                        var textColor = ColorHelper.GetContrastColor(bgColor);
+                        var style = !string.IsNullOrEmpty(obj.Color) ? $"background-color: {bgColor}; color: {textColor};" : "";
+                        var iconStyle = $"color: {textColor};";
+
+                        <div class="objective-row hover-scale" style="@style" @onclick="@(() => OpenDetails(obj))">
+                            <!-- Column 1: Icon + Title + Date -->
+                            <div class="col-main">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Class="mr-3" Style="@iconStyle" />
+                                    <div style="flex-grow: 1;">
+                                        <div class="d-flex align-center" style="width: 100%;">
+                                             <MudText Typo="Typo.subtitle1" Class="mr-3" Style="@($"font-weight: bold; color: {textColor};")">@obj.Title</MudText>
+                                        
+                                            @if (obj.ChainLength > 1)
+                                            {
+                                                <div class="d-flex align-center flex-grow-0" style="width: auto;">
+                                                    <MudProgressLinear Value="@((double)(obj.ChainPosition ?? 0))" Max="@((double)(obj.ChainLength ?? 1))" Rounded="true" Style="height: 20px; width: 100px; border-radius: 10px;" Color="@(textColor == "white" ? Color.Surface : Color.Dark)" Class="mr-2" />
+                                                    <MudText Typo="Typo.caption" Style="@($"color: {textColor}; white-space: nowrap; font-weight: bold;")">@obj.ChainPosition / @obj.ChainLength</MudText>
+                                                </div>
+                                            }
                                         </div>
-                                    }
+                                       
+                                        @if (obj.EventDate.HasValue)
+                                        {
+                                            <MudText Typo="Typo.caption" Style="@($"color: {textColor}; opacity: 0.8;")">
+                                                @obj.EventDate.Value.ToString("g")
+                                            </MudText>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
 
-                                    @if (obj.EndDate.HasValue)
+                            <!-- Column 2: Location -->
+                            <div class="col-location">
+                                <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@obj.Location</MudText>
+                            </div>
+
+                            <!-- Column 3: Rewards -->
+                            <div class="col-rewards">
+                                <div class="d-flex gap-1 justify-end">
+                                    @if (obj.ActiveMultiplier > 1.0)
                                     {
-                                        <div class="d-flex align-center mt-1">
-                                            <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-1" />
-                                            <span>Fin : @obj.EndDate.Value.ToString("g")</span>
-                                        </div>
+                                         <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                                            +@(obj.XpReward * obj.ActiveMultiplier) XP
+                                        </MudChip>
                                     }
-                                </MudText>
-                            </CardHeaderContent>
-                            <CardHeaderActions>
-                                @if (obj.IsUnique)
-                                {
-                                    <MudTooltip Text="Objectif Unique">
-                                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
-                                    </MudTooltip>
-                                }
-                            </CardHeaderActions>
-                        </MudCardHeader>
-
-                        <MudCardContent Class="flex-grow-1">
-                            <MudText Typo="Typo.body2" Class="mb-2 description-clamp">@obj.Description</MudText>
-
-                            @if (!string.IsNullOrEmpty(obj.Location))
-                            {
-                                <div class="d-flex align-center mt-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Color="Color.Default"
-                                        Class="mr-1" />
-                                    <MudText Typo="Typo.caption">@obj.Location</MudText>
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
+                                            @obj.XpReward XP
+                                        </MudChip>
+                                    }
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
+                                        @obj.DocPointsReward Crédits
+                                    </MudChip>
                                 </div>
-                            }
+                            </div>
 
-                            @if (isExpiring)
-                            {
-                                var timeToLive = obj.ExpirationDate!.Value - DateTime.UtcNow;
-                                <div class="d-flex align-center mt-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
-                                    <MudText Typo="Typo.caption" Color="Color.Warning">
-                                        Disparaît dans : @TimeFormatter.GetTimeRemaining(timeToLive)
-                                    </MudText>
-                                </div>
-                            }
-                            
-                            @if (isCooldown)
-                            {
-                                var timeLeft = obj.NextAvailableDate!.Value - DateTime.UtcNow;
-                                <div class="d-flex align-center mt-3 justify-center pa-2" style="background-color: rgba(0,0,0,0.05); border-radius: 4px; border: 1px solid var(--mud-palette-error);">
-                                    <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Error" Size="Size.Small" Class="mr-2"/>
-                                    <MudText Typo="Typo.body2" Color="Color.Error" Style="font-weight:bold;">
-                                        Disponible dans : @TimeFormatter.GetTimeRemaining(timeLeft)
-                                    </MudText>
-                                </div>
-                            }
-                        </MudCardContent>
-
-                        <MudCardActions Class="d-flex justify-end pa-3 bg-gray-light">
-                            <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="@(obj.ActiveMultiplier > 1.0 ? Color.Secondary : Color.Warning)" Size="Size.Small">
-                                @if (obj.ActiveMultiplier > 1.0)
+                            <!-- Column 4: Status / Timer -->
+                            <div class="col-status">
+                                @if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow)
                                 {
-                                    <span style="font-weight:bold;">+@(obj.XpReward * obj.ActiveMultiplier) XP</span>
-                                    <span class="ml-1" style="font-size: 0.8em;">(x@(obj.ActiveMultiplier) @obj.BonusLabel)</span>
+                                    var timeLeft = obj.NextAvailableDate!.Value - DateTime.UtcNow;
+                                    <div class="d-flex align-center justify-end">
+                                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
+                                        <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeLeft)</MudText>
+                                    </div>
                                 }
-                                else
+                                else if (obj.ExpirationDate.HasValue)
                                 {
-                                    <span>+@obj.XpReward XP</span>
+                                    var timeToLive = obj.ExpirationDate!.Value - DateTime.UtcNow;
+                                    <div class="d-flex align-center justify-end">
+                                        <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
+                                        <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeToLive)</MudText>
+                                    </div>
                                 }
-                            </MudChip>
-                            <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info"
-                                Size="Size.Small">+@obj.DocPointsReward Crédits</MudChip>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
-        </MudGrid>
+        }
     }
 </MudContainer>
 
 <style>
-    .hover-effect {
-        transition: transform 0.2s;
+    .objectives-table {
+        display: flex;
+        flex-direction: column;
+        gap: 4px; /* Space between rows */
     }
-    .hover-effect:hover {
-        transform: translateY(-5px);
+
+    .objective-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr; /* Adjust column ratios */
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 8px; /* Rounded corners */
+        width: 100%;
+        cursor: pointer;
+        transition: transform 0.1s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .description-clamp {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
+
+    .hover-scale:hover {
+        transform: scale(1.01);
     }
+
+    /* Responsive adjustments */
+    @@media (max-width: 600px) {
+        .objective-row {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto auto;
+            gap: 8px;
+        }
+        .col-location, .col-rewards, .col-status {
+            display: flex; /* Or hide/stack */
+        }
+    }
+
+
 </style>
 
 @code {
     private List<ObjectiveDto> objectives = new();
+    private Dictionary<string, List<ObjectiveDto>> groupedObjectives = new();
     private bool isLoading = true;
     private System.Timers.Timer? _timer;
 
@@ -194,6 +213,7 @@
         try
         {
             objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active") ?? new List<ObjectiveDto>();
+            GroupObjectives();
         }
         catch (Exception ex)
         {
@@ -205,12 +225,71 @@
         }
     }
 
+    private void GroupObjectives()
+    {
+        groupedObjectives = new Dictionary<string, List<ObjectiveDto>>();
+
+        // Define order
+        var categories = new[] { 
+            ObjectiveCategory.Principal.ToString(), 
+            ObjectiveCategory.Evenement.ToString(), 
+            ObjectiveCategory.Secondaire.ToString(), 
+            ObjectiveCategory.Demarrage.ToString(), 
+            ObjectiveCategory.Rechargement.ToString() 
+        };
+
+        foreach (var cat in categories)
+        {
+            groupedObjectives[cat] = new List<ObjectiveDto>();
+        }
+
+        foreach (var obj in objectives)
+        {
+            string displayCategory;
+
+            // Logic for "Rechargement" (Cooldown)
+            if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow)
+            {
+                displayCategory = ObjectiveCategory.Rechargement.ToString();
+            }
+            else
+            {
+                displayCategory = obj.Category.ToString();
+            }
+
+            if (!groupedObjectives.ContainsKey(displayCategory))
+            {
+                groupedObjectives[displayCategory] = new List<ObjectiveDto>();
+            }
+            groupedObjectives[displayCategory].Add(obj);
+        }
+    }
+
+    private string GetCategoryDescription(string category)
+    {
+        return category switch
+        {
+            "Principal" => "Vos missions les plus importantes",
+            "Evenement" => "A noter dans votre agenda",
+            "Secondaire" => "Dès que vous avez un peu de temps disponible",
+            "Demarrage" => "Débloque de nouveaux objectifs",
+            "Rechargement" => "Bientôt de retour",
+            _ => ""
+        };
+    }
+
     private void OpenDetails(ObjectiveDto obj)
     {
         if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow) return;
 
         var parameters = new DialogParameters<ObjectiveDetailsDialog> { { x => x.Objective, obj } };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        DialogService.Show<ObjectiveDetailsDialog>("Détails de l'objectif", parameters, options);
+        // Clean dialog interface
+        var options = new DialogOptions { 
+            CloseButton = false, // Removed default close button
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            NoHeader = true // Remove default header
+        };
+        DialogService.Show<ObjectiveDetailsDialog>("", parameters, options);
     }
 }

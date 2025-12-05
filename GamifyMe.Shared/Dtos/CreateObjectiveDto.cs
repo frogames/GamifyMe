@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using GamifyMe.Shared.Models;
 
 namespace GamifyMe.Shared.Dtos
 {
@@ -19,7 +20,7 @@ namespace GamifyMe.Shared.Dtos
 
         // 1. CORRECTION : Défini à 'true' par défaut, comme tu l'as demandé.
         public bool IsUnique { get; set; } = true;
-        public int? FrequencyHours { get; set; } = 24;
+        public int? FrequencyHours { get; set; }
 
         public DateTime? EventDate { get; set; }
         public DateTime? EndDate { get; set; }
@@ -42,5 +43,7 @@ namespace GamifyMe.Shared.Dtos
         // Onboarding
         public bool IsOnboarding { get; set; }
         public Guid? NextOnboardingObjectiveId { get; set; }
+
+        public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
     }
 }
