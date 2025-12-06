@@ -14,7 +14,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Périodes Bonus</MudText>
+        <MudText Typo="Typo.h5">Périodes Bonus</MudText>
         @if (!showForm)
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
@@ -78,7 +78,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@list" Hover="true" Dense="true" Striped="true">
+                <MudTable Items="@list" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BonusPeriodDto> e) => StartEdit(e.Item))" T="BonusPeriodDto" RowClass="cursor-pointer">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Dates</MudTh>
@@ -106,7 +106,6 @@
                             }
                         </MudTd>
                         <MudTd DataLabel="Actions">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEdit(item))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Delete(item))" />
                         </MudTd>
                     </RowTemplate>

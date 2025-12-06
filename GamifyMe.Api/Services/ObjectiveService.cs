@@ -41,16 +41,16 @@ namespace GamifyMe.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
-            // 3. Get Active Bonus Periods
+            // 3. Get Active Bonus Periods (XP and Credits)
             var activeBonuses = await _context.BonusPeriods
                 .Where(b => b.EstablishmentId == establishmentId
                             && b.IsActive
-                            && b.Type == BonusType.Xp
                             && b.StartDate <= now
                             && b.EndDate >= now)
                 .ToListAsync();
 
             // 4. Get User Active Boosts
+            // Note: DigitalActionCode is typically UPPERCASE (e.g. BOOST_XP_2X)
             var userBoosts = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
                 .Where(ui => ui.UserId == userId
@@ -58,7 +58,8 @@ namespace GamifyMe.Api.Services
                              && (ui.ExpiresAt == null || ui.ExpiresAt > now)
                              && ui.StoreItem.ItemType == StoreItemType.Digital
                              && ui.StoreItem.DigitalActionCode != null
-                             && ui.StoreItem.DigitalActionCode.StartsWith("BOOST_XP_"))
+                             && (ui.StoreItem.DigitalActionCode.StartsWith("BOOST_XP_") 
+                                 || ui.StoreItem.DigitalActionCode.StartsWith("XP_BOOST_"))) 
                 .ToListAsync();
 
             double totalMultiplier = 1.0;
@@ -66,23 +67,57 @@ namespace GamifyMe.Api.Services
 
             foreach (var bonus in activeBonuses)
             {
-                totalMultiplier *= bonus.Multiplier;
-                bonusLabels.Add($"{bonus.Name} (x{bonus.Multiplier})");
+                if (bonus.Type == BonusType.Xp)
+                    totalMultiplier *= bonus.Multiplier;
+
+                // Example: "Joyeux Noël (XP x2)" or "Pâques (Crédits x2)"
+                var typeStr = bonus.Type == BonusType.Xp ? "XP" : "Crédits";
+                bonusLabels.Add($"{bonus.Name} ({typeStr} x{bonus.Multiplier})");
             }
 
             foreach (var boost in userBoosts)
             {
-                // Parse multiplier from code like "BOOST_XP_2X" or "BOOST_XP_1.5X"
                 var code = boost.StoreItem.DigitalActionCode!;
                 var parts = code.Split('_');
-                if (parts.Length >= 3)
+                
+                // Try to find the multiplier part
+                // It is usually the 3rd part (index 2) like in BOOST_XP_2X or XP_BOOST_2X_24H
+                // We will iterate to find a part looking like a number
+                double m = 0;
+                bool found = false;
+
+                foreach (var part in parts)
                 {
-                    var valPart = parts[2].Replace("X", "").Replace("x", "");
-                    if (double.TryParse(valPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double m))
+                    var cleanPart = part.Replace("X", "", StringComparison.OrdinalIgnoreCase).Replace("x", "", StringComparison.OrdinalIgnoreCase);
+                    if (double.TryParse(cleanPart,  System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
                     {
-                        totalMultiplier *= m;
-                        bonusLabels.Add($"{boost.StoreItem.Name} (x{m})");
+                        // Avoid grabbing dates/hours like "24H" -> 24 if we aren't careful? 
+                        // Usually "24H" is parsed as 24? No, "24H" has 'H'. Replace only replaced 'X'.
+                        // So "24H" wont parse as double unless we remove H.
+                        // But what if the multiplier is "2"?
+                        
+                        // Heuristic: Multiplier is usually small (e.g. < 100).
+                        if (val > 0 && val < 20) // Safety check
+                        {
+                            m = val;
+                            found = true;
+                            // We assume the first number we find (that is not part of explicit duration) is the multiplier
+                            // Actually, "2X" is standard.
+                            if (part.Contains("X", StringComparison.OrdinalIgnoreCase)) break; // Validated by 'X' presence
+                        }
                     }
+                }
+
+                if (found)
+                {
+                    totalMultiplier *= m;
+                    bonusLabels.Add($"{boost.StoreItem.Name} (XP x{m})");
+                }
+                else
+                {
+                    // Fallback if parsing failed but we know it's a boost
+                    // We shouldn't apply random multiplier, but maybe show label?
+                    // Better to rely on "found".
                 }
             }
 

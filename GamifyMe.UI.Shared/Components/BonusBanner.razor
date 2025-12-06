@@ -8,9 +8,10 @@
 {
     <div class="bonus-banner d-flex justify-center align-center pa-2">
         <MudIcon Icon="@GetIcon()" Class="mr-2 pulse-animation" Size="Size.Large" />
-        <MudText Typo="Typo.h6" Class="pulse-text">
-            <strong>BONUS ACTIF :</strong> @activeBonus.Name (@GetMultiplierText()) - @TimeFormatter.GetTimeRemaining(activeBonus.EndDate)
-        </MudText>
+        <div class="d-flex flex-column align-center">
+             <MudText Typo="Typo.h6" Class="pulse-text" Align="Align.Center">@activeBonus.Name</MudText>
+             <MudText Typo="Typo.body2" Class="pulse-text" Align="Align.Center" Style="font-size: 0.8rem;">@GetBonusDescription()</MudText>
+        </div>
         <MudIcon Icon="@GetIcon()" Class="ml-2 pulse-animation" Size="Size.Large" />
     </div>
 
@@ -23,6 +24,7 @@
             top: 0;
             z-index: 10; /* Lower than MudDrawer (typically 1100+) */
             width: 100%;
+            border-radius: 0 0 16px 16px;
         }
 
         @@media (max-width: 600px) {
@@ -112,5 +114,31 @@
         return activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp 
             ? $"XP x{activeBonus.Multiplier}" 
             : $"Monnaie x{activeBonus.Multiplier}";
+    }
+
+    private string GetBonusDescription()
+    {
+        if (activeBonus == null) return "";
+
+        var typeStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? "XP" : "Crédits";
+        var multipliedStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? "multipliée" : "multipliés";
+        
+        var remaining = activeBonus.EndDate - DateTime.UtcNow;
+        
+        string timeStr;
+        if (remaining.TotalHours > 24)
+        {
+            timeStr = $"{remaining.Days} jours et {remaining.Hours} heures";
+        }
+        else if (remaining.TotalHours >= 1)
+        {
+             timeStr = $"{remaining.Hours} heures et {remaining.Minutes} minutes";
+        }
+        else
+        {
+            timeStr = $"{remaining.Minutes} minutes";
+        }
+
+        return $"{typeStr} {multipliedStr} par {activeBonus.Multiplier} pendant encore {timeStr} !";
     }
 }

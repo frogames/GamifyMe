@@ -16,7 +16,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Gestion des Groupes</MudText>
+        <MudText Typo="Typo.h5">Gestion des Groupes</MudText>
         @if (!showForm)
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
@@ -83,7 +83,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true">
+                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Description</MudTh>
@@ -107,7 +107,6 @@
                             <MudTooltip Text="Télécharger QR Code">
                                 <MudIconButton Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Color="Color.Primary" OnClick="@(() => DownloadQrCode(group))" />
                             </MudTooltip>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEdit(group))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteGroup(group))" />
                         </MudTd>
                     </RowTemplate>

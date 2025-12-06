@@ -3,7 +3,13 @@
 @inject ISnackbar Snackbar
 <MudDialog Style="@($"border-radius: 16px; background-color:{(string.IsNullOrEmpty(Item.Color) ? "var(--mud-palette-surface)" : Item.Color)}; color:{(string.IsNullOrEmpty(Item.Color) ? "inherit" : ColorHelper.GetContrastColor(Item.Color))};")" Class="mud-dialog-no-padding" ContentClass="pa-0">
     <DialogContent>
-            <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0 flex-grow-1 d-flex flex-column align-center" Style="overflow-y: hidden; height: 100%;">
+            <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0 flex-grow-1 d-flex flex-column align-center" Style="overflow-y: hidden; height: 100%; cursor: pointer;" @onclick="Cancel">
+                @if (_showFullImage)
+                {
+                    <MudOverlay Visible="true" DarkBackground="true" AutoClose="true" OnClick="() => _showFullImage = false" ZIndex="2000" LockScroll="true">
+                        <MudImage Src="@Item.ImageUrl" Style="max-width:90vw; max-height:90vh; object-fit:contain;" />
+                    </MudOverlay>
+                }
                 
                 <!-- Main Content with Scroll -->
                 <div class="pa-6 flex-grow-1 d-flex flex-column align-center w-100" style="overflow-y: auto;">
@@ -11,7 +17,9 @@
                     @if (!string.IsNullOrEmpty(Item.ImageUrl))
                     {
                         <div class="d-flex flex-row justify-start align-start w-100 mb-4" style="margin-top: 5px; gap: 15px;">
-                            <MudImage Src="@Item.ImageUrl" Alt="@Item.Name" Class="rounded-lg" Style="width: 130px; height: 130px; object-fit: cover;" Elevation="25" />
+                            <div @onclick="() => _showFullImage = true" @onclick:stopPropagation="true" style="cursor: pointer;">
+                                <MudImage Src="@Item.ImageUrl" Alt="@Item.Name" Class="rounded-lg" Style="width: 130px; height: 130px; object-fit: cover;" Elevation="25" />
+                            </div>
                             <div class="d-flex flex-column align-start">
                                  <div class="d-flex align-center mb-1">
                                     <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Medium" Class="mr-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)};" : "")">
@@ -87,7 +95,14 @@
                     @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
                     {
                         <MudPaper Elevation="0" Class="pa-2 mb-4 rounded" Style="background-color: white;">
-                            <MudAlert Severity="Severity.Warning" Dense="true" Style="background-color: white;">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
+                             @if (UserHasActiveBoost)
+                             {
+                                 <MudAlert Severity="Severity.Error" Dense="true" Style="background-color: white;">Impossible d'acheter : Un boost est déjà actif !</MudAlert>
+                             }
+                             else
+                             {
+                                 <MudAlert Severity="Severity.Warning" Dense="true" Style="background-color: white;">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
+                             }
                         </MudPaper>
                     }
 
@@ -95,7 +110,7 @@
 
                     @if (Item.ItemType == StoreItemType.Digital && Item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(Item.DigitalAssetUrl))
                     {
-                        <div class="d-flex justify-center mb-4">
+                        <div class="d-flex justify-center mb-4" @onclick:stopPropagation="true">
                              <MudButton Variant="Variant.Outlined" 
                                        Color="Color.Inherit" 
                                        StartIcon="@Icons.Material.Filled.PlayArrow" 
@@ -106,12 +121,13 @@
                     }
                 </div>
 
+
+                
                 <!-- Footer with 5px padding and 50px gap -->
-                <div class="d-flex justify-space-between align-end w-100 mt-auto mb-1" style="padding: 0 5px 5px 5px; gap: 50px;">
+                <div class="d-flex justify-space-between align-end w-100 mt-auto mb-1" style="padding: 0 5px 5px 5px; gap: 50px; cursor: default;" @onclick:stopPropagation="true">
                     <div class="d-flex flex-column align-start gap-1">
                          <!-- Price -->
                          <div class="d-flex align-center">
-                             <MudText Typo="Typo.body1" Style="font-weight:bold;" Class="mr-2">Prix :</MudText>
                              <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" Size="Size.Small" Style="font-weight:bold;">
                                  @Item.Price Crédits
                              </MudChip>
@@ -143,8 +159,8 @@
                                Size="Size.Large"
                                Class="px-6 rounded-pill"
                                Style="font-weight: bold; color: white;"
-                               Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique) || UserCurrencyBalance < Item.Price)">
-                        @(Item.IsOwned && Item.IsUnique ? "Acquis" : (UserCurrencyBalance < Item.Price ? "Pas assez de crédits" : "ACHETER"))
+                               Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique) || UserCurrencyBalance < Item.Price || (UserHasActiveBoost && Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)))">
+                        @(Item.IsOwned && Item.IsUnique ? "Acquis" : "ACHETER")
                     </MudButton>
                 </div>
             </MudContainer>
@@ -156,7 +172,10 @@
 
     [Parameter] public StoreItemDto Item { get; set; }
     [Parameter] public int UserCurrencyBalance { get; set; }
+    [Parameter] public bool UserHasActiveBoost { get; set; }
     [Parameter] public EventCallback<string> OnPlaySound { get; set; }
+
+    private bool _showFullImage = false;
 
     private void Cancel() => MudDialog.Cancel();
     

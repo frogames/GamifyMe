@@ -17,7 +17,7 @@
             var iconStyle = textColor == "white" ? "color: white;" : "";
         }
 
-        <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px;")">
+        <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px; cursor: pointer;")" @onclick="Cancel">
             <div class="d-flex flex-column align-center mb-4">
                 <MudAvatar Color="@(string.IsNullOrEmpty(Objective.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Objective.Color) ? $"background-color:{Objective.Color}; width: 80px; height: 80px; filter: brightness(0.9);" : "width: 80px; height: 80px;")">
                     <MudIcon Icon="@IconLibrary.GetIcon(Objective.IconName)" Size="Size.Large" Style="font-size: 3rem; color: white;" />
@@ -107,14 +107,6 @@
             </div>
             
              <MudDivider Class="my-4" />
-             
-             @if (!string.IsNullOrEmpty(Objective.BonusLabel))
-             {
-                 <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-1" Style="@($"color: {textColor}; font-style: italic;")">
-                     Bonus actif : @Objective.BonusLabel (x@(Objective.ActiveMultiplier))
-                 </MudText>
-             }
-
              <div class="d-flex justify-center gap-4">
                  <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
                     +@(Objective.XpReward * Objective.ActiveMultiplier) XP

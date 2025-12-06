@@ -16,7 +16,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Gestion des Objectifs</MudText>
+        <MudText Typo="Typo.h5">Gestion des Objectifs</MudText>
         @if (!showForm)
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
@@ -156,7 +156,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@allObjectivesFullList" Hover="true" Dense="true" Striped="true">
+                <MudTable Items="@allObjectivesFullList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<ObjectiveDto> e) => StartEditObjective(e.Item))" T="ObjectiveDto" RowClass="cursor-pointer">
                     <HeaderContent>
                         <MudTh>Titre</MudTh>
                         <MudTh>Lieu</MudTh>
@@ -206,7 +206,6 @@
                         <MudTd DataLabel="Actions">
 
                             <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(obj))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEditObjective(obj))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(obj))" />
                         </MudTd>
                     </RowTemplate>

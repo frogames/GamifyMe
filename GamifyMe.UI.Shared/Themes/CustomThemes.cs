@@ -5,7 +5,18 @@ namespace GamifyMe.UI.Shared.Themes
 {
     public static class CustomThemes
     {
-        public static MudTheme DefaultTheme = new MudTheme();
+        public static MudTheme DefaultTheme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#8E24AA",       // Matching Logo Purple
+                Secondary = "#00ACC1",     // Matching Logo Cyan
+                AppbarBackground = "#8E24AA", // Fallback color
+                Background = "#F9F7FB",    // Very subtle purple tint
+                DrawerBackground = "#FFFFFF",
+                Surface = "#FFFFFF"
+            }
+        };
 
         public static MudTheme WinterTheme = new MudTheme()
         {

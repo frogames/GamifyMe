@@ -6,6 +6,7 @@
 @using GamifyMe.UI.Shared.Components
 @using MudBlazor
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Themes
 
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
@@ -22,8 +23,8 @@
 {
     <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
         <Authorized>
-            <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 2000;">
-                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Href="/scanner" Style="width: 84px; height: 84px;" />
+            <div style="position: fixed; bottom: 5px; left: 50%; transform: translateX(-50%); z-index: 2000;">
+                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Href="/scanner" Style="width: 110px; height: 110px;" />
             </div>
         </Authorized>
     </AuthorizeView>
@@ -33,7 +34,7 @@
 <AuthorizeView>
     <Authorized>
         <MudLayout>
-            <MudAppBar Elevation="1" Style="flex-wrap: wrap; padding-right: 8px;">
+            <MudAppBar Elevation="1" Style="@($"flex-wrap: wrap; padding-right: 8px; {(ThemeService.CurrentTheme == CustomThemes.DefaultTheme ? "background: linear-gradient(135deg, #8E24AA 0%, #00ACC1 100%);" : "")}")">
                 <div class="d-flex align-center justify-space-between" style="width: 100%;">
                     @* GAUCHE: Menu + Logo *@
                     <div class="d-flex align-center">

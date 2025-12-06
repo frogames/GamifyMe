@@ -12,7 +12,7 @@
 <PageTitle>Classements</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
-    <MudText Typo="Typo.h4" Class="mb-4">Classements</MudText>
+    <MudText Typo="Typo.h5" Class="mb-4">Classements</MudText>
     <MudText Typo="Typo.body1" Class="mb-6">
         Découvrez les meilleurs joueurs et les groupes les plus actifs de votre établissement !
     </MudText>
@@ -36,17 +36,18 @@
                      <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
                 }
 
+                <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersXpLeaderboard.Count joueurs classés</MudText>
                 <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
-                        <MudTh>Niveau</MudTh>
+
                         <MudTh>XP</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
                         <MudTd DataLabel="Joueur"> @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
-                        <MudTd DataLabel="Niveau">@user.Level</MudTd>
+
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -66,17 +67,18 @@
                      <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency Crédits)</MudAlert>
                 }
 
+                <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
                 <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
-                        <MudTh>Niveau</MudTh>
+
                         <MudTh>Crédits</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
                         <MudTd DataLabel="Joueur">@(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
-                        <MudTd DataLabel="Niveau">@user.Level</MudTd>
+
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -96,6 +98,7 @@
                      <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
                 }
 
+                <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@groupsXpLeaderboard.Count groupes classés</MudText>
                 <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
@@ -129,6 +132,7 @@
                      <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.MemberCount Membres)</MudAlert>
                 }
 
+                <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@groupsMembersLeaderboard.Count groupes classés</MudText>
                 <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>

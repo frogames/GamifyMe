@@ -72,7 +72,11 @@ function _runScannerLogic(scannerId, dotnetHelper) {
 
         const onScanFailure = (error) => { /* ignorer ou logger si besoin */ };
 
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure);
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+        .catch(err => {
+            console.error("ERREUR CRITIQUE au démarrage de la caméra : ", err);
+            // Optionnel : Notifier l'utilisateur via une alerte ou un appel .NET si possible
+        });
 
     } catch (ex) {
         console.error("Erreur (interne) au démarrage de html5-qrcode: ", ex);

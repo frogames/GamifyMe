@@ -214,42 +214,79 @@ namespace GamifyMe.Api.Controllers
 
             // --- 4. ATTRIBUTION DES RÉCOMPENSES (AVEC BONUS) ---
 
-            // Vérifier s'il y a une période bonus active
+            // --- 4. ATTRIBUTION DES RÉCOMPENSES (AVEC BONUS & BOOSTS) ---
+
+            double xpMultiplier = 1.0;
+            double currencyMultiplier = 1.0;
+            List<string> bonusesApplied = new List<string>();
+
+            // A. Périodes Bonus (Globales)
             var now = DateTime.UtcNow;
             var activeBonus = await _context.BonusPeriods
                 .Where(b => b.EstablishmentId == establishmentId && b.IsActive && b.StartDate <= now && b.EndDate >= now)
                 .OrderByDescending(b => b.StartDate)
                 .FirstOrDefaultAsync();
 
-            int finalXpReward = objective.XpReward;
-            int finalDocPointsReward = objective.DocPointsReward;
-            string bonusMessage = "";
-
             if (activeBonus != null)
             {
                 if (activeBonus.Type == BonusType.Xp)
                 {
-                    finalXpReward = (int)(objective.XpReward * activeBonus.Multiplier);
-                    bonusMessage = $" (Bonus {activeBonus.Name}: XP x{activeBonus.Multiplier})";
+                    xpMultiplier *= activeBonus.Multiplier;
+                    bonusesApplied.Add($"{activeBonus.Name} (XP x{activeBonus.Multiplier})");
                 }
                 else if (activeBonus.Type == BonusType.Currency)
                 {
-                    finalDocPointsReward = (int)(objective.DocPointsReward * activeBonus.Multiplier);
-                    bonusMessage = $" (Bonus {activeBonus.Name}: Monnaie x{activeBonus.Multiplier})";
+                    currencyMultiplier *= activeBonus.Multiplier;
+                    bonusesApplied.Add($"{activeBonus.Name} (Crédits x{activeBonus.Multiplier})");
                 }
             }
 
-            // --- CHECK FOR XP BOOST ITEM ---
-            var activeXpBoost = await _context.UserInventories
+            // B. Boosts Joueur (Personnels)
+             var userBoosts = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
-                .Where(ui => ui.UserId == user.Id && ui.IsActive && ui.StoreItem.DigitalActionCode == "XP_BOOST_2X_24H" && ui.ExpiresAt > now)
-                .FirstOrDefaultAsync();
+                .Where(ui => ui.UserId == user.Id
+                             && ui.IsActive
+                             && (ui.ExpiresAt == null || ui.ExpiresAt > now)
+                             && ui.StoreItem.ItemType == StoreItemType.Digital
+                             && ui.StoreItem.DigitalActionCode != null
+                             && (ui.StoreItem.DigitalActionCode.Contains("BOOST"))) 
+                .ToListAsync();
 
-            if (activeXpBoost != null)
+            foreach (var boost in userBoosts)
             {
-                finalXpReward *= 2;
-                bonusMessage += " (Boost XP x2 actif !)";
+                var code = boost.StoreItem.DigitalActionCode!;
+                // Parsing simpliste mais robuste : on cherche le multiplicateur dans le code (ex: BOOST_XP_2X)
+                double boostMult = 2.0; // Par défaut
+                
+                // Tentative d'extraction
+                var parts = code.Split('_');
+                foreach (var part in parts)
+                {
+                    var cleanPart = part.Replace("X", "", StringComparison.OrdinalIgnoreCase);
+                    if (double.TryParse(cleanPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                    {
+                         if (val > 0 && val < 20) 
+                         {
+                             boostMult = val;
+                             break;
+                         }
+                    }
+                }
+
+                // Application du multiplicateur (Pour l'instant on assume que c'est du XP si le code contient XP ou par défaut)
+                if (code.Contains("XP", StringComparison.OrdinalIgnoreCase))
+                {
+                    xpMultiplier *= boostMult;
+                    bonusesApplied.Add($"Boost {boost.StoreItem.Name} (XP x{boostMult})");
+                }
+                // Si on avait des boosts de crédits, on ferait pareil
             }
+
+            // C. Calcul Final
+            int finalXpReward = (int)(objective.XpReward * xpMultiplier);
+            int finalDocPointsReward = (int)(objective.DocPointsReward * currencyMultiplier);
+            
+            string bonusMessage = bonusesApplied.Any() ? " (" + string.Join(", ", bonusesApplied) + ")" : "";
 
             if (xpWallet != null)
             {

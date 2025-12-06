@@ -16,7 +16,10 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Gestion de la Boutique</MudText>
+        <div>
+            <MudText Typo="Typo.h5">Gestion de la Boutique</MudText>
+            <MudText Typo="Typo.caption" Class="text-muted">Valeur totale : @allStoreItemsList.Sum(x => x.Price) Crédits</MudText>
+        </div>
         @if (!showForm)
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
@@ -140,7 +143,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@allStoreItemsList" Hover="true" Dense="true" Striped="true">
+                <MudTable Items="@allStoreItemsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<StoreItemDto> e) => StartEditStoreItem(e.Item))" T="StoreItemDto" RowClass="cursor-pointer">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Prix / Stock</MudTh>
@@ -184,7 +187,6 @@
                         </MudTd>
                         <MudTd DataLabel="Actions">
                             <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(item)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => StartEditStoreItem(item)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(item)" />
                         </MudTd>
                     </RowTemplate>
@@ -240,6 +242,13 @@
             {
                 newStoreItem.DigitalActionCode = _selectedPreset.Code;
                 newStoreItem.DigitalAssetUrl = _selectedPreset.Url;
+                
+                // Si c'est un boost, ce n'est pas unique par défaut (consommable)
+                if (newStoreItem.DigitalActionCode.Contains("BOOST"))
+                {
+                    newStoreItem.IsUnique = false;
+                }
+
                 Console.WriteLine($"[ManageStore] Preset selected - Code: {_selectedPreset.Code}, URL: {_selectedPreset.Url}");
                 Console.WriteLine($"[ManageStore] Item updated - DigitalActionCode: {newStoreItem.DigitalActionCode}, DigitalAssetUrl: {newStoreItem.DigitalAssetUrl}");
             }
