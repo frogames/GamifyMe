@@ -17,6 +17,11 @@
         Découvrez les meilleurs joueurs et les groupes les plus actifs de votre établissement !
     </MudText>
 
+    @if (isLoadingProfile)
+    {
+         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-block mb-4" />
+    }
+
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
         <MudTabPanel Text="Joueurs (XP)" Icon="@Icons.Material.Filled.EmojiEvents">
             @if (isLoadingUsersXp)
@@ -25,19 +30,23 @@
             }
             else
             {
-                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true">
+                @if (currentUser != null && usersXpLeaderboard.Any(u => u.Username == currentUser.Username))
+                {
+                     var rank = usersXpLeaderboard.First(u => u.Username == currentUser.Username);
+                     <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
+                }
+
+                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
                         <MudTh>Niveau</MudTh>
-
-                        <MudTh>XP Total</MudTh>
+                        <MudTh>XP</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
+                        <MudTd DataLabel="Joueur"> @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
-
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -51,19 +60,23 @@
             }
             else
             {
-                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true">
+                @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
+                {
+                     var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
+                     <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency Crédits)</MudAlert>
+                }
+
+                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
                         <MudTh>Niveau</MudTh>
-
                         <MudTh>Crédits</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">@user.FirstName @user.Username</MudTd>
+                        <MudTd DataLabel="Joueur">@(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
                         <MudTd DataLabel="Niveau">@user.Level</MudTd>
-
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -77,18 +90,24 @@
             }
             else
             {
-                <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true">
+                @if (currentUser != null && currentUser.GroupId.HasValue && groupsXpLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
+                {
+                     var rank = groupsXpLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
+                     <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
+                }
+
+                <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Groupe</MudTh>
-                        <MudTh>XP Total</MudTh>
+                        <MudTh>XP</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="group">
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
                                 <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
-                                <MudText Typo="Typo.body2">@group.Name</MudText>
+                                <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                             </div>
                         </MudTd>
                         <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
@@ -104,7 +123,13 @@
             }
             else
             {
-                <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true">
+                @if (currentUser != null && currentUser.GroupId.HasValue && groupsMembersLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
+                {
+                     var rank = groupsMembersLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
+                     <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.MemberCount Membres)</MudAlert>
+                }
+
+                <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Groupe</MudTh>
@@ -115,7 +140,7 @@
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
                                 <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
-                                <MudText Typo="Typo.body2">@group.Name</MudText>
+                                <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                             </div>
                         </MudTd>
                         <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
@@ -132,10 +157,13 @@
     private List<GroupLeaderboardEntryDto> groupsXpLeaderboard = new();
     private List<GroupLeaderboardEntryDto> groupsMembersLeaderboard = new();
 
+    private UserProfileDetailsDto? currentUser;
+
     private bool isLoadingUsersXp = true;
     private bool isLoadingUsersCurrency = true;
     private bool isLoadingGroupsXp = true;
     private bool isLoadingGroupsMembers = true;
+    private bool isLoadingProfile = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -144,11 +172,29 @@
 
     private async Task LoadData()
     {
+        var t0 = LoadProfile();
         var t1 = LoadUsersXp();
         var t2 = LoadUsersCurrency();
         var t3 = LoadGroupsXp();
         var t4 = LoadGroupsMembers();
-        await Task.WhenAll(t1, t2, t3, t4);
+        await Task.WhenAll(t0, t1, t2, t3, t4);
+    }
+
+    private async Task LoadProfile()
+    {
+         isLoadingProfile = true;
+         try
+         {
+             currentUser = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+         }
+         catch (Exception ex)
+         {
+             Console.WriteLine($"Erreur profile : {ex.Message}");
+         }
+         finally
+         {
+             isLoadingProfile = false;
+         }
     }
 
     private async Task LoadUsersXp()
@@ -193,6 +239,24 @@
         }
         catch (Exception ex) { Console.WriteLine($"Erreur groups-members : {ex.Message}"); }
         finally { isLoadingGroupsMembers = false; }
+    }
+
+    private string RowStyleUser(UserLeaderboardEntryDto user, int index)
+    {
+        if (currentUser != null && user.Username == currentUser.Username)
+        {
+            return "background-color: var(--mud-palette-action-selected); font-weight:bold;";
+        }
+        return "";
+    }
+
+    private string RowStyleGroup(GroupLeaderboardEntryDto group, int index)
+    {
+        if (currentUser != null && currentUser.GroupId.HasValue && group.GroupId == currentUser.GroupId.Value)
+        {
+            return "background-color: var(--mud-palette-action-selected); font-weight:bold;";
+        }
+        return "";
     }
 
     private RenderFragment RenderRank(int rank) => builder =>

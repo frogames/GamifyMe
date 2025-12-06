@@ -205,6 +205,7 @@
                         </MudTd>
                         <MudTd DataLabel="Actions">
 
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(obj))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => StartEditObjective(obj))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(obj))" />
                         </MudTd>
@@ -378,6 +379,46 @@
             else errorMessageObjective = "Erreur suppression.";
         }
         catch (Exception ex) { errorMessageObjective = ex.Message; }
+    }
+
+    private async Task DuplicateObjective(ObjectiveDto objectiveToDuplicate)
+    {
+        isBusyObjective = true;
+        try
+        {
+            var duplicate = new CreateObjectiveDto
+            {
+                Title = $"Copie de {objectiveToDuplicate.Title}",
+                Description = objectiveToDuplicate.Description,
+                IconName = objectiveToDuplicate.IconName,
+                Location = objectiveToDuplicate.Location,
+                EventDate = objectiveToDuplicate.EventDate,
+                EndDate = objectiveToDuplicate.EndDate,
+                XpReward = objectiveToDuplicate.XpReward,
+                DocPointsReward = objectiveToDuplicate.DocPointsReward,
+                IsUnique = objectiveToDuplicate.IsUnique,
+                FrequencyHours = objectiveToDuplicate.FrequencyHours,
+                IsActive = objectiveToDuplicate.IsActive,
+                DisplayStartDate = objectiveToDuplicate.DisplayStartDate,
+                DisplayEndDate = objectiveToDuplicate.DisplayEndDate,
+                PrerequisiteObjectiveIds = objectiveToDuplicate.PrerequisiteObjectiveIds != null ? new List<Guid>(objectiveToDuplicate.PrerequisiteObjectiveIds) : new List<Guid>(),
+                LifespanHours = objectiveToDuplicate.LifespanHours,
+                IsOnboarding = objectiveToDuplicate.IsOnboarding,
+                NextOnboardingObjectiveId = objectiveToDuplicate.NextOnboardingObjectiveId,
+                Color = objectiveToDuplicate.Color,
+                Category = objectiveToDuplicate.Category
+            };
+
+            var response = await Http.PostAsJsonAsync("api/objectives", duplicate);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageObjective = "Objectif dupliqué !";
+                await LoadData();
+            }
+            else { errorMessageObjective = $"Erreur duplication: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageObjective = $"Erreur duplication: {ex.Message}"; }
+        finally { isBusyObjective = false; }
     }
 
     private async Task OpenIconPickerForObjective()

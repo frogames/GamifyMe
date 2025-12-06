@@ -1,124 +1,153 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
+@inject ISnackbar Snackbar
 <MudDialog Style="@($"border-radius: 16px; background-color:{(string.IsNullOrEmpty(Item.Color) ? "var(--mud-palette-surface)" : Item.Color)}; color:{(string.IsNullOrEmpty(Item.Color) ? "inherit" : ColorHelper.GetContrastColor(Item.Color))};")" Class="mud-dialog-no-padding" ContentClass="pa-0">
     <DialogContent>
-            
-            <MudContainer MaxWidth="MaxWidth.Small" Class="pa-6 flex-grow-1 d-flex flex-column align-center" Style="overflow-y: hidden; height: 100%;">
-                <div class="d-flex flex-column align-center mb-2 mt-6">
-                    <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)}; width: 80px; height: 80px;" : "width: 80px; height: 80px;")">
-                        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="@($"font-size: 3rem; color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
-                    </MudAvatar>
-                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold;">@Item.Name</MudText>
+            <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0 flex-grow-1 d-flex flex-column align-center" Style="overflow-y: hidden; height: 100%;">
+                
+                <!-- Main Content with Scroll -->
+                <div class="pa-6 flex-grow-1 d-flex flex-column align-center w-100" style="overflow-y: auto;">
                     
-                    <div class="d-flex gap-2">
-                        @if (Item.IsUnique)
-                        {
-                            <MudChip T="string" Color="Color.Warning" Size="Size.Small">Objet Unique</MudChip>
-                        }
-                        @if (Item.IsOwned && Item.IsUnique)
-                        {
-                            <MudChip T="string" Color="Color.Success" Size="Size.Small">Déjà possédé</MudChip>
-                        }
-                    </div>
-                </div>
-
-                @if (Item.ItemType == StoreItemType.Digital)
-                {
-                    @if (Item.DigitalActionCode != null)
+                    @if (!string.IsNullOrEmpty(Item.ImageUrl))
                     {
-                        if (Item.DigitalActionCode.StartsWith("QR_STYLE_", StringComparison.OrdinalIgnoreCase))
+                        <div class="d-flex flex-row justify-start align-start w-100 mb-4" style="margin-top: 5px; gap: 15px;">
+                            <MudImage Src="@Item.ImageUrl" Alt="@Item.Name" Class="rounded-lg" Style="width: 130px; height: 130px; object-fit: cover;" Elevation="25" />
+                            <div class="d-flex flex-column align-start">
+                                 <div class="d-flex align-center mb-1">
+                                    <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Medium" Class="mr-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)};" : "")">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Medium" Style="@($"color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.h5" Align="Align.Left" Style="font-weight:bold;">@Item.Name</MudText>
+                                 </div>
+                                 <div class="d-flex flex-wrap gap-2 mt-2">
+                                     <MudChip T="string" Color="Color.Primary" Size="Size.Small">@(Item.ItemType == StoreItemType.Digital ? "Numérique" : "Physique")</MudChip>
+                                     @if (Item.IsUnique)
+                                     {
+                                         <MudChip T="string" Color="Color.Warning" Size="Size.Small">Objet Unique</MudChip>
+                                     }
+                                     @if (Item.IsOwned && Item.IsUnique)
+                                     {
+                                         <MudChip T="string" Color="Color.Success" Size="Size.Small">Déjà possédé</MudChip>
+                                     }
+                                 </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-center mb-2" style="margin-top: 5px;">
+                            <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)}; width: 80px; height: 80px;" : "width: 80px; height: 80px;")">
+                                <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="@($"font-size: 3rem; color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold;">@Item.Name</MudText>
+                            
+                            <div class="d-flex gap-2">
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@(Item.ItemType == StoreItemType.Digital ? "Numérique" : "Physique")</MudChip>
+                                @if (Item.IsUnique)
+                                {
+                                    <MudChip T="string" Color="Color.Warning" Size="Size.Small">Objet Unique</MudChip>
+                                }
+                                @if (Item.IsOwned && Item.IsUnique)
+                                {
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Déjà possédé</MudChip>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (Item.ItemType == StoreItemType.Digital)
+                    {
+                        @if (Item.DigitalActionCode != null)
                         {
-                            <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser votre Pass</i></MudText>
-                        }
-                        else if (Item.DigitalActionCode.StartsWith("UI_THEME_", StringComparison.OrdinalIgnoreCase))
-                        {
-                             <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser l'interface de GamifyMe</i></MudText>
-                        }
-                        else if (Item.DigitalActionCode == "SCAN_SOUND")
-                        {
-                             <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser le son émis quand vous validez un objectif</i></MudText>
+                            if (Item.DigitalActionCode.StartsWith("QR_STYLE_", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser votre Pass</i></MudText>
+                            }
+                            else if (Item.DigitalActionCode.StartsWith("UI_THEME_", StringComparison.OrdinalIgnoreCase))
+                            {
+                                 <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser l'interface de GamifyMe</i></MudText>
+                            }
+                            else if (Item.DigitalActionCode == "SCAN_SOUND")
+                            {
+                                 <MudText Typo="Typo.body2" Class="mb-2 opacity-80" Align="Align.Center"><i>Cet objet vous permet de personnaliser le son émis quand vous validez un objectif</i></MudText>
+                            }
                         }
                     }
-                }
 
-                <MudText Typo="Typo.body1" Class="mb-6 text-justify">@Item.Description</MudText>
+                    <MudText Typo="Typo.body1" Class="mb-6 text-justify">@Item.Description</MudText>
 
-                @if (Item.ItemType == StoreItemType.Physical)
-                {
-                     <MudText Typo="Typo.body2" Class="mb-4 mt-2 font-italic" Align="Align.Center" Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Info : Color.Inherit)" Style="opacity: 0.9;">
-                         <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" Title="Info" />
-                         Présentez votre Pass à un membre du staff pour récupérer votre achat
-                     </MudText>
-                }
+                    @if (Item.ItemType == StoreItemType.Physical)
+                    {
+                         <MudText Typo="Typo.body2" Class="mb-4 mt-2 font-italic" Align="Align.Center" Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Info : Color.Inherit)" Style="opacity: 0.9;">
+                             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" Title="Info" />
+                             Présentez votre Pass à un membre du staff pour récupérer votre achat
+                         </MudText>
+                    }
 
-                @if (!string.IsNullOrEmpty(Item.ImageUrl))
-                {
-                    <div class="d-flex justify-center mb-4">
-                        <MudImage Src="@Item.ImageUrl" Alt="@Item.Name" Elevation="25" Class="rounded-lg" Style="max-width: 100%; max-height: 200px;" />
-                    </div>
-                }
+                    @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <MudPaper Elevation="0" Class="pa-2 mb-4 rounded" Style="background-color: white;">
+                            <MudAlert Severity="Severity.Warning" Dense="true" Style="background-color: white;">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
+                        </MudPaper>
+                    }
 
-                @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
-                {
-                    <MudPaper Elevation="0" Class="pa-2 mb-4 rounded" Style="background-color: white;">
-                        <MudAlert Severity="Severity.Warning" Dense="true" Style="background-color: white;">Attention : Ce boost s'activera immédiatement après l'achat.</MudAlert>
-                    </MudPaper>
-                }
+                    <MudDivider Class="mb-4 w-100" Style="opacity: 0.5;" />
 
-                <MudDivider Class="mb-4 w-100" Style="opacity: 0.5;" />
-
-                <div class="d-flex justify-space-between align-center mb-2 w-100">
-                    <MudText Typo="Typo.body1" Style="font-weight:bold;">Prix :</MudText>
-                    <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Style="font-weight:bold;">
-                        @Item.Price Crédits
-                    </MudChip>
+                    @if (Item.ItemType == StoreItemType.Digital && Item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(Item.DigitalAssetUrl))
+                    {
+                        <div class="d-flex justify-center mb-4">
+                             <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Inherit" 
+                                       StartIcon="@Icons.Material.Filled.PlayArrow" 
+                                       OnClick="PlaySound">
+                                Écouter l'extrait
+                            </MudButton>
+                        </div>
+                    }
                 </div>
 
-                @if (Item.ItemType != StoreItemType.Digital)
-                {
-                    <div class="d-flex justify-space-between align-center mb-4 w-100">
-                        <MudText Typo="Typo.body1" Style="font-weight:bold;">Stock :</MudText>
-                        @if (Item.Stock == 0)
-                        {
-                            <MudText Color="Color.Inherit" Style="font-weight:bold;">Épuisé</MudText>
-                        }
-                        else if (Item.Stock < 10)
-                        {
-                            <MudText Color="Color.Inherit" Style="font-weight:bold;">Plus que @Item.Stock !</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="Color.Inherit" Style="font-weight:bold;">@Item.Stock disponibles</MudText>
-                        }
+                <!-- Footer with 5px padding and 50px gap -->
+                <div class="d-flex justify-space-between align-end w-100 mt-auto mb-1" style="padding: 0 5px 5px 5px; gap: 50px;">
+                    <div class="d-flex flex-column align-start gap-1">
+                         <!-- Price -->
+                         <div class="d-flex align-center">
+                             <MudText Typo="Typo.body1" Style="font-weight:bold;" Class="mr-2">Prix :</MudText>
+                             <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" Size="Size.Small" Style="font-weight:bold;">
+                                 @Item.Price Crédits
+                             </MudChip>
+                         </div>
+                         <!-- Stock -->
+                         @if (Item.ItemType != StoreItemType.Digital)
+                         {
+                             <div class="d-flex align-center">
+                                 <MudText Typo="Typo.body1" Style="font-weight:bold;" Class="mr-2">Stock :</MudText>
+                                 @if (Item.Stock == 0)
+                                 {
+                                     <MudText Color="Color.Error" Style="font-weight:bold;">Épuisé</MudText>
+                                 }
+                                 else if (Item.Stock < 10)
+                                 {
+                                     <MudText Color="Color.Warning" Style="font-weight:bold;">Plus que @Item.Stock !</MudText>
+                                 }
+                                 else
+                                 {
+                                     <MudText Color="Color.Inherit" Style="font-weight:bold;">@Item.Stock</MudText>
+                                 }
+                             </div>
+                         }
                     </div>
-                }
 
-                @if (Item.ItemType == StoreItemType.Digital && Item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(Item.DigitalAssetUrl))
-                {
-                    <div class="d-flex justify-center mb-4">
-                         <MudButton Variant="Variant.Outlined" 
-                                   Color="Color.Inherit" 
-                                   StartIcon="@Icons.Material.Filled.PlayArrow" 
-                                   OnClick="PlaySound">
-                            Écouter l'extrait
-                        </MudButton>
-                    </div>
-                }
-
+                    <MudButton Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" 
+                               Variant="Variant.Filled" 
+                               OnClick="Buy" 
+                               Size="Size.Large"
+                               Class="px-6 rounded-pill"
+                               Style="font-weight: bold; color: white;"
+                               Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique) || UserCurrencyBalance < Item.Price)">
+                        @(Item.IsOwned && Item.IsUnique ? "Acquis" : (UserCurrencyBalance < Item.Price ? "Pas assez de crédits" : "ACHETER"))
+                    </MudButton>
+                </div>
             </MudContainer>
-            
-            <div class="d-flex justify-end mt-4 pb-6 pr-6">
-                <MudButton Color="Color.Info" 
-                           Variant="Variant.Filled" 
-                           OnClick="Buy" 
-                           Size="Size.Large"
-                           Class="px-8 rounded-pill"
-                           Style="font-weight: bold; color: white;"
-                           Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique))">
-                    @(Item.IsOwned && Item.IsUnique ? "Acquis" : "ACHETER")
-                </MudButton>
-            </div>
-
     </DialogContent>
 </MudDialog>
 
@@ -126,15 +155,30 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     [Parameter] public StoreItemDto Item { get; set; }
+    [Parameter] public int UserCurrencyBalance { get; set; }
     [Parameter] public EventCallback<string> OnPlaySound { get; set; }
 
     private void Cancel() => MudDialog.Cancel();
     
-    private void Buy() => MudDialog.Close(DialogResult.Ok(true));
+    private void Buy() 
+    {
+        if (UserCurrencyBalance < Item.Price)
+        {
+            Snackbar.Add("Vous n'avez pas assez de crédits pour acheter cet objet !", Severity.Error);
+            return;
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; }
 
     private async Task PlaySound()
     {
-        if (OnPlaySound.HasDelegate)
+        if (!string.IsNullOrEmpty(Item.DigitalAssetUrl))
+        {
+             await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{Item.DigitalAssetUrl}').play()");
+        }
+        else if (OnPlaySound.HasDelegate)
         {
             await OnPlaySound.InvokeAsync(Item.DigitalAssetUrl);
         }

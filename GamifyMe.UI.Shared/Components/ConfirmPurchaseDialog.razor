@@ -1,0 +1,47 @@
+@using GamifyMe.Shared.Dtos
+@using MudBlazor
+
+<MudDialog Style="border-radius: 12px;">
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Primary" Class="mb-4"/>
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Confirmer l'achat</MudText>
+            
+            <MudText Align="Align.Center" Color="Color.Secondary" Class="mb-6">
+                Vous êtes sur le point d'acquérir <br/> <b>@Item.Name</b>
+            </MudText>
+
+            <MudPaper Elevation="0" Class="w-100 pa-4 rounded-lg" Style="background-color: var(--mud-palette-background-grey);">
+                <div class="d-flex justify-space-between mb-2">
+                    <MudText Typo="Typo.body2">Solde actuel</MudText>
+                    <MudText Typo="Typo.body2">@UserCurrencyBalance</MudText>
+                </div>
+                <div class="d-flex justify-space-between mb-2">
+                    <MudText Typo="Typo.body2">Prix de l'objet</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Error">- @Item.Price</MudText>
+                </div>
+                <MudDivider Class="my-2"/>
+                 <div class="d-flex justify-space-between">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:bold;">Nouveau Solde</MudText>
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:bold;" Color="@(RemainingBalance >= 0 ? Color.Success : Color.Error)">@RemainingBalance</MudText>
+                </div>
+            </MudPaper>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text" Color="Color.Default">Annuler</MudButton>
+        <MudButton OnClick="Confirm" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-pill px-6">Confirmer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public StoreItemDto Item { get; set; }
+    [Parameter] public int UserCurrencyBalance { get; set; }
+
+    private int RemainingBalance => UserCurrencyBalance - Item.Price;
+
+    void Cancel() => MudDialog.Cancel();
+    void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+}

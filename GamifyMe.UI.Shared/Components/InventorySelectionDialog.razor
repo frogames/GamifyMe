@@ -1,0 +1,85 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="pa-4" Style="max-height: 60vh; overflow-y: auto;">
+            @if (Items == null || !Items.Any())
+            {
+                <MudAlert Severity="Severity.Info">Aucun objet disponible dans cette catégorie.</MudAlert>
+            }
+            else
+            {
+                <MudGrid Spacing="2">
+                    <!-- Option "Aucun" / Déséquiper -->
+                    <MudItem xs="6" sm="4">
+                        <MudPaper Elevation="0" 
+                                  Class="d-flex flex-column align-center justify-center pa-3 cursor-pointer hover-scale transition-all"
+                                  Style="background-color: transparent; border: 2px dashed var(--mud-palette-text-disabled); height: 100%; min-height: 140px;"
+                                  @onclick="@(() => SelectItem(null))">
+                             <MudIcon Icon="@Icons.Material.Filled.Close" Size="Size.Large" Color="Color.Default" Class="mb-2" />
+                             <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Default">Aucun</MudText>
+                             <MudText Typo="Typo.caption" Align="Align.Center" Style="opacity:0.6">Déséquiper</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    @foreach (var item in Items)
+                    {
+                        var isEquipped = item.IsActive;
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Elevation="@(isEquipped ? 8 : 2)" 
+                                      Class="d-flex flex-column align-center justify-center pa-3 cursor-pointer hover-scale transition-all"
+                                      Style="@($"background-color:{(string.IsNullOrEmpty(item.Color) ? "var(--mud-palette-surface)" : item.Color)}; position:relative; overflow:hidden; border:{(isEquipped ? "3px solid var(--mud-palette-success)" : "1px solid transparent")}")"
+                                      @onclick="@(() => SelectItem(item))">
+                                
+                                @if (isEquipped)
+                                {
+                                    <div style="position:absolute; top:5px; right:5px;">
+                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    </div>
+                                }
+
+                                <MudAvatar Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(item.Color)};" : "")">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="@($"color:{(string.IsNullOrEmpty(item.Color) ? "white" : ColorHelper.GetContrastColor(item.Color))};")" />
+                                </MudAvatar>
+                                
+                                <MudText Typo="Typo.body2" Align="Align.Center" Style="@($"font-weight:bold; color:{(string.IsNullOrEmpty(item.Color) ? "inherit" : ColorHelper.GetContrastColor(item.Color))}")">@item.ItemName</MudText>
+                                
+                                <MudText Typo="Typo.caption" Align="Align.Center" Style="opacity:0.8">
+                                    @(isEquipped ? "Équipé" : "Équiper")
+                                </MudText>
+
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+    .transition-all {
+        transition: all 0.2s;
+    }
+</style>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public List<UserInventoryDto> Items { get; set; } = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void SelectItem(UserInventoryDto? item)
+    {
+        MudDialog.Close(DialogResult.Ok<object>(item));
+    }
+}

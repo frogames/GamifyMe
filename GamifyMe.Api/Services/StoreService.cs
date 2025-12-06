@@ -69,7 +69,10 @@ namespace GamifyMe.Api.Services
                     DigitalActionCode = item.DigitalActionCode,
                     DigitalAssetUrl = item.DigitalAssetUrl,
                     ImageUrl = item.ImageUrl,
-                    Color = item.Color
+                    Color = item.Color,
+                    IsUnique = item.IsUnique,
+                    StartDate = item.StartDate,
+                    EndDate = item.EndDate
                 })
                 .ToListAsync();
         }

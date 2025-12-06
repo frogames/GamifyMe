@@ -18,6 +18,18 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
+@if (!IsScannerPage)
+{
+    <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
+        <Authorized>
+            <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 2000;">
+                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Href="/scanner" Style="width: 84px; height: 84px;" />
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+
+
 <AuthorizeView>
     <Authorized>
         <MudLayout>
@@ -134,6 +146,7 @@
 @code {
     bool _drawerOpen = true;
     private UserProfileDetailsDto? userStats;
+    private bool IsScannerPage => Navigation.Uri.Contains("/scanner", StringComparison.OrdinalIgnoreCase);
 
     private System.Timers.Timer? _timer;
     private TimeSpan _timeLeft;
@@ -143,12 +156,19 @@
     protected override void OnInitialized()
     {
         ThemeService.OnChange += StateHasChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
     }
 
     public void Dispose()
     {
         _timer?.Dispose();
         ThemeService.OnChange -= StateHasChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 
     protected override async Task OnParametersSetAsync()

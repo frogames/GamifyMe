@@ -33,10 +33,17 @@ namespace GamifyMe.UI.Shared.Themes
         {
             PaletteLight = new PaletteLight()
             {
-                Primary = Colors.Brown.Default,
-                Secondary = Colors.DeepOrange.Accent3,
-                AppbarBackground = Colors.Brown.Darken2,
-                Background = Colors.Orange.Lighten5
+                Primary = Colors.Orange.Accent3,           // Buttons / Highlights
+                Secondary = Colors.Yellow.Accent4,         // Secondary actions
+                AppbarBackground = "#1A0B08",              // Very dark red/brown
+                Background = "#2E150F",                    // Dark brown background
+                Surface = "#3E1C14",                       // Slightly lighter brown for cards
+                TextPrimary = Colors.Orange.Lighten1,      // Main text
+                TextSecondary = Colors.Yellow.Default,     // Secondary text
+                ActionDefault = Colors.Orange.Default,     // Icons
+                DrawerBackground = "#26110C",              // Drawer background
+                DrawerText = Colors.Orange.Lighten2,       // Drawer text
+                DrawerIcon = Colors.Orange.Default         // Drawer icons
             }
         };
 

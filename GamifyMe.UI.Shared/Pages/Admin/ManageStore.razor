@@ -47,7 +47,10 @@
 
                     <div class="d-flex gap-4 mb-3">
                         <MudNumericField T="int" Label="Prix (Crédits)" @bind-Value="newStoreItem.Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
-                        <MudNumericField T="int" Label="Stock" @bind-Value="newStoreItem.Stock" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        @if (newStoreItem.ItemType != StoreItemType.Digital)
+                        {
+                            <MudNumericField T="int" Label="Stock" @bind-Value="newStoreItem.Stock" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        }
                     </div>
 
                     @if (newStoreItem.ItemType == StoreItemType.Digital)
@@ -154,7 +157,7 @@
                         </MudTd>
                         <MudTd DataLabel="Prix / Stock">
                             <MudText Typo="Typo.body2">@item.Price Crédits</MudText>
-                            @if (item.Stock > 0)
+                            @if (item.ItemType != StoreItemType.Digital && item.Stock > 0)
                             {
                                 <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @item.Stock</MudChip>
                             }
@@ -180,6 +183,7 @@
                             }
                         </MudTd>
                         <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(item)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => StartEditStoreItem(item)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(item)" />
                         </MudTd>
@@ -366,6 +370,41 @@
             else errorMessageStore = "Erreur suppression.";
         }
         catch (Exception ex) { errorMessageStore = ex.Message; }
+    }
+
+    private async Task DuplicateStoreItem(StoreItemDto itemToDuplicate)
+    {
+        isBusyStore = true;
+        try
+        {
+            var duplicate = new StoreItemDto
+            {
+                Name = $"Copie de {itemToDuplicate.Name}",
+                Description = itemToDuplicate.Description,
+                Price = itemToDuplicate.Price,
+                IconName = itemToDuplicate.IconName,
+                ItemType = itemToDuplicate.ItemType,
+                DigitalActionCode = itemToDuplicate.DigitalActionCode,
+                Stock = itemToDuplicate.Stock,
+                IsActive = itemToDuplicate.IsActive,
+                StartDate = itemToDuplicate.StartDate,
+                EndDate = itemToDuplicate.EndDate,
+                DigitalAssetUrl = itemToDuplicate.DigitalAssetUrl,
+                IsUnique = itemToDuplicate.IsUnique,
+                ImageUrl = itemToDuplicate.ImageUrl,
+                Color = itemToDuplicate.Color
+            };
+
+            var response = await Http.PostAsJsonAsync("api/store", duplicate);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageStore = "Objet dupliqué !";
+                await LoadData();
+            }
+            else { errorMessageStore = $"Erreur duplication: {await response.Content.ReadAsStringAsync()}"; }
+        }
+        catch (Exception ex) { errorMessageStore = $"Erreur duplication: {ex.Message}"; }
+        finally { isBusyStore = false; }
     }
 
     private async Task OpenIconPickerForStore()

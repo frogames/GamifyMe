@@ -20,120 +20,274 @@
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="ma-auto d-block" />
     }
-    else if (inventoryItems == null || !inventoryItems.Any())
-    {
-        <MudAlert Severity="Severity.Info">Votre inventaire est vide. Achetez des objets dans la boutique !</MudAlert>
-    }
     else
     {
-        <MudExpansionPanels MultiExpansion="true">
-            <MudExpansionPanel Text="@($"Objets Physiques ({PhysicalItems.Count()})")" Expanded="false">
-                @if (PhysicalItems.Any())
-                {
-                    <div class="horizontal-scroll-container mb-2">
-                        @foreach (var item in PhysicalItems)
-                        {
-                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
-                        }
+        var activeSound = ActiveSound;
+        var activeQr = ActiveQrStyle;
+        var activeTheme = ActiveTheme;
+
+        <MudGrid>
+            <!-- Phone Configurator Area (Digital Items) -->
+            <MudItem xs="12" md="5" lg="4" Class="d-flex justify-center flex-column align-center">
+                <!-- Removed Title as requested -->
+                
+                <div class="phone-container">
+                    <!-- Phone Bezel/Frame -->
+                    <div class="phone-frame">
+                        <!-- Camera Area (Decoration) -->
+                        <div class="camera-notch"></div>
+                        
+                        <div class="phone-screen">
+                            <!-- Slot 1: Sound -->
+                            <div class="phone-slot slot-sound hover-highlight" @onclick="@(() => OpenSelection("Sound"))">
+                                <MudText Typo="Typo.caption" Class="slot-label">SON DE SCAN</MudText>
+                                @if (activeSound != null)
+                                {
+                                    <div class="slot-content">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(activeSound.IconName)" Size="Size.Large" Class="mb-1" />
+                                        <MudText Typo="Typo.body2" Align="Align.Center" Style="line-height:1.1;">@activeSound.ItemName</MudText>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="slot-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.MusicNote" Size="Size.Large" Color="Color.Default" Style="opacity:0.3" />
+                                        <MudText Typo="Typo.caption" Style="opacity:0.5">Aucun</MudText>
+                                    </div>
+                                }
+                                <div class="slot-overlay-hint">Modifier</div>
+                            </div>
+
+                            <!-- Connection Lines (Visual) -->
+                            <div class="connection-line-vertical"></div>
+
+                            <!-- Slot 2: QR Style (Middle) -->
+                            <div class="phone-slot slot-qr hover-highlight" @onclick="@(() => OpenSelection("QR"))">
+                                <MudText Typo="Typo.caption" Class="slot-label">STYLE QR</MudText>
+                                @if (activeQr != null)
+                                {
+                                    <div class="slot-content">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(activeQr.IconName)" Size="Size.Large" Class="mb-1" />
+                                        <MudText Typo="Typo.body2" Align="Align.Center" Style="line-height:1.1;">@activeQr.ItemName</MudText>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="slot-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.QrCode2" Size="Size.Large" Color="Color.Default" Style="opacity:0.3" />
+                                        <MudText Typo="Typo.caption" Style="opacity:0.5">Défaut</MudText>
+                                    </div>
+                                }
+                                <div class="slot-overlay-hint">Modifier</div>
+                            </div>
+
+                            <div class="connection-line-vertical"></div>
+
+                            <!-- Slot 3: Interface/Theme (Bottom) -->
+                            <div class="phone-slot slot-theme hover-highlight" @onclick="@(() => OpenSelection("Theme"))">
+                                <MudText Typo="Typo.caption" Class="slot-label">APPARENCE</MudText>
+                                @if (activeTheme != null)
+                                {
+                                    <div class="slot-content">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(activeTheme.IconName)" Size="Size.Large" Class="mb-1" />
+                                        <MudText Typo="Typo.body2" Align="Align.Center" Style="line-height:1.1;">@activeTheme.ItemName</MudText>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="slot-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.Palette" Size="Size.Large" Color="Color.Default" Style="opacity:0.3" />
+                                        <MudText Typo="Typo.caption" Style="opacity:0.5">Défaut</MudText>
+                                    </div>
+                                }
+                                <div class="slot-overlay-hint">Modifier</div>
+                            </div>
+
+                        </div>
                     </div>
+                </div>
+            </MudItem>
+
+            <!-- Physical Items Area -->
+            <MudItem xs="12" md="7" lg="8">
+                <MudText Typo="Typo.h6" Class="mb-4">Objets Physiques / Inventaire</MudText>
+                
+                @if (inventoryItems == null || !inventoryItems.Any())
+                {
+                     <MudAlert Severity="Severity.Info">Votre inventaire est vide.</MudAlert>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun objet physique.</MudText>
-                }
-            </MudExpansionPanel>
+                     <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Physique</MudText>
+                     @if (PhysicalItems.Any())
+                     {
+                        <div class="horizontal-scroll-container mb-6">
+                            @foreach (var item in PhysicalItems)
+                            {
+                                <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                            }
+                        </div>
+                     }
+                     else
+                     {
+                         <MudText Typo="Typo.body2" Class="text-muted ml-4">Aucun objet physique.</MudText>
+                     }
 
-            <MudExpansionPanel Text="@($"Interfaces ({InterfaceItems.Count()})")" Expanded="false">
-                @if (InterfaceItems.Any())
-                {
-                    <div class="horizontal-scroll-container mb-2">
-                        @foreach (var item in InterfaceItems)
-                        {
-                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
-                        }
-                    </div>
+                     <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Boosts & Divers</MudText>
+                     @if (BoostItems.Any())
+                     {
+                        <div class="horizontal-scroll-container mb-2">
+                            @foreach (var item in BoostItems)
+                            {
+                                <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
+                            }
+                        </div>
+                     }
+                     else
+                     {
+                          <MudText Typo="Typo.body2" Class="text-muted ml-4">Aucun boost actif.</MudText>
+                     }
                 }
-                else
-                {
-                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucune interface.</MudText>
-                }
-            </MudExpansionPanel>
-
-            <MudExpansionPanel Text="@($"Sons ({SoundItems.Count()})")" Expanded="false">
-                @if (SoundItems.Any())
-                {
-                    <div class="horizontal-scroll-container mb-2">
-                        @foreach (var item in SoundItems)
-                        {
-                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
-                        }
-                    </div>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun son.</MudText>
-                }
-            </MudExpansionPanel>
-
-            <MudExpansionPanel Text="@($"Styles QR Code ({QrCodeItems.Count()})")" Expanded="false">
-                @if (QrCodeItems.Any())
-                {
-                    <div class="horizontal-scroll-container mb-2">
-                        @foreach (var item in QrCodeItems)
-                        {
-                            <InventoryItemCard Item="item" OnClick="@(() => OpenItemDetails(item))" />
-                        }
-                    </div>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Class="pa-4 text-muted">Aucun style QR code.</MudText>
-                }
-            </MudExpansionPanel>
-
-
-        </MudExpansionPanels>
+            </MudItem>
+        </MudGrid>
     }
 </MudContainer>
 
 <style>
+    .phone-container {
+        position: relative;
+        width: 300px;
+        height: 550px;
+    }
+
+    .phone-frame {
+        width: 100%;
+        height: 100%;
+        background-color: #1a1a1a;
+        border-radius: 40px;
+        border: 4px solid #333;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 10px rgba(0,0,0,0.8);
+        padding: 15px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .phone-screen {
+        width: 100%;
+        height: 100%;
+        background-color: #000000;
+        border-radius: 30px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        padding: 40px 10px;
+    }
+
+    .camera-notch {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 20px;
+        background-color: #000;
+        border-radius: 10px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .phone-slot {
+        width: 140px;
+        height: 120px;
+        border: 2px dashed #666;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background-color: rgba(255,255,255,0.1);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        color: white;
+    }
+
+    .hover-highlight:hover {
+        border-color: var(--mud-palette-primary);
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .hover-highlight:hover .slot-overlay-hint {
+        opacity: 1;
+    }
+
+    .slot-label {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: bold;
+        color: #fff;
+        white-space: nowrap;
+        background-color: #000;
+        padding: 0 6px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        z-index: 5;
+    }
+
+    .slot-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        opacity: 0.6;
+    }
+
+    .slot-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        padding: 4px;
+    }
+
+    .slot-overlay-hint {
+        position: absolute;
+        bottom: 4px;
+        font-size: 0.7rem;
+        background-color: var(--mud-palette-primary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .connection-line-vertical {
+        width: 2px;
+        height: 20px;
+        background-color: #ccc;
+    }
+
     .horizontal-scroll-container {
         display: flex;
         overflow-x: auto;
         gap: 16px;
-        padding-bottom: 8px; /* Space for scrollbar */
-        scrollbar-width: thin; /* Firefox */
+        padding-bottom: 8px;
+        scrollbar-width: thin;
     }
-    
-    .horizontal-scroll-container::-webkit-scrollbar {
-        height: 8px;
-    }
-    
-    .horizontal-scroll-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .horizontal-scroll-container::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    
-    .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-
-    .inventory-card {
-        min-width: 160px;
-        width: 160px;
-        flex-shrink: 0;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .inventory-card:hover {
-        transform: translateY(-5px);
-    }
+    .horizontal-scroll-container::-webkit-scrollbar { height: 8px; }
+    .horizontal-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .horizontal-scroll-container::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
 </style>
 
 @code {
@@ -141,21 +295,13 @@
     private bool isLoading = true;
 
     private IEnumerable<UserInventoryDto> PhysicalItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Physical"));
-    
-    private IEnumerable<UserInventoryDto> InterfaceItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
-                                                                           i.DigitalActionCode != null && 
-                                                                           i.DigitalActionCode.StartsWith("UI_THEME_", StringComparison.OrdinalIgnoreCase)));
-
-    private IEnumerable<UserInventoryDto> SoundItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
-                                                                           i.DigitalActionCode == "SCAN_SOUND"));
-
-    private IEnumerable<UserInventoryDto> QrCodeItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
-                                                                           i.DigitalActionCode != null && 
-                                                                           i.DigitalActionCode.StartsWith("QR_STYLE_", StringComparison.OrdinalIgnoreCase)));
-                                                                           
     private IEnumerable<UserInventoryDto> BoostItems => GetSortedItems(inventoryItems.Where(i => i.ItemType == "Digital" && 
                                                                           i.DigitalActionCode != null && 
                                                                           i.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)));
+
+    private UserInventoryDto? ActiveSound => inventoryItems.FirstOrDefault(i => i.IsActive && i.DigitalActionCode == "SCAN_SOUND");
+    private UserInventoryDto? ActiveQrStyle => inventoryItems.FirstOrDefault(i => i.IsActive && i.DigitalActionCode != null && i.DigitalActionCode.StartsWith("QR_STYLE_"));
+    private UserInventoryDto? ActiveTheme => inventoryItems.FirstOrDefault(i => i.IsActive && i.DigitalActionCode != null && i.DigitalActionCode.StartsWith("UI_THEME_"));
 
     private IEnumerable<UserInventoryDto> GetSortedItems(IEnumerable<UserInventoryDto> items)
     {
@@ -185,52 +331,102 @@
         }
     }
 
-    private async Task OpenItemDetails(UserInventoryDto item)
+    private async Task OpenSelection(string category)
     {
-        var parameters = new DialogParameters<InventoryItemDetailsDialog> 
+        List<UserInventoryDto> items = new();
+        string title = "";
+
+        if (category == "Sound")
+        {
+            items = inventoryItems.Where(i => i.DigitalActionCode == "SCAN_SOUND").ToList();
+            title = "Choisir un Son";
+        }
+        else if (category == "QR")
+        {
+            items = inventoryItems.Where(i => i.DigitalActionCode != null && i.DigitalActionCode.StartsWith("QR_STYLE_")).ToList();
+            title = "Choisir un Style QR";
+        }
+        else if (category == "Theme")
+        {
+            items = inventoryItems.Where(i => i.DigitalActionCode != null && i.DigitalActionCode.StartsWith("UI_THEME_")).ToList();
+            title = "Choisir une Apparence";
+        }
+
+        var parameters = new DialogParameters<InventorySelectionDialog> 
         { 
-            { x => x.Item, item },
-            { x => x.OnPlaySound, EventCallback.Factory.Create<string>(this, PreviewSound) }
+            { x => x.Items, items }
         };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         
-        var dialog = DialogService.Show<InventoryItemDetailsDialog>("Détails", parameters, options);
+        var dialog = DialogService.Show<InventorySelectionDialog>(title, parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is bool confirmed && confirmed)
+        if (!result.Canceled)
         {
-            await ToggleItem(item);
+            // If result.Data is UserInventoryDto (or null via object cast)
+            var selectedItem = result.Data as UserInventoryDto; 
+            // Note: result.Data is object. 'as' returns null if it's not UserInventoryDto OR if it is null.
+            // If we returned 'null' from dialog, result.Data is likely null (or whatever default).
+            // MudDialog.Close(DialogResult.Ok<object>(null)) -> result.Data should be null.
+            
+            await EquipItem(selectedItem, category);
         }
     }
 
-    private async Task ToggleItem(UserInventoryDto item)
+    private async Task EquipItem(UserInventoryDto? newItem, string category)
     {
-        try
+        // Find current active item
+        UserInventoryDto? currentActive = null;
+        if (category == "Sound") currentActive = ActiveSound;
+        if (category == "QR") currentActive = ActiveQrStyle;
+        if (category == "Theme") currentActive = ActiveTheme;
+
+        // If newItem is null, it means we want to UNEQUIP the current active item
+        if (newItem == null)
+        {
+            if (currentActive != null)
+            {
+                await ToggleItemState(currentActive); // Turn OFF
+            }
+            return;
+        }
+
+        // Don't re-equip if already active
+        if (newItem.IsActive) return;
+
+        if (currentActive != null && currentActive.Id != newItem.Id)
+        {
+             await ToggleItemState(currentActive); // Turn OFF
+        }
+
+        await ToggleItemState(newItem); // Turn ON
+    }
+
+    private async Task ToggleItemState(UserInventoryDto item)
+    {
+         try
         {
             var response = await Http.PostAsync($"api/users/inventory/{item.Id}/toggle", null);
             if (response.IsSuccessStatusCode)
             {
-                await LoadInventory();
-                Snackbar.Add("Inventaire mis à jour", Severity.Success);
                 
-                // Play sound if we just equipped a sound item
+                // Side effects
                 if (!item.IsActive && item.DigitalActionCode == "SCAN_SOUND" && !string.IsNullOrEmpty(item.DigitalAssetUrl))
                 {
-                    await PreviewSound(item.DigitalAssetUrl);
+                    // If we just turned it ON (it was inactive)
+                     await PreviewSound(item.DigitalAssetUrl);
                 }
 
-                // Update Theme if we toggled a UI Theme
                 if (item.DigitalActionCode != null && item.DigitalActionCode.StartsWith("UI_THEME_"))
                 {
-                    if (!item.IsActive) // Was inactive, now active (logic inverted because we reload inventory after, but here we use the old item state)
-                    {
-                        ThemeService.SetTheme(item.DigitalActionCode);
-                    }
-                    else // Was active, now inactive
-                    {
-                        ThemeService.SetTheme(GamifyMe.Shared.Constants.ThemeConstants.Default);
-                    }
+                    if (!item.IsActive) // Turning ON
+                         ThemeService.SetTheme(item.DigitalActionCode);
+                    else // Turning OFF
+                         ThemeService.SetTheme(GamifyMe.Shared.Constants.ThemeConstants.Default);
                 }
+
+                await LoadInventory(); // Reload to sync
+                Snackbar.Add("Inventaire mis à jour", Severity.Success);
             }
             else
             {
@@ -243,7 +439,8 @@
         }
     }
 
-    private async Task PreviewSound(string? url)
+    // Keep PreviewSound for manual checks if needed
+     private async Task PreviewSound(string? url)
     {
         if (string.IsNullOrEmpty(url)) return;
         try
@@ -257,7 +454,20 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error playing sound: {ex.Message}");
-            Snackbar.Add("Impossible de lire l'audio", Severity.Error);
         }
+    }
+    
+    // Keep OpenItemDetails for Physical/Boost items
+     private async Task OpenItemDetails(UserInventoryDto item)
+    {
+        var parameters = new DialogParameters<InventoryItemDetailsDialog> 
+        { 
+            { x => x.Item, item },
+            { x => x.OnPlaySound, EventCallback.Factory.Create<string>(this, PreviewSound) }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        
+        var dialog = DialogService.Show<InventoryItemDetailsDialog>("Détails", parameters, options);
+        var result = await dialog.Result;
     }
 }
