@@ -137,19 +137,30 @@ namespace GamifyMe.Api.Services
             }
 
             // --- ONBOARDING LOGIC ---
-            var onboardingObjectives = validObjectives.Where(o => o.IsOnboarding).ToList();
-            var standardObjectives = validObjectives.Where(o => !o.IsOnboarding).ToList();
+            var onboardingObjectives = validObjectives.Where(o => o.Category == ObjectiveCategory.Onboarding).ToList();
+            // All other non-onboarding objectives (Principal, Event, Secondary, etc.)
+            var standardObjectives = validObjectives.Where(o => o.Category != ObjectiveCategory.Onboarding).ToList();
 
             Objective? currentOnboardingObjective = null;
 
             if (onboardingObjectives.Any())
             {
-                // Find roots (objectives that are not anyone's NextOnboardingObjectiveId)
-                var pointedToIds = new HashSet<Guid>(onboardingObjectives
-                    .Where(o => o.NextOnboardingObjectiveId.HasValue)
-                    .Select(o => o.NextOnboardingObjectiveId.Value));
-
-                var roots = onboardingObjectives.Where(o => !pointedToIds.Contains(o.Id)).ToList();
+                // Find roots: Onboarding objectives that do not have any Prerequisite that IS ALSO an onboarding objective
+                // (This allows them to have other prerequisites if needed, but not from the chain)
+                var roots = new List<Objective>();
+                foreach (var obj in onboardingObjectives)
+                {
+                    bool isRoot = true;
+                    if (obj.Prerequisites != null && obj.Prerequisites.Any())
+                    {
+                         // Check if any prerequisite is an onboarding objective
+                         if (obj.Prerequisites.Any(p => onboardingObjectives.Any(o => o.Id == p.Id)))
+                         {
+                             isRoot = false;
+                         }
+                    }
+                    if (isRoot) roots.Add(obj);
+                }
 
                 foreach (var root in roots)
                 {
@@ -164,10 +175,15 @@ namespace GamifyMe.Api.Services
                             break;
                         }
 
-                        // Move to next
-                        if (current.NextOnboardingObjectiveId.HasValue)
+                        // Move to next: Find a child in 'onboardingObjectives' that has 'current' as prerequisite
+                        // relying on IsPrerequisiteFor
+                        var next = current.IsPrerequisiteFor
+                            ?.FirstOrDefault(child => onboardingObjectives.Any(o => o.Id == child.Id));
+
+                        // We need the full object from our memory list
+                        if (next != null)
                         {
-                            current = onboardingObjectives.FirstOrDefault(o => o.Id == current.NextOnboardingObjectiveId.Value);
+                            current = onboardingObjectives.FirstOrDefault(o => o.Id == next.Id);
                         }
                         else
                         {
@@ -285,7 +301,7 @@ namespace GamifyMe.Api.Services
                 objectiveDtos.Add(dto);
             }
 
-            return objectiveDtos.OrderBy(o => o.EventDate ?? DateTime.MaxValue).ToList();
+            return objectiveDtos.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
         }
 
         private int GetMaxChainDepth(Objective current, List<Objective> allObjectives, HashSet<Guid> visited)
@@ -319,7 +335,8 @@ namespace GamifyMe.Api.Services
         {
             var objectives = await _context.Objectives
                 .Include(o => o.Prerequisites)
-                .OrderByDescending(o => o.CreatedAt)
+                .OrderBy(o => o.Category)
+                .ThenBy(o => o.SortOrder)
                 .ToListAsync();
 
             return objectives.Select(o => MapToDto(o, false)).ToList();
@@ -328,7 +345,7 @@ namespace GamifyMe.Api.Services
         public async Task<List<ObjectiveSimpleDto>> GetAllObjectivesSimpleListAsync()
         {
             return await _context.Objectives
-                .OrderBy(o => o.Title)
+                .OrderBy(o => o.SortOrder)
                 .Select(o => new ObjectiveSimpleDto
                 {
                     Id = o.Id,
@@ -374,9 +391,8 @@ namespace GamifyMe.Api.Services
                 Color = request.Color,
                 Prerequisites = prerequisiteObjectives,
                 LifespanHours = request.LifespanHours,
-                IsOnboarding = request.IsOnboarding,
-                NextOnboardingObjectiveId = request.NextOnboardingObjectiveId,
-                Category = DetermineCategory(request)
+                Category = DetermineCategory(request),
+                SortOrder = request.SortOrder
             };
 
             _context.Objectives.Add(objective);
@@ -417,11 +433,10 @@ namespace GamifyMe.Api.Services
             objective.IconName = request.IconName ?? "Star";
             objective.Color = request.Color;
             objective.LifespanHours = request.LifespanHours;
-            objective.IsOnboarding = request.IsOnboarding;
-            objective.NextOnboardingObjectiveId = request.NextOnboardingObjectiveId;
             
             // Automatic Categorization Logic
             objective.Category = DetermineCategory(request);
+            objective.SortOrder = request.SortOrder;
 
             await _context.SaveChangesAsync();
             return true;
@@ -439,9 +454,8 @@ namespace GamifyMe.Api.Services
 
         private static ObjectiveCategory DetermineCategory(CreateObjectiveDto request)
         {
-            // 1. Onboarding -> Principal
-            if (request.IsOnboarding) return ObjectiveCategory.Principal;
-
+            // 1. Onboarding handled manually now via dropdown
+            
             // 2. Event -> Evenement (Unique + Start + End)
             // The prompt says "Ce sont les objectifs uniques avec une date de début et de fin"
             // We'll check if EventDate and EndDate are set. IsUnique is usually true for events but let's stick to dates.
@@ -452,6 +466,29 @@ namespace GamifyMe.Api.Services
 
             // 4. Default / Manual
             return request.Category;
+        }
+
+        public async Task<bool> ReorderObjectivesAsync(List<Guid> orderedIds)
+        {
+            if (orderedIds == null || !orderedIds.Any()) return false;
+
+            var objectives = await _context.Objectives
+                .Where(o => orderedIds.Contains(o.Id))
+                .ToListAsync();
+
+            if (!objectives.Any()) return false;
+
+            foreach (var obj in objectives)
+            {
+                var index = orderedIds.IndexOf(obj.Id);
+                if (index != -1)
+                {
+                    obj.SortOrder = index;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted)
@@ -476,10 +513,9 @@ namespace GamifyMe.Api.Services
                 IsAlreadyCompleted = isAlreadyCompleted,
                 PrerequisiteObjectiveIds = obj.Prerequisites?.Select(p => p.Id).ToList() ?? new List<Guid>(),
                 LifespanHours = obj.LifespanHours,
-                IsOnboarding = obj.IsOnboarding,
-                NextOnboardingObjectiveId = obj.NextOnboardingObjectiveId,
                 Category = obj.Category,
-                UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>()
+                UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>(),
+                SortOrder = obj.SortOrder
             };
         }
     }

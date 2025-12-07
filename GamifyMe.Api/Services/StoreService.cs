@@ -18,7 +18,7 @@ namespace GamifyMe.Api.Services
         {
             var items = await _dbContext.StoreItems
                 .Where(item => item.IsActive && item.Stock > 0)
-                .OrderBy(item => item.Price)
+                .OrderBy(item => item.SortOrder)
                 .ToListAsync();
 
             // Fetch user's inventory/orders to determine ownership
@@ -48,14 +48,18 @@ namespace GamifyMe.Api.Services
                 IsUnique = item.IsUnique,
                 IsOwned = ownedItemIds.Contains(item.Id),
                 ImageUrl = item.ImageUrl,
-                Color = item.Color
-            }).ToList();
+                Color = item.Color,
+                SortOrder = item.SortOrder
+            })
+            .OrderBy(i => i.IsUnique && i.IsOwned) // Owned unique items last
+            .ThenBy(i => i.SortOrder)
+            .ToList();
         }
 
         public async Task<List<StoreItemDto>> GetAllStoreItemsSimpleListAsync()
         {
             return await _dbContext.StoreItems
-                .OrderBy(item => item.Name)
+                .OrderBy(item => item.SortOrder)
                 .Select(item => new StoreItemDto
                 {
                     Id = item.Id,
@@ -95,7 +99,8 @@ namespace GamifyMe.Api.Services
                 DigitalActionCode = storeItem.DigitalActionCode,
                 DigitalAssetUrl = storeItem.DigitalAssetUrl,
                 ImageUrl = storeItem.ImageUrl,
-                Color = storeItem.Color
+                Color = storeItem.Color,
+                SortOrder = storeItem.SortOrder
             };
         }
 
@@ -118,7 +123,8 @@ namespace GamifyMe.Api.Services
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 ImageUrl = request.ImageUrl,
-                Color = request.Color
+                Color = request.Color,
+                SortOrder = request.SortOrder
             };
 
             _dbContext.StoreItems.Add(storeItem);
@@ -147,6 +153,7 @@ namespace GamifyMe.Api.Services
             storeItem.EndDate = request.EndDate;
             storeItem.ImageUrl = request.ImageUrl;
             storeItem.Color = request.Color;
+            storeItem.SortOrder = request.SortOrder;
 
             await _dbContext.SaveChangesAsync();
             return true;
@@ -294,6 +301,28 @@ namespace GamifyMe.Api.Services
                 await transaction.RollbackAsync();
                 return (false, $"Erreur d'achat : {ex.Message}");
             }
+        }
+        public async Task<bool> ReorderStoreItemsAsync(List<Guid> orderedIds)
+        {
+            if (orderedIds == null || !orderedIds.Any()) return false;
+
+            var items = await _dbContext.StoreItems
+                .Where(i => orderedIds.Contains(i.Id))
+                .ToListAsync();
+
+            if (!items.Any()) return false;
+
+            foreach (var item in items)
+            {
+                var index = orderedIds.IndexOf(item.Id);
+                if (index != -1)
+                {
+                    item.SortOrder = index;
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

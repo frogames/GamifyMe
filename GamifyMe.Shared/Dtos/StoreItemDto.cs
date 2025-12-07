@@ -14,6 +14,7 @@ namespace GamifyMe.Shared.Dtos
 
         public string Description { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "L'icône est requise.")]
         public string IconName { get; set; } = "fas fa-shopping-bag";
 
         [Range(0, 1000000)]
@@ -25,9 +26,12 @@ namespace GamifyMe.Shared.Dtos
         public StoreItemType ItemType { get; set; } = StoreItemType.Physical;
         public bool IsActive { get; set; } = true;
         public string? ImageUrl { get; set; }
-        public string? Color { get; set; }
+        
+        [Required(ErrorMessage = "La couleur est requise.")]
+        public string? Color { get; set; } = "#FFFFFF";
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public int SortOrder { get; set; }
         public string? DigitalActionCode { get; set; }
         public string? DigitalAssetUrl { get; set; }
         public bool IsUnique { get; set; }

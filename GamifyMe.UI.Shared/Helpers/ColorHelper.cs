@@ -4,6 +4,20 @@ namespace GamifyMe.UI.Shared.Helpers
 {
     public static class ColorHelper
     {
+        public static List<MudBlazor.Utilities.MudColor> Palette => new List<MudBlazor.Utilities.MudColor>
+        {
+            // Row 1: Warm & Pinks
+            "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
+            // Row 2: Blues & Teals
+            "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50",
+            // Row 3: Greens & Yellows
+            "#8BC34A", "#CDDC39", "#FFEB3B", "#FFC107", "#FF9800",
+            // Row 4: Oranges & Neutrals
+            "#FF5722", "#795548", "#9E9E9E", "#607D8B", "#000000",
+            // Row 5: White & Darks
+            "#FFFFFF", "#1A237E", "#B71C1C", "#1B5E20", "#F57F17"
+        };
+
         public static string GetContrastColor(string? hexColor)
         {
             if (string.IsNullOrEmpty(hexColor)) return "black";

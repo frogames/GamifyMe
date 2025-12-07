@@ -78,7 +78,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@list" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BonusPeriodDto> e) => StartEdit(e.Item))" T="BonusPeriodDto" RowClass="cursor-pointer">
+                <MudTable Items="@list" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BonusPeriodDto> e) => StartEdit(e.Item))" T="BonusPeriodDto" RowClass="cursor-pointer custom-hover-row">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Dates</MudTh>
@@ -249,3 +249,9 @@
         catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
     }
 }
+
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+</style>

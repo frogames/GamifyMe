@@ -16,23 +16,15 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h5">Gestion des Objectifs</MudText>
+        <div>
+            <MudText Typo="Typo.h5">Gestion des Objectifs</MudText>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mt-2">Estimation Richesse</MudButton>
+        </div>
         @if (!showForm)
         {
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="ShowCreateForm" />
         }
-        else
-        {
-             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp" Class="ml-4">Estimation Richesse</MudButton>
-        }
     </div>
-    
-    @if (!showForm && allObjectivesFullList.Any())
-    {
-         <div class="d-flex justify-end mb-4" style="margin-top: -48px; margin-right: 60px;">
-             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp">Estimation Richesse</MudButton>
-         </div>
-    }
 
     @if (showForm)
     {
@@ -46,10 +38,15 @@
         <EditForm Model="newObjective" OnValidSubmit="@(editingObjectiveId == null ? HandleCreateObjective : HandleUpdateObjective)">
                     <DataAnnotationsValidator />
 
-                    <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
                     <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
 
-                    <MudSelect T="ObjectiveCategory" Label="Catégorie" @bind-Value="newObjective.Category" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Disabled="@IsCategoryAutomatic">
+                    <div class="d-flex gap-4 mb-3">
+                        <MudTextField T="int" Label="Récompense XP" @bind-Value="newObjective.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Required="true" />
+                        <MudTextField T="int" Label="Récompense Crédits" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Required="true" />
+                    </div>
+
+                    <MudSelect T="ObjectiveCategory" Label="Catégorie" @bind-Value="newObjective.Category" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Disabled="@IsCategoryAutomatic" Required="true" >
                         @foreach (ObjectiveCategory cat in Enum.GetValues(typeof(ObjectiveCategory)))
                         {
                             if (cat != ObjectiveCategory.Rechargement)
@@ -59,20 +56,30 @@
                         }
                     </MudSelect>
 
-                    @* SÉLECTEUR D'ICÔNE *@
-                    <div class="d-flex justify-center mb-4">
-                        <MudTooltip Text="Cliquez pour changer l'icône">
-                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(newObjective.Color) ? $"color:{newObjective.Color};" : "")}")" Color="@(string.IsNullOrEmpty(newObjective.Color) ? Color.Primary : Color.Default)" />
-                                </MudPaper>
-                            </MudBadge>
-                        </MudTooltip>
-                    </div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newObjective.IconName</MudText>
 
-                    @* COULEUR *@
-                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="newObjective.Color" Style="@($"color: {newObjective.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
+                    
+                    @if (newObjective.Category == ObjectiveCategory.Onboarding)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Info" Class="mb-3 d-block">Utilisez les prérequis ci-dessous pour définir l'ordre du parcours d'onboarding.</MudText>
+                    }
+
+                    @* SÉLECTEUR D'ICÔNE ET COULEUR *@
+                    <div class="d-flex justify-center align-center gap-8 mb-4">
+                        <div class="d-flex flex-column align-center">
+                            <MudTooltip Text="Cliquez pour changer l'icône">
+                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    </MudPaper>
+                                </MudBadge>
+                            </MudTooltip>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1">Icône : @newObjective.IconName</MudText>
+                        </div>
+
+                        <div style="width: 200px;">
+                            <MudColorPicker Label="Couleur" @bind-Text="newObjective.Color" ColorPickerView="ColorPickerView.Palette" Palette="ColorHelper.Palette" Variant="Variant.Outlined" Margin="Margin.Dense" Style="@($"background-color: {(!string.IsNullOrEmpty(newObjective.Color) ? newObjective.Color : "#FFFFFF")}; color: {ColorHelper.GetContrastColor(newObjective.Color ?? "#FFFFFF")}; font-weight: bold;")" Placeholder="Selectionnez une couleur" Required="true" />
+                        </div>
+                    </div>
 
                     <MudTextField T="string" Label="Lieu" @bind-Value="newObjective.Location" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
 
@@ -95,7 +102,10 @@
                         <MudDatePicker Label="Affichage : Fin" @bind-Date="newObjective.DisplayEndDate" Editable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" HelperText="Date après laquelle l'objectif disparaît" />
                     </div>
 
-                    <MudTextField T="int?" Label="Durée de vie (Heures)" @bind-Value="newObjective.LifespanHours" HelperText="Temps avant autodestruction (optionnel)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    @if (newObjective.Category != ObjectiveCategory.Onboarding && newObjective.Category != ObjectiveCategory.Evenement)
+                    {
+                        <MudTextField T="int?" Label="Durée de vie (Heures)" @bind-Value="newObjective.LifespanHours" HelperText="Temps avant autodestruction (optionnel)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    }
 
                     <MudText Typo="Typo.subtitle2" Class="mt-2">Prérequis (facultatif)</MudText>
                     <MudSelect T="Guid?" Label="Choisir un prérequis" @bind-Value="selectedPrerequisiteId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-3">
@@ -105,8 +115,7 @@
                         }
                     </MudSelect>
 
-                    <MudTextField T="int" Label="Récompense XP" @bind-Value="newObjective.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
-                    <MudTextField T="int" Label="Récompense Crédits" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+
 
                     <MudSwitch T="bool" @bind-Value="newObjective.IsUnique" Label="Objectif unique" Color="Color.Primary" Class="mb-2" />
                     @if (!newObjective.IsUnique)
@@ -114,17 +123,7 @@
                         <MudTextField T="int?" Label="Fréquence (Heures)" @bind-Value="newObjective.FrequencyHours" HelperText="Délai minimum entre deux validations (en heures)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                     }
 
-                    <MudText Typo="Typo.subtitle2" Class="mt-2">Onboarding</MudText>
-                    <MudSwitch T="bool" @bind-Value="newObjective.IsOnboarding" Label="Est une étape d'onboarding" Color="Color.Info" Class="mb-2" />
-                    @if (newObjective.IsOnboarding)
-                    {
-                        <MudSelect T="Guid?" Label="Objectif suivant (Onboarding)" @bind-Value="newObjective.NextOnboardingObjectiveId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-3">
-                            @foreach (var objective in allObjectivesList.Where(o => o.Id != editingObjectiveId))
-                            {
-                                <MudSelectItem Value="@((Guid?)objective.Id)">@objective.Title</MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
+
 
                     <MudSwitch T="bool" @bind-Value="newObjective.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
 
@@ -136,6 +135,11 @@
                     {
                         <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessageObjective</MudAlert>
                     }
+
+                    <MudAlert Severity="@(newObjective.IsActive ? Severity.Info : Severity.Warning)" Variant="Variant.Outlined" Class="mb-4" Icon="@Icons.Material.Filled.Info">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:bold; text-decoration:underline;">Résumé du comportement :</MudText>
+                        <MudText Typo="Typo.body2" Style="white-space: pre-wrap;">@GetObjectiveSummary()</MudText>
+                    </MudAlert>
 
                     <div class="d-flex gap-2">
                         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusyObjective">
@@ -156,60 +160,56 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@allObjectivesFullList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<ObjectiveDto> e) => StartEditObjective(e.Item))" T="ObjectiveDto" RowClass="cursor-pointer">
-                    <HeaderContent>
-                        <MudTh>Titre</MudTh>
-                        <MudTh>Lieu</MudTh>
-                        <MudTh>Dates</MudTh>
-                        <MudTh>Récompenses</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="obj">
-                        <MudTd DataLabel="Titre">
-                            <div class="d-flex align-center">
-                                <MudAvatar Color="@(string.IsNullOrEmpty(obj.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(obj.Color) ? $"background-color:{obj.Color};" : "")">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(obj.IconName)" Size="Size.Small" Style="color: white;" />
-                                </MudAvatar>
-                                <MudText Typo="Typo.body2">@obj.Title</MudText>
-                                @if (obj.IsOnboarding)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
-                                }
+                <MudDropContainer T="ObjectiveDto" @ref="_dropContainer" Items="_dropZoneItems" ItemsSelector="@((item,dropzone) => dropzone == "dropzone")" ItemDropped="ItemUpdated" Class="d-flex flex-column">
+                    <ChildContent>
+                        <MudDropZone T="ObjectiveDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
+                    </ChildContent>
+                    <ItemRenderer>
+                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid #eee;">
+                            <div class="d-flex align-center mr-4 grab-cursor">
+                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
                             </div>
-                        </MudTd>
-                        <MudTd DataLabel="Lieu">@obj.Location</MudTd>
-                        <MudTd DataLabel="Dates">
-                            @if (obj.EventDate.HasValue)
-                            {
-                                <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">Evt: @obj.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
-                            }
-                            @if (obj.DisplayStartDate.HasValue || obj.DisplayEndDate.HasValue)
-                            {
-                                <div class="d-flex flex-column">
-                                    @if (obj.DisplayStartDate.HasValue)
+                            
+                            <!-- Content simulating columns -->
+                            <MudGrid Spacing="0" Class="align-center w-100">
+                                <MudItem xs="4">
+                                    <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
+                                        <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
+                                            <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Style="color: white;" />
+                                        </MudAvatar>
+                                        <div class="d-flex flex-column">
+                                            <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Category</MudText>
+                                        </div>
+                                        @if (context.Category == ObjectiveCategory.Onboarding)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                        }
+                                    </div>
+                                </MudItem>
+                                <MudItem xs="2">
+                                    <MudText Typo="Typo.body2">@context.Location</MudText>
+                                </MudItem>
+                                <MudItem xs="3">
+                                     @if (context.EventDate.HasValue)
                                     {
-                                        <MudText Typo="Typo.caption">Affichage du : @obj.DisplayStartDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                        <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
                                     }
-                                    @if (obj.DisplayEndDate.HasValue)
-                                    {
-                                        <MudText Typo="Typo.caption">au : @obj.DisplayEndDate.Value.ToString("dd/MM/yyyy")</MudText>
-                                    }
-                                </div>
-                            }
-                        </MudTd>
-                        <MudTd DataLabel="Récompenses">
-                            <div class="d-flex gap-1">
-                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@obj.XpReward XP</MudChip>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Success">@obj.DocPointsReward Crédits</MudChip>
-                            </div>
-                        </MudTd>
-                        <MudTd DataLabel="Actions">
-
-                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(obj))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(obj))" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+                                </MudItem>
+                                <MudItem xs="2">
+                                    <div class="d-flex gap-1">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward Crédits</MudChip>
+                                    </div>
+                                </MudItem>
+                                <MudItem xs="1" Class="d-flex justify-end">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(context))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(context))" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </ItemRenderer>
+                </MudDropContainer>
             </MudCardContent>
         </MudCard>
     }
@@ -230,6 +230,9 @@
     private TimeSpan? endTime;
     private Guid? selectedPrerequisiteId;
     
+    private List<ObjectiveDto> _dropZoneItems = new();
+    private MudDropContainer<ObjectiveDto>? _dropContainer;
+    
     private ScanValidationModal scanModal = default!;
 
     protected override async Task OnInitializedAsync()
@@ -246,6 +249,15 @@
             await Task.WhenAll(objectivesTask, objectivesFullTask);
             allObjectivesList = objectivesTask.Result ?? new();
             allObjectivesFullList = objectivesFullTask.Result ?? new();
+            
+            // Sort by Category then SortOrder for the view
+            _dropZoneItems = allObjectivesFullList
+                .OrderBy(o => o.Category)
+                .ThenBy(o => o.SortOrder)
+                .ToList();
+            
+            StateHasChanged();
+            _dropContainer?.Refresh();
         }
         catch (Exception ex)
         {
@@ -257,6 +269,10 @@
     {
         editingObjectiveId = null;
         newObjective = new CreateObjectiveDto();
+        newObjective.Color = "#FFFFFF"; // Default color
+        newObjective.XpReward = 5;
+        newObjective.DocPointsReward = 5;
+        newObjective.IsActive = true;
         eventTime = null;
         endTime = null;
         selectedPrerequisiteId = null;
@@ -320,10 +336,9 @@
             DisplayEndDate = objectiveToEdit.DisplayEndDate,
             PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>(),
             LifespanHours = objectiveToEdit.LifespanHours,
-            IsOnboarding = objectiveToEdit.IsOnboarding,
-            NextOnboardingObjectiveId = objectiveToEdit.NextOnboardingObjectiveId,
-            Color = objectiveToEdit.Color,
-            Category = objectiveToEdit.Category
+            Category = objectiveToEdit.Category,
+            SortOrder = objectiveToEdit.SortOrder,
+            Color = !string.IsNullOrEmpty(objectiveToEdit.Color) ? objectiveToEdit.Color : "#FFFFFF"
         };
         showForm = true;
     }
@@ -397,15 +412,13 @@
                 DocPointsReward = objectiveToDuplicate.DocPointsReward,
                 IsUnique = objectiveToDuplicate.IsUnique,
                 FrequencyHours = objectiveToDuplicate.FrequencyHours,
-                IsActive = objectiveToDuplicate.IsActive,
+                IsActive = false,
                 DisplayStartDate = objectiveToDuplicate.DisplayStartDate,
                 DisplayEndDate = objectiveToDuplicate.DisplayEndDate,
                 PrerequisiteObjectiveIds = objectiveToDuplicate.PrerequisiteObjectiveIds != null ? new List<Guid>(objectiveToDuplicate.PrerequisiteObjectiveIds) : new List<Guid>(),
                 LifespanHours = objectiveToDuplicate.LifespanHours,
-                IsOnboarding = objectiveToDuplicate.IsOnboarding,
-                NextOnboardingObjectiveId = objectiveToDuplicate.NextOnboardingObjectiveId,
-                Color = objectiveToDuplicate.Color,
-                Category = objectiveToDuplicate.Category
+                Category = objectiveToDuplicate.Category,
+                SortOrder = objectiveToDuplicate.SortOrder
             };
 
             var response = await Http.PostAsJsonAsync("api/objectives", duplicate);
@@ -448,6 +461,129 @@
     }
 
     private bool IsCategoryAutomatic => 
-        newObjective.IsOnboarding || 
         (newObjective.EventDate.HasValue && newObjective.EndDate.HasValue);
+
+    private async Task ItemUpdated(MudItemDropInfo<ObjectiveDto> dropItem)
+    {
+        // Update local list
+        dropItem.Item.Category = dropItem.Item.Category; // Keep category? Or assume single list.
+        // Actually, with a single DropZone, we just reorder the list.
+        
+        // Remove item from old position
+        _dropZoneItems.Remove(dropItem.Item);
+        // Insert at new position
+        _dropZoneItems.Insert(dropItem.IndexInZone, dropItem.Item);
+        
+        // Trigger server update
+        var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
+        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
+        
+        try 
+        {
+            var response = await Http.PostAsJsonAsync("api/objectives/reorder", reorderDto);
+             if (!response.IsSuccessStatusCode)
+             {
+                 errorMessageObjective = "Erreur lors de la réorganisation.";
+                 await LoadData(); // Revert
+             }
+        }
+        catch (Exception ex)
+        {
+             errorMessageObjective = ex.Message;
+        }
+    }
+
+    private string GetObjectiveSummary()
+    {
+        var sb = new System.Text.StringBuilder();
+
+        // 1. Statut Actif
+        if (!newObjective.IsActive)
+        {
+            return "⛔ CET OBJECTIF EST INACTIF. Il ne sera visible pour aucun joueur, même si toutes les autres conditions sont remplies.";
+        }
+
+        // 1.5. Description Catégorie
+        switch (newObjective.Category)
+        {
+            case ObjectiveCategory.Principal:
+                sb.AppendLine("⭐ TYPE : Objectif majeur, mis en avant dans l'interface.");
+                break;
+            case ObjectiveCategory.Secondaire:
+                sb.AppendLine("📝 TYPE : Objectif standard, enrichit l'expérience quotidienne.");
+                break;
+            case ObjectiveCategory.Evenement:
+                sb.AppendLine("🎉 TYPE : Objectif ponctuel lié à un événement, avec une priorité d'affichage élevée.");
+                break;
+            case ObjectiveCategory.Onboarding:
+                sb.AppendLine("🎓 TYPE : Étape du parcours d'intégration des nouveaux joueurs.");
+                break;
+        }
+
+        // 2. Prérequis
+        if (selectedPrerequisiteId.HasValue)
+        {
+            var pre = allObjectivesList.FirstOrDefault(o => o.Id == selectedPrerequisiteId.Value);
+            if (pre != null)
+            {
+                sb.AppendLine($"🔒 VERROUILLÉ : Cet objectif n'apparaîtra QUE lorsque le joueur aura validé l'objectif \"{pre.Title}\".");
+            }
+        }
+        else
+        {
+             if (newObjective.Category == ObjectiveCategory.Onboarding)
+                sb.AppendLine("🏁 DÉPART : Accessible dès le début du parcours d'intégration.");
+             else
+                sb.AppendLine("🔓 DÉVERROUILLÉ : Accessible par défaut (si les dates correspondent).");
+        }
+
+        // 3. Dates d'affichage
+        if (newObjective.DisplayStartDate.HasValue || newObjective.DisplayEndDate.HasValue)
+        {
+            if (newObjective.DisplayStartDate.HasValue && newObjective.DisplayEndDate.HasValue)
+                sb.AppendLine($"📅 VISIBILITÉ : Visible uniquement du {newObjective.DisplayStartDate:dd/MM/yyyy HH:mm} au {newObjective.DisplayEndDate:dd/MM/yyyy HH:mm}.");
+            else if (newObjective.DisplayStartDate.HasValue)
+                sb.AppendLine($"📅 VISIBILITÉ : Visible à partir du {newObjective.DisplayStartDate:dd/MM/yyyy HH:mm}.");
+            else if (newObjective.DisplayEndDate.HasValue)
+                sb.AppendLine($"📅 VISIBILITÉ : Visible jusqu'au {newObjective.DisplayEndDate:dd/MM/yyyy HH:mm}, puis disparaît.");
+        }
+        else
+        {
+            sb.AppendLine("📅 VISIBILITÉ : Visible en permanence (selon prérequis).");
+        }
+
+        // 4. Durée de vie (Chrono)
+        if (newObjective.LifespanHours.HasValue && newObjective.Category != ObjectiveCategory.Onboarding && newObjective.Category != ObjectiveCategory.Evenement)
+        {
+             sb.AppendLine($"⏳ COMPTE À REBOURS : Une fois apparu dans la liste du joueur, il a {newObjective.LifespanHours} heures pour le valider avant qu'il ne disparaisse définitivement.");
+        }
+
+        // 5. Répétition et Fréquence
+        if (newObjective.IsUnique)
+        {
+            sb.Append("✅ VALIDATION UNIQUE : Cet objectif ne peut être accompli qu'une seule fois.");
+        }
+        else
+        {
+            sb.Append("🔄 RÉPÉTABLE : Le joueur peut valider cet objectif plusieurs fois.");
+            if (newObjective.FrequencyHours.HasValue && newObjective.FrequencyHours > 0)
+                sb.Append($" Un délai d'attente de {newObjective.FrequencyHours} heures est imposé entre chaque validation.");
+            else
+                sb.Append(" Aucune limite de temps entre deux validations.");
+        }
+
+        return sb.ToString();
+    }
 }
+
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+    .grab-cursor {
+        cursor: grab;
+    }
+    .grab-cursor:active {
+        cursor: grabbing;
+    }
+</style>

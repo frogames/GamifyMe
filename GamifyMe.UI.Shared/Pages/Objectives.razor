@@ -12,7 +12,6 @@
 @inject IDialogService DialogService
 @implements IDisposable
 
-
 <PageTitle>Mes Objectifs</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
@@ -41,9 +40,11 @@
                 <div class="objectives-table">
                     @foreach (var obj in group.Value)
                     {
-                        var bgColor = !string.IsNullOrEmpty(obj.Color) ? obj.Color : "#ffffff";
+                        // For "Rechargement" objectives, force gray color
+                        bool isRecharging = obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow;
+                        var bgColor = isRecharging ? "#9E9E9E" : (!string.IsNullOrEmpty(obj.Color) ? obj.Color : "#ffffff");
                         var textColor = ColorHelper.GetContrastColor(bgColor);
-                        var style = !string.IsNullOrEmpty(obj.Color) ? $"background-color: {bgColor}; color: {textColor};" : "";
+                        var style = $"background-color: {bgColor}; color: {textColor};";
                         var iconStyle = $"color: {textColor};";
 
                         <div class="objective-row hover-scale" style="@style" @onclick="@(() => OpenDetails(obj))">
@@ -79,7 +80,7 @@
                                 @if (!string.IsNullOrEmpty(obj.Location))
                                 {
                                     <div class="d-flex align-center">
-                                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
+                                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")"/>
                                         <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@obj.Location</MudText>
                                     </div>
                                 }
@@ -108,19 +109,21 @@
 
                             <!-- Column 4: Status / Timer -->
                             <div class="col-status">
-                                @if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow)
+                                @if (isRecharging)
                                 {
                                     var timeLeft = obj.NextAvailableDate!.Value - DateTime.UtcNow;
                                     <div class="d-flex align-center justify-end">
-                                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
-                                        <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeLeft)</MudText>
+                                        <div class="d-flex align-center" style="background-color: rgba(255,255,255,0.25); padding: 6px 14px; border-radius: 20px;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Medium" Class="mr-2" Style="@($"color: {textColor};")"/>
+                                            <MudText Typo="Typo.subtitle1" Style="@($"color: {textColor}; font-weight: bold;")">@TimeFormatter.GetTimeRemaining(timeLeft)</MudText>
+                                        </div>
                                     </div>
                                 }
                                 else if (obj.ExpirationDate.HasValue)
                                 {
                                     var timeToLive = obj.ExpirationDate!.Value - DateTime.UtcNow;
                                     <div class="d-flex align-center justify-end">
-                                        <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")" />
+                                        <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")"/>
                                         <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeToLive)</MudText>
                                     </div>
                                 }
@@ -244,7 +247,7 @@
             ObjectiveCategory.Principal.ToString(), 
             ObjectiveCategory.Evenement.ToString(), 
             ObjectiveCategory.Secondaire.ToString(), 
-            ObjectiveCategory.Demarrage.ToString(), 
+            ObjectiveCategory.Onboarding.ToString(), 
             ObjectiveCategory.Rechargement.ToString() 
         };
 
@@ -282,7 +285,7 @@
             "Principal" => "Vos missions les plus importantes",
             "Evenement" => "A noter dans votre agenda",
             "Secondaire" => "Dès que vous avez un peu de temps disponible",
-            "Demarrage" => "Débloque de nouveaux objectifs",
+            "Onboarding" => "Débloque de nouveaux objectifs",
             "Rechargement" => "Bientôt de retour",
             _ => ""
         };
@@ -290,8 +293,6 @@
 
     private void OpenDetails(ObjectiveDto obj)
     {
-        if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow) return;
-
         var parameters = new DialogParameters<ObjectiveDetailsDialog> { { x => x.Objective, obj } };
         // Clean dialog interface
         var options = new DialogOptions { 

@@ -174,9 +174,6 @@ namespace GamifyMe.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsOnboarding")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsUnique")
                         .HasColumnType("boolean");
 
@@ -187,8 +184,8 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("NextOnboardingObjectiveId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -198,8 +195,6 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NextOnboardingObjectiveId");
 
                     b.ToTable("Objectives");
                 });
@@ -302,6 +297,9 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("StartDate")
@@ -525,16 +523,6 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Establishment");
-                });
-
-            modelBuilder.Entity("GamifyMe.Shared.Models.Objective", b =>
-                {
-                    b.HasOne("GamifyMe.Shared.Models.Objective", "NextOnboardingObjective")
-                        .WithMany()
-                        .HasForeignKey("NextOnboardingObjectiveId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("NextOnboardingObjective");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.ObjectiveObjective", b =>

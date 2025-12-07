@@ -41,12 +41,7 @@ namespace GamifyMe.Api.Data
                     j => j.HasKey(oo => new { oo.IsPrerequisiteForId, oo.PrerequisitesId })
                 );
 
-            // --- Configuration Onboarding (Self-referencing) ---
-            modelBuilder.Entity<Objective>()
-                .HasOne(o => o.NextOnboardingObjective)
-                .WithMany()
-                .HasForeignKey(o => o.NextOnboardingObjectiveId)
-                .OnDelete(DeleteBehavior.Restrict);
+
 
             // --- Configuration UserObjective ---
             modelBuilder.Entity<UserObjective>()

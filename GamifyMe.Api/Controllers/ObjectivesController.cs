@@ -92,5 +92,13 @@ namespace GamifyMe.Api.Controllers
             if (!success) return NotFound("Objectif non trouvé.");
             return NoContent();
         }
+        [HttpPost("reorder")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        public async Task<IActionResult> ReorderObjectives(ReorderRequestDto request)
+        {
+            var success = await _objectiveService.ReorderObjectivesAsync(request.OrderedIds);
+            if (!success) return BadRequest("Erreur lors de la réorganisation.");
+            return Ok();
+        }
     }
 }

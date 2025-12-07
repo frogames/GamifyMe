@@ -13,10 +13,10 @@ namespace GamifyMe.Shared.Dtos
         public string Description { get; set; } = string.Empty;
 
         [Range(0, 10000, ErrorMessage = "L'XP doit être comprise entre 0 et 10 000.")]
-        public int XpReward { get; set; }
+        public int XpReward { get; set; } = 5;
 
         [Range(0, 10000, ErrorMessage = "Les points doivent être compris entre 0 et 10 000.")]
-        public int DocPointsReward { get; set; }
+        public int DocPointsReward { get; set; } = 5;
 
         // 1. CORRECTION : Défini à 'true' par défaut, comme tu l'as demandé.
         public bool IsUnique { get; set; } = true;
@@ -31,7 +31,8 @@ namespace GamifyMe.Shared.Dtos
         // 2. CORRECTION : Rendu obligatoire, comme tu l'as demandé.
         [Required(ErrorMessage = "L'icône est requise.")]
         public string IconName { get; set; } = "fas fa-star"; // Garde une icône par défaut
-        public string? Color { get; set; }
+        [Required(ErrorMessage = "La couleur est requise.")]
+        public string? Color { get; set; } = "#FFFFFF";
 
         public bool IsActive { get; set; } = true;
 
@@ -40,10 +41,9 @@ namespace GamifyMe.Shared.Dtos
 
         public int? LifespanHours { get; set; }
 
-        // Onboarding
-        public bool IsOnboarding { get; set; }
-        public Guid? NextOnboardingObjectiveId { get; set; }
+
 
         public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
+        public int SortOrder { get; set; }
     }
 }

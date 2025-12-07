@@ -40,13 +40,12 @@ namespace GamifyMe.Shared.Dtos
         public int? ChainLength { get; set; }
         public DateTime? ExpirationDate { get; set; }
 
-        // Onboarding
-        public bool IsOnboarding { get; set; }
-        public Guid? NextOnboardingObjectiveId { get; set; }
+
 
         public double ActiveMultiplier { get; set; } = 1.0;
         public string? BonusLabel { get; set; }
         public ObjectiveCategory Category { get; set; }
         public List<string> UnlockedObjectiveTitles { get; set; } = new();
+        public int SortOrder { get; set; }
     }
 }

@@ -31,16 +31,13 @@
         // (EF Core a besoin de cette "navigation inverse" pour créer la relation)
         public ICollection<Objective> IsPrerequisiteFor { get; set; } = new List<Objective>();
 
-        // --- Onboarding System ---
-        public bool IsOnboarding { get; set; } = false;
-        public Guid? NextOnboardingObjectiveId { get; set; } // ID of the next objective in the chain
-        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("NextOnboardingObjectiveId")]
-        public virtual Objective? NextOnboardingObjective { get; set; }
+
 
         // --- Relations ---
         public virtual ICollection<UserObjective> UserObjectives { get; set; } = new List<UserObjective>();
 
         public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
+        public int SortOrder { get; set; } = 0;
     }
 
     public enum ObjectiveCategory
@@ -48,7 +45,7 @@
         Principal,
         Evenement,
         Secondaire,
-        Demarrage,
+        Onboarding,
         Rechargement
     }
 }

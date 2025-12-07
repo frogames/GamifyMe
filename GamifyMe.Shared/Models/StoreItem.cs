@@ -40,6 +40,7 @@ namespace GamifyMe.Shared.Models
         public string? Color { get; set; } // Hex Color Code
         public DateTime? StartDate { get; set; } // Date de début de disponibilité
         public DateTime? EndDate { get; set; }   // Date de fin de disponibilité
+        public int SortOrder { get; set; } = 0;
 
         // --- Pour les items Numériques ---
         // On peut ajouter un "code d'action" pour dire au jeu quoi faire

@@ -140,7 +140,7 @@
     <MudDivider Class="my-8" />
 
     @* --- SECTION SCAN OBJECTIFS --- *@
-    <MudText Typo="Typo.h5" GutterBottom="true" Class="mb-4">Scanner un Objectif</MudText>
+
 
     @if (isLoadingObjectives)
     {
@@ -152,7 +152,11 @@
             @foreach (var obj in objectives)
             {
                 <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="() => OpenObjectiveScanner(obj)">
+                    <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 rounded-xl" Style="@($"background-color: {obj.Color}; color: {ColorHelper.GetContrastColor(obj.Color)}; overflow: hidden;")" @onclick="() => OpenObjectiveScanner(obj)">
+                        <div class="d-flex align-center justify-center pt-2 pb-2" style="background-color: rgba(0,0,0,0.2);">
+                            <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Small" Class="mr-2" Style="color: white;" />
+                            <MudText Typo="Typo.button" Style="font-weight:bold; color: white;">SCANNER L'OBJECTIF</MudText>
+                        </div>
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudAvatar Color="Color.Secondary" Variant="Variant.Filled">
@@ -164,15 +168,13 @@
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudText Typo="Typo.body2" Class="mb-2">@obj.Description</MudText>
+
                             <div class="d-flex gap-2">
                                 <MudChip T="string" Size="Size.Small" Color="Color.Warning">+@obj.XpReward XP</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info">+@obj.DocPointsReward Cr</MudChip>
                             </div>
                         </MudCardContent>
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.QrCodeScanner">Scanner</MudButton>
-                        </MudCardActions>
+
                     </MudCard>
                 </MudItem>
             }

@@ -123,5 +123,13 @@ namespace GamifyMe.Api.Controllers
             var url = $"/images/products/{fileName}";
             return Ok(new { Url = url });
         }
+        [HttpPost("reorder")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        public async Task<IActionResult> ReorderStoreItems(ReorderRequestDto request)
+        {
+            var success = await _storeService.ReorderStoreItemsAsync(request.OrderedIds);
+            if (!success) return BadRequest("Erreur lors de la réorganisation.");
+            return Ok();
+        }
     }
 }

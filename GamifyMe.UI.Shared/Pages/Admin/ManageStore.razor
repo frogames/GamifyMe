@@ -38,7 +38,7 @@
                 <EditForm Model="newStoreItem" OnValidSubmit="@(editingStoreItemId == null ? HandleCreateStoreItem : HandleUpdateStoreItem)">
                     <DataAnnotationsValidator />
 
-                    <MudTextField T="string" Label="Nom" @bind-Value="newStoreItem.Name" For="@(() => newStoreItem.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Nom" @bind-Value="newStoreItem.Name" For="@(() => newStoreItem.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
                     <MudTextField T="string" Label="Description" @bind-Value="newStoreItem.Description" Variant="Variant.Outlined" Lines="2" Margin="Margin.Dense" Class="mb-3" />
 
                     <MudSelect T="StoreItemType" Label="Type" @bind-Value="newStoreItem.ItemType" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" AnchorOrigin="Origin.BottomCenter">
@@ -70,20 +70,23 @@
                         }
                     }
 
-                    @* SÉLECTEUR D'ICÔNE *@
-                    <div class="d-flex justify-center mb-4">
-                        <MudTooltip Text="Cliquez pour changer l'icône">
-                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(newStoreItem.Color) ? $"color:{newStoreItem.Color};" : "")}")" Color="@(string.IsNullOrEmpty(newStoreItem.Color) ? Color.Primary : Color.Default)" />
-                                </MudPaper>
-                            </MudBadge>
-                        </MudTooltip>
-                    </div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @newStoreItem.IconName</MudText>
+                    @* SÉLECTEUR D'ICÔNE ET COULEUR *@
+                    <div class="d-flex justify-center align-center gap-8 mb-4">
+                        <div class="d-flex flex-column align-center">
+                            <MudTooltip Text="Cliquez pour changer l'icône">
+                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    </MudPaper>
+                                </MudBadge>
+                            </MudTooltip>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1">Icône : @newStoreItem.IconName</MudText>
+                        </div>
 
-                    @* COULEUR *@
-                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="newStoreItem.Color" Style="@($"color: {newStoreItem.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
+                        <div style="width: 200px;">
+                            <MudColorPicker Label="Couleur" @bind-Text="newStoreItem.Color" ColorPickerView="ColorPickerView.Palette" Palette="ColorHelper.Palette" Variant="Variant.Outlined" Margin="Margin.Dense" Style="@($"background-color: {(!string.IsNullOrEmpty(newStoreItem.Color) ? newStoreItem.Color : "#FFFFFF")}; color: {ColorHelper.GetContrastColor(newStoreItem.Color ?? "#FFFFFF")}; font-weight: bold;")" Placeholder="Selectionnez une couleur" Required="true" />
+                        </div>
+                    </div>
 
                     @* IMAGE DU PRODUIT *@
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Image du produit (facultatif)</MudText>
@@ -115,6 +118,7 @@
                     <MudCheckBox @bind-Value="newStoreItem.IsUnique" Label="Objet Unique (Achat unique)" Color="Color.Primary" />
                     <MudSwitch T="bool" @bind-Value="newStoreItem.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
 
+
                     @if (!string.IsNullOrEmpty(successMessageStore))
                     {
                         <MudAlert Severity="Severity.Success" Class="mb-3">@successMessageStore</MudAlert>
@@ -123,6 +127,11 @@
                     {
                         <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessageStore</MudAlert>
                     }
+
+                    <MudAlert Severity="@(newStoreItem.IsActive ? Severity.Info : Severity.Warning)" Variant="Variant.Outlined" Class="mb-4" Icon="@Icons.Material.Filled.Info">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:bold; text-decoration:underline;">Résumé du comportement :</MudText>
+                        <MudText Typo="Typo.body2" Style="white-space: pre-wrap;">@GetStoreItemSummary()</MudText>
+                    </MudAlert>
 
                     <div class="d-flex gap-2">
                         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="isBusyStore">
@@ -143,54 +152,61 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@allStoreItemsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<StoreItemDto> e) => StartEditStoreItem(e.Item))" T="StoreItemDto" RowClass="cursor-pointer">
-                    <HeaderContent>
-                        <MudTh>Nom</MudTh>
-                        <MudTh>Prix / Stock</MudTh>
-                        <MudTh>Type</MudTh>
-                        <MudTh>Disponibilité</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="item">
-                        <MudTd DataLabel="Nom">
-                            <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(item.Color) ? $"color:{item.Color};" : "")" Color="@(string.IsNullOrEmpty(item.Color) ? Color.Default : Color.Default)" />
-                                <MudText Typo="Typo.body2">@item.Name</MudText>
+                <MudDropContainer T="StoreItemDto" @ref="_dropContainer" Items="_dropZoneItems" ItemsSelector="@((item,dropzone) => dropzone == "dropzone")" ItemDropped="ItemUpdated" Class="d-flex flex-column">
+                    <ChildContent>
+                        <MudDropZone T="StoreItemDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
+                    </ChildContent>
+                    <ItemRenderer>
+                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid #eee;">
+                             <div class="d-flex align-center mr-4 grab-cursor">
+                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
                             </div>
-                        </MudTd>
-                        <MudTd DataLabel="Prix / Stock">
-                            <MudText Typo="Typo.body2">@item.Price Crédits</MudText>
-                            @if (item.ItemType != StoreItemType.Digital && item.Stock > 0)
-                            {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @item.Stock</MudChip>
-                            }
-                        </MudTd>
-                        <MudTd DataLabel="Type">
-                            <MudChip T="string" Size="Size.Small" Color="@(item.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@item.ItemType</MudChip>
-                        </MudTd>
-                        <MudTd DataLabel="Disponibilité">
-                            @if (item.StartDate.HasValue || item.EndDate.HasValue)
-                            {
-                                @if (item.StartDate.HasValue)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Info">@item.StartDate.Value.ToString("dd/MM/yyyy")</MudChip>
-                                }
-                                @if (item.EndDate.HasValue)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Stop" Color="Color.Warning">@item.EndDate.Value.ToString("dd/MM/yyyy")</MudChip>
-                                }
-                            }
-                            else
-                            {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
-                            }
-                        </MudTd>
-                        <MudTd DataLabel="Actions">
-                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(item)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(item)" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+
+                             <!-- Content simulating columns -->
+                             <MudGrid Spacing="0" Class="align-center w-100">
+                                 <MudItem xs="4">
+                                     <div class="d-flex align-center" @onclick="@(() => StartEditStoreItem(context))" style="cursor: pointer;">
+                                         <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(context.Color) ? $"color:{context.Color};" : "")" />
+                                         <div class="d-flex flex-column">
+                                             <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Name</MudText>
+                                         </div>
+                                     </div>
+                                 </MudItem>
+                                 <MudItem xs="2">
+                                     <MudText Typo="Typo.body2">@context.Price Crédits</MudText>
+                                     @if (context.ItemType != StoreItemType.Digital && context.Stock > 0)
+                                     {
+                                         <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @context.Stock</MudChip>
+                                     }
+                                 </MudItem>
+                                 <MudItem xs="2">
+                                     <MudChip T="string" Size="Size.Small" Color="@(context.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@context.ItemType</MudChip>
+                                 </MudItem>
+                                 <MudItem xs="3">
+                                    @if (context.StartDate.HasValue || context.EndDate.HasValue)
+                                    {
+                                        @if (context.StartDate.HasValue)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Info">@context.StartDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                        }
+                                        @if (context.EndDate.HasValue)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Stop" Color="Color.Warning">@context.EndDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
+                                    }
+                                 </MudItem>
+                                 <MudItem xs="1" Class="d-flex justify-end">
+                                     <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(context)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(context)" />
+                                 </MudItem>
+                             </MudGrid>
+                        </MudPaper>
+                    </ItemRenderer>
+                </MudDropContainer>
             </MudCardContent>
         </MudCard>
     }
@@ -200,6 +216,8 @@
     private StoreItemDto newStoreItem = new();
     private List<StoreItemDto> allStoreItemsList = new();
     private Guid? editingStoreItemId = null;
+    private List<StoreItemDto> _dropZoneItems = new();
+    private MudDropContainer<StoreItemDto>? _dropContainer;
 
     public class DigitalItemPreset
     {
@@ -269,7 +287,11 @@
     {
         try
         {
-            allStoreItemsList = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all") ?? new();
+            var items = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all") ?? new();
+            allStoreItemsList = items.OrderBy(i => i.SortOrder).ToList();
+            _dropZoneItems = allStoreItemsList;
+            StateHasChanged();
+            _dropContainer?.Refresh();
         }
         catch (Exception ex)
         {
@@ -281,6 +303,7 @@
     {
         editingStoreItemId = null;
         newStoreItem = new StoreItemDto();
+        newStoreItem.Color = "#FFFFFF"; // Default color
         newStoreItem.IsUnique = true; // Par défaut, tous les objets sont uniques
         selectedPreset = null;
         showForm = true;
@@ -326,7 +349,8 @@
             DigitalAssetUrl = itemToEdit.DigitalAssetUrl,
             IsUnique = itemToEdit.IsUnique,
             ImageUrl = itemToEdit.ImageUrl,
-            Color = itemToEdit.Color
+            Color = !string.IsNullOrEmpty(itemToEdit.Color) ? itemToEdit.Color : "#FFFFFF",
+            SortOrder = itemToEdit.SortOrder
         };
 
         if (newStoreItem.ItemType == StoreItemType.Digital)
@@ -401,7 +425,8 @@
                 DigitalAssetUrl = itemToDuplicate.DigitalAssetUrl,
                 IsUnique = itemToDuplicate.IsUnique,
                 ImageUrl = itemToDuplicate.ImageUrl,
-                Color = itemToDuplicate.Color
+                Color = itemToDuplicate.Color,
+                SortOrder = itemToDuplicate.SortOrder
             };
 
             var response = await Http.PostAsJsonAsync("api/store", duplicate);
@@ -472,4 +497,103 @@
     {
         public string Url { get; set; }
     }
+    
+    private async Task ItemUpdated(MudItemDropInfo<StoreItemDto> dropItem)
+    {
+        _dropZoneItems.Remove(dropItem.Item);
+        _dropZoneItems.Insert(dropItem.IndexInZone, dropItem.Item);
+        
+        var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
+        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
+        
+        try 
+        {
+            var response = await Http.PostAsJsonAsync("api/store/reorder", reorderDto);
+             if (!response.IsSuccessStatusCode)
+             {
+                 errorMessageStore = "Erreur lors de la réorganisation.";
+                 await LoadData();
+             }
+        }
+        catch (Exception ex)
+        {
+             errorMessageStore = ex.Message;
+        }
+    }
+
+    private string GetStoreItemSummary()
+    {
+        var sb = new System.Text.StringBuilder();
+
+        // 1. Statut Actif
+        if (!newStoreItem.IsActive)
+        {
+            return "⛔ CET OBJET EST INACTIF. Il ne sera visible dans la boutique pour aucun joueur.";
+        }
+
+        // 2. Type d'objet
+        sb.Append($"🛍️ TYPE : {newStoreItem.ItemType}. ");
+        if (newStoreItem.ItemType == StoreItemType.Digital)
+        {
+            sb.AppendLine("C'est un objet immatériel (boost, thème, son...) activable immédiatement ou depuis l'inventaire.");
+            if (!string.IsNullOrEmpty(newStoreItem.DigitalActionCode))
+                sb.AppendLine($"   Code Action : {newStoreItem.DigitalActionCode}");
+        }
+        else
+        {
+            sb.AppendLine("C'est un objet physique à récupérer auprès du staff.");
+        }
+
+        // 3. Stock
+        if (newStoreItem.ItemType == StoreItemType.Physical)
+        {
+            if (newStoreItem.Stock <= 0)
+                sb.AppendLine("⚠ RUPTURE : Stock à 0, l'objet apparaîtra comme épuisé.");
+            else
+                sb.AppendLine($"📦 STOCK : {newStoreItem.Stock} unités disponibles.");
+        }
+        else
+        {
+            sb.AppendLine("✨ ILLIMITÉ : Pas de gestion de stock pour les objets numériques.");
+        }
+
+        // 4. Unicité
+        if (newStoreItem.IsUnique)
+        {
+            sb.AppendLine("1️⃣ ACHAT UNIQUE : Le joueur ne peut posséder cet objet qu'une seule fois.");
+        }
+        else
+        {
+             sb.AppendLine("🔄 CUMULABLE : Le joueur peut acheter cet objet plusieurs fois.");
+        }
+
+        // 5. Dates
+        if (newStoreItem.StartDate.HasValue || newStoreItem.EndDate.HasValue)
+        {
+            if (newStoreItem.StartDate.HasValue && newStoreItem.EndDate.HasValue)
+                sb.AppendLine($"📅 DISPONIBILITÉ : Du {newStoreItem.StartDate:dd/MM/yyyy} au {newStoreItem.EndDate:dd/MM/yyyy}.");
+            else if (newStoreItem.StartDate.HasValue)
+                sb.AppendLine($"📅 DISPONIBILITÉ : À partir du {newStoreItem.StartDate:dd/MM/yyyy}.");
+            else if (newStoreItem.EndDate.HasValue)
+                sb.AppendLine($"📅 DISPONIBILITÉ : Jusqu'au {newStoreItem.EndDate:dd/MM/yyyy}.");
+        }
+        else
+        {
+            sb.AppendLine("📅 DISPONIBILITÉ : Toujours disponible (si actif).");
+        }
+
+        return sb.ToString();
+    }
 }
+
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+    .grab-cursor {
+        cursor: grab;
+    }
+    .grab-cursor:active {
+        cursor: grabbing;
+    }
+</style>

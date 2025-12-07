@@ -35,25 +35,28 @@
                 <EditForm Model="groupModel" OnValidSubmit="@(editingGroupId == null ? HandleCreateGroup : HandleUpdateGroup)">
                     <DataAnnotationsValidator />
 
-                    <MudTextField T="string" Label="Nom" @bind-Value="groupModel.Name" For="@(() => groupModel.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                    <MudTextField T="string" Label="Nom" @bind-Value="groupModel.Name" For="@(() => groupModel.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
                     <MudTextField T="string" Label="Description" @bind-Value="groupModel.Description" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
                     
                     <MudNumericField T="int?" Label="Durée d'inscription (heures, 0 = illimité)" @bind-Value="groupModel.RegistrationDurationHours" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Min="0" />
 
-                    @* SÉLECTEUR D'ICÔNE *@
-                    <div class="d-flex justify-center mb-4">
-                        <MudTooltip Text="Cliquez pour changer l'icône">
-                            <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="@($"font-size: 3rem; {(!string.IsNullOrEmpty(groupModel.Color) ? $"color:{groupModel.Color};" : "")}")" Color="@(string.IsNullOrEmpty(groupModel.Color) ? Color.Primary : Color.Default)" />
-                                </MudPaper>
-                            </MudBadge>
-                        </MudTooltip>
-                    </div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mb-4">Icône : @groupModel.IconName</MudText>
+                    @* SÉLECTEUR D'ICÔNE ET COULEUR *@
+                    <div class="d-flex justify-center align-center gap-8 mb-4">
+                        <div class="d-flex flex-column align-center">
+                            <MudTooltip Text="Cliquez pour changer l'icône">
+                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    </MudPaper>
+                                </MudBadge>
+                            </MudTooltip>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1">Icône : @groupModel.IconName</MudText>
+                        </div>
 
-                    @* COULEUR *@
-                    <MudColorPicker Label="Couleur (Optionnel)" @bind-Text="groupModel.Color" Style="@($"color: {groupModel.Color};")" Placeholder="Ex: #FF0000" Class="mb-3" ColorPickerView="ColorPickerView.Palette" Palette="ColorPaletteHelper.Palette256" />
+                        <div style="width: 200px;">
+                            <MudColorPicker Label="Couleur" @bind-Text="groupModel.Color" ColorPickerView="ColorPickerView.Palette" Palette="ColorHelper.Palette" Variant="Variant.Outlined" Margin="Margin.Dense" Style="@($"background-color: {(!string.IsNullOrEmpty(groupModel.Color) ? groupModel.Color : "#FFFFFF")}; color: {ColorHelper.GetContrastColor(groupModel.Color ?? "#FFFFFF")}; font-weight: bold;")" Placeholder="Selectionnez une couleur" Required="true" />
+                        </div>
+                    </div>
 
                     @if (!string.IsNullOrEmpty(successMessage))
                     {
@@ -83,7 +86,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer">
+                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer custom-hover-row">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Description</MudTh>
@@ -146,6 +149,8 @@
     {
         editingGroupId = null;
         groupModel = new UpdateGroupDto();
+        groupModel.IconName = "fas fa-star"; // Default icon
+        groupModel.Color = "#FFFFFF"; // Default color
         showForm = true;
     }
 
@@ -186,7 +191,7 @@
             Name = group.Name,
             Description = group.Description,
             IconName = group.IconName,
-            Color = group.Color,
+            Color = !string.IsNullOrEmpty(group.Color) ? group.Color : "#FFFFFF",
             RegistrationDurationHours = group.RegistrationDurationHours
         };
         showForm = true;
@@ -246,3 +251,9 @@
         await JSRuntime.InvokeVoidAsync("generateAndDownloadQrCode", url, $"Groupe_{group.Name}.png");
     }
 }
+
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+</style>
