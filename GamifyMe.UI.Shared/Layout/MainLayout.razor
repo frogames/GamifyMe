@@ -100,22 +100,7 @@
                         
                         @* Bouton Profil (Toujours visible, ne rétrécit pas) *@
                         <div class="d-flex align-center justify-center ml-2 flex-shrink-0" style="background-color: white; border-radius: 50%; width: 40px; height: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                            @if (userStats?.Rank == 1)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Size="Size.Small" Href="profile" />
-                            }
-                            else if (userStats?.Rank == 2)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Style="color: #C0C0C0;" Size="Size.Small" Href="profile" />
-                            }
-                            else if (userStats?.Rank == 3)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Style="color: #CD7F32;" Size="Size.Small" Href="profile" />
-                            }
-                            else
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Size="Size.Small" Href="profile" />
-                            }
+                            <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Size="Size.Small" Href="profile" />
                         </div>
                     </div>
                 </div>

@@ -247,8 +247,9 @@
             ObjectiveCategory.Principal.ToString(), 
             ObjectiveCategory.Evenement.ToString(), 
             ObjectiveCategory.Secondaire.ToString(), 
-            ObjectiveCategory.Onboarding.ToString(), 
-            ObjectiveCategory.Rechargement.ToString() 
+            ObjectiveCategory.Demarrage.ToString(), 
+            ObjectiveCategory.Rechargement.ToString(),
+            ObjectiveCategory.Onboarding.ToString()
         };
 
         foreach (var cat in categories)
@@ -285,8 +286,9 @@
             "Principal" => "Vos missions les plus importantes",
             "Evenement" => "A noter dans votre agenda",
             "Secondaire" => "Dès que vous avez un peu de temps disponible",
-            "Onboarding" => "Débloque de nouveaux objectifs",
+            "Demarrage" => "Débloque de nouveaux objectifs",
             "Rechargement" => "Bientôt de retour",
+            "Onboarding" => "Parcours d'accueil des nouveaux utilisateurs",
             _ => ""
         };
     }

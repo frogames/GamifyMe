@@ -11,6 +11,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+using System.Text;
+using GamifyMe.Shared.Helpers;
+
 namespace GamifyMe.Api.Controllers
 {
     [Route("api/[controller]")]
@@ -166,12 +169,13 @@ namespace GamifyMe.Api.Controllers
                 .Select(w => new WalletBalanceDto { CurrencyCode = w.CurrencyCode, Balance = (int)w.Balance }).ToListAsync();
 
             int currentXp = (int)(xpWallet?.Balance ?? 0);
-            int level = 1 + (currentXp / 500);
+            var levelDetails = LevelHelpers.GetLevelDetails(currentXp);
+            
             return Ok(new InfoBarDto
             {
-                Level = level,
+                Level = levelDetails.currentLevel,
                 CurrentXp = currentXp,
-                XpToNextLevel = level * 500,
+                XpToNextLevel = levelDetails.xpForNextLevel,
                 OtherWallets = otherWallets,
                 EstablishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A",
                 FirstName = User.FindFirstValue("FirstName") ?? ""
@@ -223,15 +227,15 @@ namespace GamifyMe.Api.Controllers
             if (user == null) return NotFound("Utilisateur introuvable.");
 
             // Wallets
+// ... (Top of file)
+            // Wallets
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
             var currencyWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP"); // Assuming 1 main currency for now
 
             int currentXp = (int)(xpWallet?.Balance ?? 0);
             int currentCurrency = (int)(currencyWallet?.Balance ?? 0);
-            int level = 1 + (currentXp / 500);
-            int xpForNextLevel = level * 500;
-            int xpInCurrentLevel = currentXp - ((level - 1) * 500);
-            double progress = (double)xpInCurrentLevel / 500 * 100;
+            
+            var levelDetails = LevelHelpers.GetLevelDetails(currentXp);
 
             // Rank
             int rank = await _context.Wallets
@@ -312,10 +316,10 @@ namespace GamifyMe.Api.Controllers
                 Role = user.Role,
                 QrCode = user.QrCode,
                 CreatedAt = user.CreatedAt,
-                Level = level,
+                Level = levelDetails.currentLevel,
                 CurrentXp = currentXp,
-                XpForNextLevel = xpForNextLevel,
-                ProgressPercentage = progress,
+                XpForNextLevel = levelDetails.xpForNextLevel,
+                ProgressPercentage = levelDetails.progressPercent,
                 Rank = rank,
                 CurrencyBalance = currentCurrency,
                 CurrencyName = currencyWallet?.CurrencyCode ?? "DOC",

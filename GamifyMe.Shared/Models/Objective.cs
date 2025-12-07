@@ -45,7 +45,8 @@
         Principal,
         Evenement,
         Secondaire,
+        Demarrage,
+        Rechargement,
         Onboarding,
-        Rechargement
     }
 }

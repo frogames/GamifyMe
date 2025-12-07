@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
+using GamifyMe.Shared.Helpers;
+
 namespace GamifyMe.Api.Controllers
 {
     [Route("api/[controller]")]
@@ -46,7 +48,7 @@ namespace GamifyMe.Api.Controllers
                     UserId = x.User.Id,
                     Username = x.User.Username,
                     FirstName = x.User.FirstName,
-                    Level = 1 + (x.Xp / 500),
+                    Level = LevelHelpers.GetLevelFromXp(x.Xp),
                     TotalXp = x.Xp,
                     TotalCurrency = x.Currency,
                     GroupName = x.User.Group?.Name
@@ -82,7 +84,7 @@ namespace GamifyMe.Api.Controllers
                     UserId = x.User.Id,
                     Username = x.User.Username,
                     FirstName = x.User.FirstName,
-                    Level = 1 + (x.Xp / 500),
+                    Level = LevelHelpers.GetLevelFromXp(x.Xp),
                     TotalXp = x.Xp,
                     TotalCurrency = x.Currency,
                     GroupName = x.User.Group?.Name

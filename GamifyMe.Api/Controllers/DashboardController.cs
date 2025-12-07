@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
+using GamifyMe.Shared.Helpers;
+
 namespace GamifyMe.Api.Controllers
 {
     [Route("api/dashboard")]
@@ -312,7 +314,7 @@ namespace GamifyMe.Api.Controllers
             // Mise à jour du niveau
             if (xpWallet != null)
             {
-                int newLevel = 1 + ((int)xpWallet.Balance / 500);
+                int newLevel = LevelHelpers.GetLevelFromXp((int)xpWallet.Balance);
                 if (newLevel > user.Level) user.Level = newLevel;
             }
             user.LastActivityAt = DateTime.UtcNow;
