@@ -54,6 +54,7 @@ namespace GamifyMe.Web.Client
                 provider.GetRequiredService<GamifyMe.UI.Shared.Services.ApiAuthenticationStateProvider>());
 
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
+            builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
 
             await builder.Build().RunAsync();
         }

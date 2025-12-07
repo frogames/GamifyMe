@@ -10,7 +10,7 @@
         <h4 class="objective-title">@Objective.Title</h4>
         <p class="objective-description">@Objective.Description</p>
 
-        @if (Objective.DisplayStartDate.HasValue || Objective.DisplayEndDate.HasValue)
+        @if (Objective.DisplayStartDate.HasValue || Objective.DisplayEndDate.HasValue || Objective.ExpirationDate.HasValue)
         {
             <div class="objective-dates" style="font-size: 0.8em; color: #888; margin-top: 5px;">
                 <i class="fas fa-calendar-alt"></i>
@@ -18,9 +18,13 @@
                 {
                     <span style="margin-right: 10px;">Du : @Objective.DisplayStartDate.Value.ToLocalTime().ToString("dd/MM/yyyy")</span>
                 }
-                @if (Objective.DisplayEndDate.HasValue)
+                @if (Objective.ExpirationDate.HasValue)
                 {
-                    <span>Au : @Objective.DisplayEndDate.Value.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                    <span style="color: #d32f2f; font-weight: bold;">@GetTimeRemainingText(Objective.ExpirationDate.Value)</span>
+                }
+                else if (Objective.DisplayEndDate.HasValue)
+                {
+                    <span style="color: #d32f2f; font-weight: bold;">@GetTimeRemainingText(Objective.DisplayEndDate.Value)</span>
                 }
             </div>
         }
@@ -52,4 +56,42 @@
     // La page "Objectives" va nous "passer" l'objectif à afficher.
     [Parameter]
     public ObjectiveDto Objective { get; set; } = new();
+
+    private string GetTimeRemainingText(DateTime endDate)
+    {
+        var remaining = endDate - DateTime.UtcNow;
+        if (remaining.TotalSeconds <= 0) return "Expiré";
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append("cet objectif disparaitra dans ");
+
+        var parts = new List<string>();
+
+        if (remaining.Days > 0)
+            parts.Add($"{remaining.Days} jour{(remaining.Days > 1 ? "s" : "")}");
+
+        if (remaining.Hours > 0)
+            parts.Add($"{remaining.Hours} heure{(remaining.Hours > 1 ? "s" : "")}");
+
+        // If we have days or hours, showing minutes is optional but requested. 
+        // If we have nothing (e.g. 5 minutes), we MUST show minutes.
+        // Let's always show minutes if > 0 or if lists is empty (less than 1 min -> 0 minutes)
+        if (remaining.Minutes > 0 || parts.Count == 0)
+            parts.Add($"{remaining.Minutes} minute{(remaining.Minutes > 1 ? "s" : "")}");
+
+        if (parts.Count == 1)
+        {
+            sb.Append(parts[0]);
+        }
+        else if (parts.Count == 2)
+        {
+            sb.Append($"{parts[0]} et {parts[1]}");
+        }
+        else // 3 parts
+        {
+            sb.Append($"{parts[0]}, {parts[1]} et {parts[2]}");
+        }
+        
+        return sb.ToString(); 
+    }
 }

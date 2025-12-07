@@ -12,6 +12,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
+@inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
 @implements IDisposable
 
 <MudThemeProvider Theme="@ThemeService.CurrentTheme" />
@@ -143,6 +144,16 @@
     {
         ThemeService.OnChange += StateHasChanged;
         Navigation.LocationChanged += OnLocationChanged;
+        UserStateService.OnUserDataChanged += HandleUserDataChanged;
+    }
+
+    private void HandleUserDataChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            await LoadUserStats();
+            StateHasChanged();
+        });
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -155,6 +166,7 @@
         _timer?.Dispose();
         ThemeService.OnChange -= StateHasChanged;
         Navigation.LocationChanged -= OnLocationChanged;
+        UserStateService.OnUserDataChanged -= HandleUserDataChanged;
     }
 
     protected override async Task OnParametersSetAsync()

@@ -45,8 +45,8 @@
                         <div class="d-flex flex-column align-center">
                             <MudTooltip Text="Cliquez pour changer l'icône">
                                 <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPicker" Style="@($"background-color: {groupModel.Color};")">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(groupModel.IconName)" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(groupModel.Color ?? "#FFFFFF")};")" />
                                     </MudPaper>
                                 </MudBadge>
                             </MudTooltip>

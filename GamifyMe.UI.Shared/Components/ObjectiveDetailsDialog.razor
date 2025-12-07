@@ -73,7 +73,7 @@
                 {
                     <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")"><strong>Fin :</strong> @Objective.EndDate.Value.ToString("g")</MudText>
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")"><strong>@GetTimeRemainingText(Objective.EndDate.Value)</strong></MudText>
                     </div>
                 }
 
@@ -100,7 +100,7 @@
                      <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
                         <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
-                             <strong>Temps restant :</strong> @TimeFormatter.GetTimeRemaining(Objective.ExpirationDate.Value - DateTime.UtcNow)
+                             <strong>@GetTimeRemainingText(Objective.ExpirationDate.Value)</strong>
                         </MudText>
                     </div>
                 }
@@ -137,5 +137,40 @@
             return $"{days} jours et {remHours} heures";
         else
             return $"{days} jours";
+    }
+
+    private string GetTimeRemainingText(DateTime endDate)
+    {
+        var remaining = endDate - DateTime.UtcNow;
+        if (remaining.TotalSeconds <= 0) return "Expiré";
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append("cet objectif disparaitra dans ");
+
+        var parts = new List<string>();
+
+        if (remaining.Days > 0)
+            parts.Add($"{remaining.Days} jour{(remaining.Days > 1 ? "s" : "")}");
+
+        if (remaining.Hours > 0)
+            parts.Add($"{remaining.Hours} heure{(remaining.Hours > 1 ? "s" : "")}");
+
+        if (remaining.Minutes > 0 || parts.Count == 0)
+            parts.Add($"{remaining.Minutes} minute{(remaining.Minutes > 1 ? "s" : "")}");
+
+        if (parts.Count == 1)
+        {
+            sb.Append(parts[0]);
+        }
+        else if (parts.Count == 2)
+        {
+            sb.Append($"{parts[0]} et {parts[1]}");
+        }
+        else
+        {
+            sb.Append($"{parts[0]}, {parts[1]} et {parts[2]}");
+        }
+        
+        return sb.ToString(); 
     }
 }

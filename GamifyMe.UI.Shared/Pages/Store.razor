@@ -10,6 +10,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject IDialogService DialogService
+@inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
     <div class="d-flex justify-space-between align-center mb-6">
@@ -238,6 +239,7 @@
                 var message = await response.Content.ReadAsStringAsync();
                 Snackbar.Add(string.IsNullOrWhiteSpace(message) ? "Achat réussi !" : message, Severity.Success);
                 await LoadData(); // Refresh UI
+                UserStateService.NotifyUserDataChanged(); // Refresh Top Bar
             }
             else
             {

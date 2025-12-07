@@ -5,6 +5,10 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
+@implements IDisposable
+@inject IDialogService DialogService
+@inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
+
 <PageTitle>Mon Pass</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16 d-flex flex-column align-center">
@@ -71,12 +75,17 @@
 @code {
     private UserProfileDetailsDto? profile;
     private bool isLoading = true;
+    private System.Threading.Timer? _timer;
+    private DateTime _lastPollTime = DateTime.UtcNow;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+            
+            // Start polling (every 3 seconds)
+            _timer = new System.Threading.Timer(async _ => await PollUpdates(), null, 3000, 3000);
         }
         catch (Exception ex)
         {
@@ -86,6 +95,57 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task PollUpdates()
+    {
+        try
+        {
+            // Use local variable to avoid race conditions if poll takes long (though single threaded context mostly)
+            var checkTime = _lastPollTime;
+            
+            // We ask for updates SINCE last poll time
+            var url = $"api/users/updates?since={checkTime.ToString("o")}";
+            var updates = await Http.GetFromJsonAsync<List<UserUpdateDto>>(url);
+
+            if (updates != null && updates.Any())
+            {
+                // Update last poll time to the most recent event + 1 tick to avoid duplicate
+                _lastPollTime = updates.Max(u => u.Date).AddTicks(1);
+
+                // Show feedback for each update
+                foreach (var update in updates)
+                {
+                    await InvokeAsync(async () => 
+                    {
+                        await ShowFeedbackDialog(update);
+                        UserStateService.NotifyUserDataChanged(); // Refresh Top Bar
+                    });
+                }
+            }
+            else
+            {
+                 // If nothing found, simply advance the window to "now" to avoid querying too far back later
+                 _lastPollTime = DateTime.UtcNow;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Polling error: {ex.Message}");
+        }
+    }
+
+    private async Task ShowFeedbackDialog(UserUpdateDto update)
+    {
+        string icon = update.Type == "Validation" ? Icons.Material.Filled.EmojiEvents : Icons.Material.Filled.ShoppingBag;
+        Color color = update.Type == "Validation" ? Color.Warning : Color.Info;
+
+        var parameters = new DialogParameters();
+        
+        var result = await DialogService.ShowMessageBox(
+            update.Title, 
+            (MarkupString)$"{update.Message}<br/><br/>{(update.XpGained > 0 ? $"<b>+{update.XpGained} XP</b>" : "")}{(update.CurrencyGained > 0 ? $" &nbsp; <b>+{update.CurrencyGained} Crédits</b>" : "")}", 
+            yesText: "Génial !", cancelText: null, options: new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
     }
 
     private async Task PrintCard()
@@ -117,5 +177,10 @@
             "Mon Pass GamifyMe",
             $"Voici mon code joueur pour {profile.FirstName} {profile.Username}",
             qrImageUrl);
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
     }
 }

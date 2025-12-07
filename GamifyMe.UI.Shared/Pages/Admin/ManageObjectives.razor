@@ -68,8 +68,8 @@
                         <div class="d-flex flex-column align-center">
                             <MudTooltip Text="Cliquez pour changer l'icône">
                                 <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective" Style="@($"background-color: {newObjective.Color};")">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newObjective.Color ?? "#FFFFFF")};")" />
                                     </MudPaper>
                                 </MudBadge>
                             </MudTooltip>
@@ -171,42 +171,44 @@
                             </div>
                             
                             <!-- Content simulating columns -->
-                            <MudGrid Spacing="0" Class="align-center w-100">
-                                <MudItem xs="4">
-                                    <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
-                                        <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
-                                            <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Style="color: white;" />
-                                        </MudAvatar>
-                                        <div class="d-flex flex-column">
-                                            <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Category</MudText>
+                            <div style="width: 100%;" @onmousedown:stopPropagation>
+                                <MudGrid Spacing="0" Class="align-center w-100">
+                                    <MudItem xs="4">
+                                        <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
+                                            <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
+                                                <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Style="@($"color: {ColorHelper.GetContrastColor(context.Color ?? "#FFFFFF")};")" />
+                                            </MudAvatar>
+                                            <div class="d-flex flex-column">
+                                                <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Category</MudText>
+                                            </div>
+                                            @if (context.Category == ObjectiveCategory.Onboarding)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                            }
                                         </div>
-                                        @if (context.Category == ObjectiveCategory.Onboarding)
+                                    </MudItem>
+                                    <MudItem xs="2">
+                                        <MudText Typo="Typo.body2">@context.Location</MudText>
+                                    </MudItem>
+                                    <MudItem xs="3">
+                                         @if (context.EventDate.HasValue)
                                         {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                            <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
                                         }
-                                    </div>
-                                </MudItem>
-                                <MudItem xs="2">
-                                    <MudText Typo="Typo.body2">@context.Location</MudText>
-                                </MudItem>
-                                <MudItem xs="3">
-                                     @if (context.EventDate.HasValue)
-                                    {
-                                        <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
-                                    }
-                                </MudItem>
-                                <MudItem xs="2">
-                                    <div class="d-flex gap-1">
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward Crédits</MudChip>
-                                    </div>
-                                </MudItem>
-                                <MudItem xs="1" Class="d-flex justify-end">
-                                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(context))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(context))" />
-                                </MudItem>
-                            </MudGrid>
+                                    </MudItem>
+                                    <MudItem xs="2">
+                                        <div class="d-flex gap-1">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward Crédits</MudChip>
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs="1" Class="d-flex justify-end">
+                                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(context))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(context))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </div>
                         </MudPaper>
                     </ItemRenderer>
                 </MudDropContainer>
@@ -507,16 +509,16 @@
         switch (newObjective.Category)
         {
             case ObjectiveCategory.Principal:
-                sb.AppendLine("⭐ TYPE : Objectif majeur, mis en avant dans l'interface.");
+                sb.AppendLine($"⭐ CATÉGORIE ({newObjective.Category}) : Objectif majeur, mis en avant dans l'interface.");
                 break;
             case ObjectiveCategory.Secondaire:
-                sb.AppendLine("📝 TYPE : Objectif standard, enrichit l'expérience quotidienne.");
+                sb.AppendLine($"📝 CATÉGORIE ({newObjective.Category}) : Objectif standard, enrichit l'expérience quotidienne.");
                 break;
             case ObjectiveCategory.Evenement:
-                sb.AppendLine("🎉 TYPE : Objectif ponctuel lié à un événement, avec une priorité d'affichage élevée.");
+                sb.AppendLine($"🎉 CATÉGORIE ({newObjective.Category}) : Objectif ponctuel lié à un événement, avec une priorité d'affichage élevée.");
                 break;
             case ObjectiveCategory.Onboarding:
-                sb.AppendLine("🎓 TYPE : Étape du parcours d'intégration des nouveaux joueurs.");
+                sb.AppendLine($"🎓 CATÉGORIE ({newObjective.Category}) : Étape du parcours d'intégration des nouveaux joueurs.");
                 break;
         }
 
@@ -547,10 +549,7 @@
             else if (newObjective.DisplayEndDate.HasValue)
                 sb.AppendLine($"📅 VISIBILITÉ : Visible jusqu'au {newObjective.DisplayEndDate:dd/MM/yyyy HH:mm}, puis disparaît.");
         }
-        else
-        {
-            sb.AppendLine("📅 VISIBILITÉ : Visible en permanence (selon prérequis).");
-        }
+
 
         // 4. Durée de vie (Chrono)
         if (newObjective.LifespanHours.HasValue && newObjective.Category != ObjectiveCategory.Onboarding && newObjective.Category != ObjectiveCategory.Evenement)

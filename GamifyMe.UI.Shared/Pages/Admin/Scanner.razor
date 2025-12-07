@@ -50,8 +50,10 @@
                 {
                     <MudText Align="Align.Center" Class="mb-2">Dirigez la caméra vers le QR code du joueur.</MudText>
                     
-                    <div style="width: 100%; max-width: 400px; height: 300px; margin: 0 auto 16px auto; border: 2px solid #594AE2; border-radius: 8px; overflow: hidden; background: black; position: relative;">
-                        <QrCodeScanner @ref="profileScannerRef" OnScanSuccess="OnScanProfileResult" />
+                    <div class="d-flex justify-center mb-4">
+                        <div class="scanner-wrapper">
+                            <QrCodeScanner @ref="profileScannerRef" OnScanSuccess="OnScanProfileResult" />
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-center">
@@ -188,6 +190,23 @@
 <style>
     .hover-effect { transition: transform 0.2s; }
     .hover-effect:hover { transform: translateY(-5px); }
+    
+    .scanner-wrapper {
+        width: 100%;
+        max-width: 400px;
+        height: 300px;
+        border: 2px solid #594AE2;
+        border-radius: 8px;
+        overflow: hidden;
+        background: black;
+        position: relative;
+    }
+    
+    .scanner-wrapper video {
+        object-fit: cover !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
 </style>
 
 @code {

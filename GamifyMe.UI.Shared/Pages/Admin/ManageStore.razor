@@ -75,8 +75,8 @@
                         <div class="d-flex flex-column align-center">
                             <MudTooltip Text="Cliquez pour changer l'icône">
                                 <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
-                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="font-size: 3rem; color: white;" Color="Color.Default" />
+                                    <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore" Style="@($"background-color: {newStoreItem.Color};")">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newStoreItem.Color ?? "#FFFFFF")};")" />
                                     </MudPaper>
                                 </MudBadge>
                             </MudTooltip>
@@ -163,47 +163,49 @@
                             </div>
 
                              <!-- Content simulating columns -->
-                             <MudGrid Spacing="0" Class="align-center w-100">
-                                 <MudItem xs="4">
-                                     <div class="d-flex align-center" @onclick="@(() => StartEditStoreItem(context))" style="cursor: pointer;">
-                                         <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(context.Color) ? $"color:{context.Color};" : "")" />
-                                         <div class="d-flex flex-column">
-                                             <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Name</MudText>
+                             <div style="width: 100%;" @onmousedown:stopPropagation>
+                                 <MudGrid Spacing="0" Class="align-center w-100">
+                                     <MudItem xs="4">
+                                         <div class="d-flex align-center" @onclick="@(() => StartEditStoreItem(context))" style="cursor: pointer;">
+                                             <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(context.Color) ? $"color:{context.Color};" : "")" />
+                                             <div class="d-flex flex-column">
+                                                 <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Name</MudText>
+                                             </div>
                                          </div>
-                                     </div>
-                                 </MudItem>
-                                 <MudItem xs="2">
-                                     <MudText Typo="Typo.body2">@context.Price Crédits</MudText>
-                                     @if (context.ItemType != StoreItemType.Digital && context.Stock > 0)
-                                     {
-                                         <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @context.Stock</MudChip>
-                                     }
-                                 </MudItem>
-                                 <MudItem xs="2">
-                                     <MudChip T="string" Size="Size.Small" Color="@(context.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@context.ItemType</MudChip>
-                                 </MudItem>
-                                 <MudItem xs="3">
-                                    @if (context.StartDate.HasValue || context.EndDate.HasValue)
-                                    {
-                                        @if (context.StartDate.HasValue)
+                                     </MudItem>
+                                     <MudItem xs="2">
+                                         <MudText Typo="Typo.body2">@context.Price Crédits</MudText>
+                                         @if (context.ItemType != StoreItemType.Digital && context.Stock > 0)
+                                         {
+                                             <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @context.Stock</MudChip>
+                                         }
+                                     </MudItem>
+                                     <MudItem xs="2">
+                                         <MudChip T="string" Size="Size.Small" Color="@(context.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@context.ItemType</MudChip>
+                                     </MudItem>
+                                     <MudItem xs="3">
+                                        @if (context.StartDate.HasValue || context.EndDate.HasValue)
                                         {
-                                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Info">@context.StartDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                            @if (context.StartDate.HasValue)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Info">@context.StartDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                            }
+                                            @if (context.EndDate.HasValue)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Stop" Color="Color.Warning">@context.EndDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                            }
                                         }
-                                        @if (context.EndDate.HasValue)
+                                        else
                                         {
-                                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Stop" Color="Color.Warning">@context.EndDate.Value.ToString("dd/MM/yyyy")</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
-                                    }
-                                 </MudItem>
-                                 <MudItem xs="1" Class="d-flex justify-end">
-                                     <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(context)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(context)" />
-                                 </MudItem>
-                             </MudGrid>
+                                     </MudItem>
+                                     <MudItem xs="1" Class="d-flex justify-end">
+                                         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(context)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(context)" />
+                                     </MudItem>
+                                 </MudGrid>
+                             </div>
                         </MudPaper>
                     </ItemRenderer>
                 </MudDropContainer>
@@ -577,10 +579,7 @@
             else if (newStoreItem.EndDate.HasValue)
                 sb.AppendLine($"📅 DISPONIBILITÉ : Jusqu'au {newStoreItem.EndDate:dd/MM/yyyy}.");
         }
-        else
-        {
-            sb.AppendLine("📅 DISPONIBILITÉ : Toujours disponible (si actif).");
-        }
+
 
         return sb.ToString();
     }

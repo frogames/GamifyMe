@@ -17,13 +17,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
-
+    
 builder.Services.AddCascadingAuthenticationState();
 
 // 2. Services MudBlazor & UI
 builder.Services.AddMudServices();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
+builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
 
 // 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient

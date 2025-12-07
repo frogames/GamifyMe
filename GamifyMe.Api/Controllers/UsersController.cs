@@ -11,7 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-using System.Text;
+
 using GamifyMe.Shared.Helpers;
 
 namespace GamifyMe.Api.Controllers
@@ -633,6 +633,54 @@ namespace GamifyMe.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Mot de passe modifié avec succès.");
+        }
+        [HttpGet("updates")]
+        [Authorize]
+        public async Task<ActionResult<List<UserUpdateDto>>> GetRecentUpdates([FromQuery] DateTime? since)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            // Default lookback if not provided or too old (max 5 mins to prevent massive queries if client clock is wrong)
+            var threshold = since.HasValue && since.Value > DateTime.UtcNow.AddMinutes(-5) 
+                ? since.Value 
+                : DateTime.UtcNow.AddMinutes(-1); // Default to last 1 minute if first check or stale
+
+            var updates = new List<UserUpdateDto>();
+
+            // 1. Validations (Objectives)
+            var validations = await _context.Validations
+                .Include(v => v.Objective)
+                .Where(v => v.UserId == userId && v.Date > threshold)
+                .ToListAsync();
+
+            updates.AddRange(validations.Select(v => new UserUpdateDto
+            {
+                Type = "Validation",
+                Title = "Objectif Validé !",
+                Message = $"Félicitations ! Vous avez validé l'objectif : {v.Objective.Title}",
+                XpGained = v.Objective.XpReward, // Note: This doesn't account for bonuses applied at validation time, handled in client message primarily
+                CurrencyGained = v.Objective.DocPointsReward,
+                Date = v.Date
+            }));
+
+            // 2. Completed Orders (Store Items)
+            var completedOrders = await _context.Orders
+                .Include(o => o.StoreItem)
+                .Where(o => o.UserId == userId && o.Status == OrderStatus.Completed && o.DateCompleted.HasValue && o.DateCompleted.Value > threshold)
+                .ToListAsync();
+
+            updates.AddRange(completedOrders.Select(o => new UserUpdateDto
+            {
+                Type = "Order",
+                Title = "Article Reçu !",
+                Message = $"L'article '{o.StoreItem.Name}' vous a été remis.",
+                XpGained = 0,
+                CurrencyGained = 0,
+                Date = o.DateCompleted.Value
+            }));
+
+            return Ok(updates.OrderBy(u => u.Date).ToList());
         }
     }
 }
