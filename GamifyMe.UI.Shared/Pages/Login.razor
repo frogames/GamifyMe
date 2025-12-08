@@ -47,6 +47,27 @@
 @code {
     private LoginRequest loginModel = new LoginRequest();
     private bool _processing = false;
+    private string? _returnUrl;
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = uri.Query;
+        if (!string.IsNullOrEmpty(query))
+        {
+            // Simple manual parsing to avoid missing references
+            var queryParams = query.TrimStart('?').Split('&');
+            foreach (var param in queryParams)
+            {
+                var kvp = param.Split('=');
+                if (kvp.Length == 2 && kvp[0].Equals("returnUrl", StringComparison.OrdinalIgnoreCase))
+                {
+                    _returnUrl = Uri.UnescapeDataString(kvp[1]);
+                    break;
+                }
+            }
+        }
+    }
 
     private async Task OnValidSubmit()
     {
@@ -71,7 +92,8 @@
                     await TokenService.SetTokenAsync(token);
 
                     // 4. Redirection forcée pour recharger l'état d'authentification
-                    Navigation.NavigateTo("/", forceLoad: true);
+                    var target = !string.IsNullOrEmpty(_returnUrl) ? _returnUrl : "/";
+                    Navigation.NavigateTo(target, forceLoad: true);
                 }
             }
             else
@@ -97,7 +119,8 @@
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity?.IsAuthenticated == true)
             {
-                Navigation.NavigateTo("/");
+                var target = !string.IsNullOrEmpty(_returnUrl) ? _returnUrl : "/";
+                Navigation.NavigateTo(target);
             }
         }
     }

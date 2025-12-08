@@ -9,6 +9,7 @@
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
 
 <PageTitle>Groupes</PageTitle>
 
@@ -38,7 +39,11 @@
             @foreach (var group in groups)
             {
                 <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="3" Class="@(group.Id == currentGroupId ? "border-primary" : "")">
+                    <MudCard Elevation="3" Class="@(group.Id == currentGroupId ? "border-primary" : "")" Style="position: relative; overflow: hidden;">
+                        @if (group.CreatedAt > _lastVisit)
+                        {
+                            <div class="ribbon-new">Nouveau</div>
+                        }
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
@@ -88,6 +93,21 @@
     .border-primary {
         border: 2px solid var(--mud-palette-primary);
     }
+    .ribbon-new {
+        position: absolute;
+        top: 12px;
+        right: -32px;
+        background: #D32F2F;
+        color: white;
+        transform: rotate(45deg);
+        padding: 4px 30px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 5;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 </style>
 
 @code {
@@ -95,6 +115,7 @@
     private Guid? currentGroupId;
     private string? currentGroupName;
     private bool isLoading = true;
+    private DateTime _lastVisit;
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,7 +136,10 @@
             }
 
             // 2. Get All Groups
+            _lastVisit = await NotificationService.GetLastVisit("groups");
             groups = await Http.GetFromJsonAsync<List<GroupDto>>("api/groups") ?? new();
+
+            await NotificationService.MarkAsSeenAsync("groups");
         }
         catch (Exception ex)
         {

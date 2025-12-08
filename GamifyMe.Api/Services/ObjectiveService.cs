@@ -349,7 +349,8 @@ namespace GamifyMe.Api.Services
                 .Select(o => new ObjectiveSimpleDto
                 {
                     Id = o.Id,
-                    Title = o.Title
+                    Title = o.Title,
+                    CreatedAt = o.CreatedAt
                 })
                 .ToListAsync();
         }
@@ -515,7 +516,8 @@ namespace GamifyMe.Api.Services
                 LifespanHours = obj.LifespanHours,
                 Category = obj.Category,
                 UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>(),
-                SortOrder = obj.SortOrder
+                SortOrder = obj.SortOrder,
+                CreatedAt = obj.CreatedAt
             };
         }
     }

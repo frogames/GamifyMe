@@ -25,6 +25,7 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
+builder.Services.AddScoped<GamifyMe.UI.Shared.Services.NotificationService>();
 
 // 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient

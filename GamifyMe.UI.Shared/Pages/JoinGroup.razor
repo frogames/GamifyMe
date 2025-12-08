@@ -43,25 +43,29 @@
     private string? successMessage;
     private string? errorMessage;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Check if user is authenticated
-        if (AuthenticationStateTask != null)
+        if (firstRender)
         {
-            var authState = await AuthenticationStateTask;
-            var user = authState.User;
-
-            if (!user.Identity?.IsAuthenticated ?? true)
+            // Check if user is authenticated
+            if (AuthenticationStateTask != null)
             {
-                // Not authenticated - redirect to login with return URL
-                var returnUrl = Uri.EscapeDataString($"/join-group/{GroupId}");
-                Navigation.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
-                return;
-            }
-        }
+                var authState = await AuthenticationStateTask;
+                var user = authState.User;
 
-        // User is authenticated, proceed with joining
-        await ExecuteJoinGroup();
+                if (!user.Identity?.IsAuthenticated ?? true)
+                {
+                    // Not authenticated - redirect to login with return URL
+                    var returnUrl = Uri.EscapeDataString($"/join-group/{GroupId}");
+                    Navigation.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
+                    return;
+                }
+            }
+
+            // User is authenticated, proceed with joining
+            await ExecuteJoinGroup();
+            StateHasChanged();
+        }
     }
 
     private async Task ExecuteJoinGroup()

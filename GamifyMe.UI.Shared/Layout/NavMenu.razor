@@ -1,4 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
+@using GamifyMe.UI.Shared.Services
+@implements IDisposable
+
+@inject NotificationService NotificationService
 
 <MudNavMenu>
     <!-- Main navigation -->
@@ -8,18 +12,41 @@
     <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">
         Mon Pass
     </MudNavLink>
-    <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment">
-        Objectifs
-    </MudNavLink>
-    <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store">
-        Boutique
-    </MudNavLink>
+    
+    <div class="d-flex align-center justify-space-between">
+        <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment" Class="flex-grow-1">
+            Objectifs
+        </MudNavLink>
+        @if (NotificationService.NewObjectivesCount > 0)
+        {
+            <div class="notification-badge mr-3">@NotificationService.NewObjectivesCount</div>
+        }
+    </div>
+
+    <div class="d-flex align-center justify-space-between">
+        <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store" Class="flex-grow-1">
+            Boutique
+        </MudNavLink>
+        @if (NotificationService.NewStoreItemsCount > 0)
+        {
+             <div class="notification-badge mr-3">@NotificationService.NewStoreItemsCount</div>
+        }
+    </div>
+
     <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">
         Inventaire
     </MudNavLink>
-    <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups">
-        Groupes
-    </MudNavLink>
+    
+    <div class="d-flex align-center justify-space-between">
+        <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups" Class="flex-grow-1">
+            Groupes
+        </MudNavLink>
+        @if (NotificationService.NewGroupsCount > 0)
+        {
+             <div class="notification-badge mr-3">@NotificationService.NewGroupsCount</div>
+        }
+    </div>
+
     <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">
         Classements
     </MudNavLink>
@@ -49,3 +76,43 @@
         </MudNavLink>
     </AuthorizeView>
 </MudNavMenu>
+
+<style>
+    .notification-badge {
+        background-color: #F44336; /* Red */
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.OnChange += StateHasChanged;
+        // On server side, we might not want to fetch immediately but let MainLayout do it, 
+        // however simpler here.
+        // Wait, OnInitializedAsync runs twice (server/client).
+        // NotificationService handles fetch but needs Auth token (which might not be available on server pre-render).
+        // Let's defer to OnAfterRenderAsync for fetch if needed, but OnInitializedAsync is okay if we handle errors (NotificationService does catch).
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await NotificationService.LoadCountsAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnChange -= StateHasChanged;
+    }
+}

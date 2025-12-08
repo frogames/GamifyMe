@@ -36,5 +36,6 @@ namespace GamifyMe.Shared.Dtos
         public string? DigitalAssetUrl { get; set; }
         public bool IsUnique { get; set; }
         public bool IsOwned { get; set; } // Computed property for UI
+        public DateTime CreatedAt { get; set; }
     }
 }

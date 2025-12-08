@@ -9,6 +9,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
 
 <PageTitle>Accueil</PageTitle>
 
@@ -28,7 +29,11 @@
         </MudItem>
         <!-- Objectifs Card -->
         <MudItem xs="6" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
+                @if (NotificationService.NewObjectivesCount > 0)
+                {
+                    <div class="home-card-badge">@NotificationService.NewObjectivesCount</div>
+                }
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Secondary" Class="mb-2 home-card-icon" />
                     <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Objectifs</MudText>
@@ -38,7 +43,11 @@
         </MudItem>
         <!-- Boutique Card -->
         <MudItem xs="6" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/store"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/store"))">
+                @if (NotificationService.NewStoreItemsCount > 0)
+                {
+                    <div class="home-card-badge">@NotificationService.NewStoreItemsCount</div>
+                }
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Success" Class="mb-2 home-card-icon" />
                     <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Boutique</MudText>
@@ -58,11 +67,15 @@
         </MudItem>
         <!-- Groupes Card -->
         <MudItem xs="6" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/groups"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/groups"))">
+                @if (NotificationService.NewGroupsCount > 0)
+                {
+                    <div class="home-card-badge">@NotificationService.NewGroupsCount</div>
+                }
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Tertiary" Class="mb-2 home-card-icon" />
                     <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Groupes</MudText>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Rejoindre ou voir mon groupe</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@groupCount groupes disponibles</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -84,7 +97,24 @@
     .hover-effect { transition: transform 0.2s; }
     .hover-effect:hover { transform: translateY(-5px); }
 
-    /* Mobile Styles (Default) */
+    .position-relative { position: relative !important; }
+
+    .home-card-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: #F44336;
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
     .home-card-content {
         padding: 12px !important;
     }
@@ -104,13 +134,12 @@
 </style>
 
 @code {
-    private int objectiveCount;
-    private int storeItemCount;
-    private int inventoryCount;
     private string firstName = "";
 
     protected override async Task OnInitializedAsync()
     {
+        NotificationService.OnChange += StateHasChanged;
+        
         try 
         {
             var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
@@ -118,7 +147,6 @@
         }
         catch
         {
-            // Fallback to claims if API fails
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
             firstName = user.FindFirst("FirstName")?.Value 
@@ -127,40 +155,41 @@
         }
         
         StateHasChanged();
-        
-        await LoadCounts();
+    }
+    
+    // Using simple getter to ensure reactivity if service updates
+    private int objectiveCount => NotificationService.TotalObjectivesCount;
+    private int storeItemCount => NotificationService.TotalStoreItemsCount;
+    private int groupCount => NotificationService.TotalGroupsCount;
+    // Inventory is not managed by NotificationService, we'll keep local or add to service later.
+    // For now, let's keep inventory local load or assume 0 for simplicity/consistency, 
+    // OR fetch it here manually as before. 
+    // Wait, reusing existing LoadCounts logic for Inventory is better to keep functionality.
+    
+    private int inventoryCount;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await NotificationService.LoadCountsAsync();
+            await LoadInventoryCount();
+        }
     }
 
-    private async Task LoadCounts()
+    private async Task LoadInventoryCount()
     {
         try
         {
-            var objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active");
-            objectiveCount = objectives?.Count ?? 0;
+             var inventory = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory");
+             inventoryCount = inventory?.Count ?? 0;
+             StateHasChanged();
         }
-        catch
-        {
-            objectiveCount = 0;
-        }
-
-        try
-        {
-            var storeItems = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active");
-            storeItemCount = storeItems?.Count ?? 0;
-        }
-        catch
-        {
-            storeItemCount = 0;
-        }
-
-        try
-        {
-            var inventory = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory");
-            inventoryCount = inventory?.Count ?? 0;
-        }
-        catch
-        {
-            inventoryCount = 0;
-        }
+        catch { inventoryCount = 0; }
+    }
+    
+    public void Dispose()
+    {
+        NotificationService.OnChange -= StateHasChanged;
     }
 }

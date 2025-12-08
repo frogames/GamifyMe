@@ -10,6 +10,7 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDialogService DialogService
+@inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
 @implements IDisposable
 
 <PageTitle>Mes Objectifs</PageTitle>
@@ -47,7 +48,13 @@
                         var style = $"background-color: {bgColor}; color: {textColor};";
                         var iconStyle = $"color: {textColor};";
 
+                        bool isNew = obj.CreatedAt > _lastVisit;
+
                         <div class="objective-row hover-scale" style="@style" @onclick="@(() => OpenDetails(obj))">
+                            @if (isNew)
+                            {
+                                <div class="ribbon-new">Nouveau</div>
+                            }
                             <!-- Column 1: Icon + Title + Date -->
                             <div class="col-main">
                                 <div class="d-flex align-center">
@@ -153,6 +160,24 @@
         cursor: pointer;
         transition: transform 0.1s ease-in-out;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative !important;
+        overflow: hidden;
+    }
+
+    .ribbon-new {
+        position: absolute;
+        top: 12px;
+        right: -32px;
+        background: #D32F2F; /* Darker red */
+        color: white;
+        transform: rotate(45deg);
+        padding: 4px 30px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 5;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     .hover-scale:hover {
@@ -183,6 +208,7 @@
     private Dictionary<string, List<ObjectiveDto>> groupedObjectives = new();
     private bool isLoading = true;
     private System.Timers.Timer? _timer;
+    private DateTime _lastVisit;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -225,8 +251,11 @@
 
         try
         {
+            _lastVisit = await NotificationService.GetLastVisit("objectives");
             objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active") ?? new List<ObjectiveDto>();
             GroupObjectives();
+            
+            await NotificationService.MarkAsSeenAsync("objectives");
         }
         catch (Exception ex)
         {

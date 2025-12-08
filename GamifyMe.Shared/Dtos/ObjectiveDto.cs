@@ -47,5 +47,6 @@ namespace GamifyMe.Shared.Dtos
         public ObjectiveCategory Category { get; set; }
         public List<string> UnlockedObjectiveTitles { get; set; } = new();
         public int SortOrder { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

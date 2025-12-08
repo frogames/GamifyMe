@@ -49,7 +49,8 @@ namespace GamifyMe.Api.Services
                 IsOwned = ownedItemIds.Contains(item.Id),
                 ImageUrl = item.ImageUrl,
                 Color = item.Color,
-                SortOrder = item.SortOrder
+                SortOrder = item.SortOrder,
+                CreatedAt = item.CreatedAt
             })
             .OrderBy(i => i.IsUnique && i.IsOwned) // Owned unique items last
             .ThenBy(i => i.SortOrder)
@@ -76,7 +77,8 @@ namespace GamifyMe.Api.Services
                     Color = item.Color,
                     IsUnique = item.IsUnique,
                     StartDate = item.StartDate,
-                    EndDate = item.EndDate
+                    EndDate = item.EndDate,
+                    CreatedAt = item.CreatedAt
                 })
                 .ToListAsync();
         }
@@ -100,7 +102,8 @@ namespace GamifyMe.Api.Services
                 DigitalAssetUrl = storeItem.DigitalAssetUrl,
                 ImageUrl = storeItem.ImageUrl,
                 Color = storeItem.Color,
-                SortOrder = storeItem.SortOrder
+                SortOrder = storeItem.SortOrder,
+                CreatedAt = storeItem.CreatedAt
             };
         }
 

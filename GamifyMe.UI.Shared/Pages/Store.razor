@@ -11,6 +11,7 @@
 @inject IJSRuntime JSRuntime
 @inject IDialogService DialogService
 @inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
+@inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
     <div class="d-flex justify-space-between align-center mb-6">
@@ -53,6 +54,11 @@
                               Class="d-flex flex-column cursor-pointer hover-scale" 
                               Style="@($"height: 240px; background-color: {item.Color}; color: {textColor}; border-radius: 8px; position: relative; overflow: hidden;")"
                               @onclick="@(() => OpenItemDetails(item))">
+                        
+                        @if (item.CreatedAt > _lastVisit)
+                        {
+                            <div class="ribbon-new">Nouveau</div>
+                        }
                         
                         <!-- Visual Area (Image or Big Icon) -->
                         <div class="d-flex justify-center align-center w-100" style="height: 140px; background-color: rgba(0,0,0,0.05);">
@@ -108,6 +114,21 @@
     .hover-scale:hover {
         transform: scale(1.02);
     }
+    .ribbon-new {
+        position: absolute;
+        top: 12px;
+        right: -32px;
+        background: #D32F2F;
+        color: white;
+        transform: rotate(45deg);
+        padding: 4px 30px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        z-index: 5;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 </style>
 
 @code {
@@ -116,6 +137,7 @@
     private int userCurrencyBalance = 0;
     private List<StoreItemDto> Items = new();
     private List<UserInventoryDto> userInventory = new();
+    private DateTime _lastVisit;
 
     private IEnumerable<StoreItemDto> FilteredItems
     {
@@ -162,9 +184,13 @@
             // Load Inventory (to determine ownership)
             userInventory = await Http.GetFromJsonAsync<List<UserInventoryDto>>("api/users/inventory") ?? new List<UserInventoryDto>();
 
+            _lastVisit = await NotificationService.GetLastVisit("store");
+
             // Load Store Items using the CORRECT endpoint
             Items = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/active") ?? new List<StoreItemDto>();
             
+            await NotificationService.MarkAsSeenAsync("store");
+
             // Mark items as owned
             foreach (var item in Items)
             {

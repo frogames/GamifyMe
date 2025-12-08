@@ -40,6 +40,7 @@ namespace GamifyMe.Shared.Models
         public string? Color { get; set; } // Hex Color Code
         public DateTime? StartDate { get; set; } // Date de début de disponibilité
         public DateTime? EndDate { get; set; }   // Date de fin de disponibilité
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int SortOrder { get; set; } = 0;
 
         // --- Pour les items Numériques ---
