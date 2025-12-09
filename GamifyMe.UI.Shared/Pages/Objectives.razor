@@ -5,19 +5,21 @@
 @using GamifyMe.Shared.Models
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Components
-@inject HttpClient Http
+@using Microsoft.Extensions.Localization
 @using System.Net.Http.Json
+@inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDialogService DialogService
 @inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 @implements IDisposable
 
-<PageTitle>Mes Objectifs</PageTitle>
+<PageTitle>@Loc["MyObjectives"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
 
-    <MudText Typo="Typo.h5" Class="mb-6" Color="Color.Primary">Objectifs Disponibles</MudText>
+    <MudText Typo="Typo.h5" Class="mb-6" Color="Color.Primary">@Loc["AvailableObjectivesTitle"]</MudText>
 
     @if (isLoading)
     {
@@ -25,7 +27,7 @@
     }
     else if (groupedObjectives == null || !groupedObjectives.Any())
     {
-        <MudAlert Severity="Severity.Info">Aucun objectif disponible pour le moment.</MudAlert>
+        <MudAlert Severity="Severity.Info">@Loc["NoObjectivesAvailable"]</MudAlert>
     }
     else
     {
@@ -34,8 +36,8 @@
             if (group.Value.Any())
             {
                 <div class="d-flex align-end mt-6 mb-3 gap-3">
-                    <MudText Typo="Typo.h5">@group.Key</MudText>
-                    <MudText Typo="Typo.caption" Class="mb-1" Color="Color.Secondary">@GetCategoryDescription(group.Key)</MudText>
+                    <MudText Typo="Typo.h5">@Loc[$"Cat_{group.Key}"]</MudText>
+                    <MudText Typo="Typo.caption" Class="mb-1" Color="Color.Secondary">@Loc[$"Desc_{group.Key}"]</MudText>
                 </div>
                 
                 <div class="objectives-table">
@@ -53,7 +55,7 @@
                         <div class="objective-row hover-scale" style="@style" @onclick="@(() => OpenDetails(obj))">
                             @if (isNew)
                             {
-                                <div class="ribbon-new">Nouveau</div>
+                                <div class="ribbon-new">@Loc["New"]</div>
                             }
                             <!-- Column 1: Icon + Title + Date -->
                             <div class="col-main">
@@ -306,20 +308,6 @@
             }
             groupedObjectives[displayCategory].Add(obj);
         }
-    }
-
-    private string GetCategoryDescription(string category)
-    {
-        return category switch
-        {
-            "Principal" => "Vos missions les plus importantes",
-            "Evenement" => "A noter dans votre agenda",
-            "Secondaire" => "Dès que vous avez un peu de temps disponible",
-            "Demarrage" => "Débloque de nouveaux objectifs",
-            "Rechargement" => "Bientôt de retour",
-            "Onboarding" => "Parcours d'accueil des nouveaux utilisateurs",
-            _ => ""
-        };
     }
 
     private void OpenDetails(ObjectiveDto obj)

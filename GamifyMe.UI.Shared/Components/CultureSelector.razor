@@ -1,0 +1,25 @@
+@using System.Globalization
+@inject NavigationManager Navigation
+
+<MudSelect T="string" Label="Langue / Language" AdornmentIcon="@Icons.Material.Filled.Language" Value="@CultureInfo.CurrentCulture.TwoLetterISOLanguageName" ValueChanged="OnCultureChanged" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4">
+    <MudSelectItem Value="@("fr")">Français</MudSelectItem>
+    <MudSelectItem Value="@("en")">English</MudSelectItem>
+    <MudSelectItem Value="@("de")">Deutsch</MudSelectItem>
+    <MudSelectItem Value="@("es")">Español</MudSelectItem>
+</MudSelect>
+
+@code {
+    private void OnCultureChanged(string cultureName)
+    {
+        if (CultureInfo.CurrentCulture.Name != cultureName)
+        {
+            var uri = new Uri(Navigation.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            var cultureEscaped = Uri.EscapeDataString(cultureName);
+            var uriEscaped = Uri.EscapeDataString(uri);
+
+            Navigation.NavigateTo(
+                $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                forceLoad: true);
+        }
+    }
+}

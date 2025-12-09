@@ -233,3 +233,6 @@ D:\GamifyMe\GamifyMe.Web\obj\Debug\net8.0\refint\GamifyMe.Web.dll
 D:\GamifyMe\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.pdb
 D:\GamifyMe\GamifyMe.Web\obj\Debug\net8.0\GamifyMe.Web.genruntimeconfig.cache
 D:\GamifyMe\GamifyMe.Web\obj\Debug\net8.0\ref\GamifyMe.Web.dll
+D:\GamifyMe\GamifyMe.Web\bin\Debug\net8.0\de\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.Web\bin\Debug\net8.0\en\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.Web\bin\Debug\net8.0\es\GamifyMe.UI.Shared.resources.dll

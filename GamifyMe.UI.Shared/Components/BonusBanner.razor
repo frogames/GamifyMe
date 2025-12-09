@@ -1,7 +1,9 @@
 @using GamifyMe.Shared.Dtos
 @using System.Net.Http.Json
 @using GamifyMe.UI.Shared.Helpers
+@using Microsoft.Extensions.Localization
 @inject HttpClient Http
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 @implements IDisposable
 
 @if (activeBonus != null)
@@ -112,33 +114,33 @@
     {
         if (activeBonus == null) return "";
         return activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp 
-            ? $"XP x{activeBonus.Multiplier}" 
-            : $"Monnaie x{activeBonus.Multiplier}";
+            ? $"{Loc["BonusXP"]} x{activeBonus.Multiplier}" 
+            : $"{Loc["BonusCredits"]} x{activeBonus.Multiplier}";
     }
 
     private string GetBonusDescription()
     {
         if (activeBonus == null) return "";
 
-        var typeStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? "XP" : "Crédits";
-        var multipliedStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? "multipliée" : "multipliés";
+        var typeStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? Loc["BonusXP"] : Loc["BonusCredits"];
+        var multipliedStr = activeBonus.Type == GamifyMe.Shared.Models.BonusType.Xp ? Loc["MultipliedFem"] : Loc["MultipliedMasc"];
         
         var remaining = activeBonus.EndDate - DateTime.UtcNow;
         
         string timeStr;
         if (remaining.TotalHours > 24)
         {
-            timeStr = $"{remaining.Days} jours et {remaining.Hours} heures";
+            timeStr = $"{remaining.Days} {Loc["Days"]} {Loc["And"]} {remaining.Hours} {Loc["Hours"]}";
         }
         else if (remaining.TotalHours >= 1)
         {
-             timeStr = $"{remaining.Hours} heures et {remaining.Minutes} minutes";
+             timeStr = $"{remaining.Hours} {Loc["Hours"]} {Loc["And"]} {remaining.Minutes} {Loc["Minutes"]}";
         }
         else
         {
-            timeStr = $"{remaining.Minutes} minutes";
+            timeStr = $"{remaining.Minutes} {Loc["Minutes"]}";
         }
 
-        return $"{typeStr} {multipliedStr} par {activeBonus.Multiplier} pendant encore {timeStr} !";
+        return Loc["BonusDescription", typeStr, multipliedStr, activeBonus.Multiplier, timeStr];
     }
 }

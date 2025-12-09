@@ -7,12 +7,14 @@
 @using MudBlazor
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Themes
+@using Microsoft.Extensions.Localization
 
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
 @inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 @implements IDisposable
 
 <MudThemeProvider Theme="@ThemeService.CurrentTheme" />
@@ -53,7 +55,7 @@
                             @* Desktop: Stats complètes (Caché sur Mobile) *@
                             <div class="d-none d-sm-flex align-center gap-2 mr-4">
                                 <MudText Typo="Typo.caption" Class="mr-2"><b>@userStats.EstablishmentName</b> @(string.IsNullOrEmpty(userStats.GroupName) ? "" : $" - {userStats.GroupName}")</MudText>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents">Lvl @userStats.Level</MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents">@Loc["LevelShort"] @userStats.Level</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Bolt">@userStats.CurrentXp XP</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MonetizationOn">@userStats.CurrencyBalance</MudChip>
                                 @if (userStats.ActiveBoostMultiplier > 1)
@@ -69,7 +71,7 @@
                                     <div class="d-flex align-center ml-2 pulse-animation" style="border: 2px solid var(--mud-palette-error); border-radius: 16px; padding: 4px 12px; background-color: rgba(244, 67, 54, 0.1);">
                                         <MudIcon Icon="@Icons.Material.Filled.RocketLaunch" Color="Color.Error" Class="mr-2"/>
                                         <div class="d-flex flex-column">
-                                            <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight:bold; line-height:1;">BOOST XP x@(userStats.ActiveBoostMultiplier)</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight:bold; line-height:1;">@Loc["BoostXP"] x@(userStats.ActiveBoostMultiplier)</MudText>
                                             <MudText Typo="Typo.body2" Color="Color.Error" Style="font-weight:bold; line-height:1;">@TimeFormatter.GetTimeRemaining(_timeLeft)</MudText>
                                         </div>
                                     </div>
@@ -82,7 +84,7 @@
                             </div>
 
                             <div class="d-flex d-sm-none align-center gap-1 mt-1 mb-1" style="width: 100%; padding-left: 12px; padding-right: 12px;">
-                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents" Style="height: 24px; font-size: 0.65rem;">Lvl @userStats.Level</MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents" Style="height: 24px; font-size: 0.65rem;">@Loc["LevelShort"] @userStats.Level</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MonetizationOn" Style="height: 24px; font-size: 0.65rem;">@userStats.CurrencyBalance</MudChip>
                                 @if (userStats.ActiveBoostMultiplier > 1)
                                 {
@@ -115,6 +117,7 @@
                 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
                     <BonusBanner />
                     @Body
+
                 </MudContainer>
             </MudMainContent>
         </MudLayout>
@@ -140,7 +143,7 @@
 
     void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         ThemeService.OnChange += StateHasChanged;
         Navigation.LocationChanged += OnLocationChanged;

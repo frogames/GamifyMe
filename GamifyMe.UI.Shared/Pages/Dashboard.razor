@@ -11,6 +11,8 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Dashboard Gestionnaire</PageTitle>
 
@@ -165,10 +167,16 @@
     private bool isPageLoading = true;
     private bool showQr = false;
     private string qrCodeImage = string.Empty;
-    private string establishmentId = "demo-establishment-id"; // TODO: replace with real ID
+    private string establishmentId = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            establishmentId = user.FindFirst("EstablishmentId")?.Value ?? string.Empty;
+        }
         await LoadData();
     }
 
@@ -194,13 +202,20 @@
         var host = uri.Host;
         var isDev = host.Contains("localhost");
         var baseUrl = isDev ? "http://localhost:5001" : "https://gamifyme.fun";
-        return $"{baseUrl}/register?establishmentId={establishmentId}";
+        // Use 'est_id' parameter
+        return $"{baseUrl}/register?est_id={establishmentId}";
     }
 
     private async Task GenerateQrCodeAsync()
     {
         try
         {
+            if (string.IsNullOrEmpty(establishmentId))
+            {
+                 Console.WriteLine("No establishment ID found for user.");
+                 return;
+            }
+
             var url = GetRegisterUrl();
             using var qrGenerator = new QRCodeGenerator();
             using var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);

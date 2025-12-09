@@ -17,6 +17,17 @@
         },
         "runtime": {
           "GamifyMe.UI.Shared.dll": {}
+        },
+        "resources": {
+          "de/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "de"
+          },
+          "en/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "en"
+          },
+          "es/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "es"
+          }
         }
       },
       "Microsoft.AspNetCore.Authorization/8.0.21": {

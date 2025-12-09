@@ -5,14 +5,16 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using GamifyMe.UI.Shared.Components
+@using Microsoft.Extensions.Localization
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject TokenStorageService TokenService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 
-<PageTitle>Mon Profil</PageTitle>
+<PageTitle>@Loc["MyProfile"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-4 mb-16">
 
@@ -24,9 +26,9 @@
     }
     else if (profile == null)
     {
-        <MudAlert Severity="Severity.Error">Impossible de charger le profil.</MudAlert>
+        <MudAlert Severity="Severity.Error">@Loc["UnableToLoadProfile"]</MudAlert>
         <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true" Class="mt-4">
-            Se déconnecter
+            @Loc["Logout"]
         </MudButton>
     }
     else
@@ -40,28 +42,30 @@
             @* NOM & PRÉNOM *@
             <div class="d-flex align-center">
                 <MudText Typo="Typo.h5">@profile.FirstName @profile.Username</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditName" Class="ml-2" Title="Modifier nom/prénom" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditName" Class="ml-2" Title="@Loc["EditNameTitle"]" />
             </div>
 
             @* EMAIL *@
             <div class="d-flex align-center mt-1">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.Email</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditEmail" Class="ml-1" Title="Modifier l'email" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" OnClick="EditEmail" Class="ml-1" Title="@Loc["EditEmailTitle"]" />
             </div>
 
             <MudText Typo="Typo.body2" Color="Color.Secondary">@profile.EstablishmentName</MudText>
-            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-1">@profile.Role</MudChip>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-1 mb-4">@profile.Role</MudChip>
+            
+            <CultureSelector />
         </div>
 
         @* 2. NIVEAU & PROGRESSION *@
         <MudCard Elevation="3" Class="mb-6 pa-4">
             <div class="d-flex justify-space-between align-end mb-2">
-                <MudText Typo="Typo.h6" Color="Color.Warning"><b>Niveau @profile.Level</b></MudText>
+                <MudText Typo="Typo.h6" Color="Color.Warning"><b>@Loc["Level", profile.Level]</b></MudText>
                 <MudText Typo="Typo.caption">@profile.CurrentXp / @profile.XpForNextLevel XP</MudText>
             </div>
             <MudProgressLinear Color="Color.Warning" Value="@profile.ProgressPercentage" Size="Size.Large" Rounded="true" Striped="true" Class="my-2" />
             <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
-                Encore @(profile.XpForNextLevel - profile.CurrentXp) XP pour le niveau suivant !
+                @Loc["XpForNextLevel", (profile.XpForNextLevel - profile.CurrentXp)]
             </MudText>
         </MudCard>
 
@@ -71,14 +75,14 @@
                 <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
                     <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h5">@profile.CurrentXp</MudText>
-                    <MudText Typo="Typo.caption">XP Total</MudText>
+                    <MudText Typo="Typo.caption">@Loc["TotalXP"]</MudText>
                 </MudPaper>
             </MudItem>
             <MudItem xs="6">
                 <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
                     <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h5">@profile.CurrencyBalance</MudText>
-                    <MudText Typo="Typo.caption">Crédits</MudText>
+                    <MudText Typo="Typo.caption">@Loc["Credits"]</MudText>
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -117,21 +121,21 @@
         }
         else
         {
-            <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">Aucune activité récente.</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">@Loc["NoRecentActivity"]</MudText>
         }
 
         @* 6. ACTIONS & DÉCONNEXION *@
         <div class="mt-8 d-flex flex-column gap-2">
             <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Lock" OnClick="ChangePassword" FullWidth="true">
-                Changer mot de passe
+                @Loc["ChangePassword"]
             </MudButton>
 
             <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Logout" OnClick="Logout" FullWidth="true">
-                Se déconnecter
+                @Loc["Logout"]
             </MudButton>
 
             @* Zone de danger (Suppression) *@
-            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick="DeleteAccount">Supprimer mon compte</MudButton>
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick="DeleteAccount">@Loc["DeleteAccount"]</MudButton>
         </div>
     }
 
@@ -180,7 +184,7 @@
         };
 
         var parameters = new DialogParameters<DialogEditName> { { x => x.Model, model } };
-        var dialog = await DialogService.ShowAsync<DialogEditName>("Modifier mon nom", parameters);
+        var dialog = await DialogService.ShowAsync<DialogEditName>(Loc["EditNameDialogTitle"], parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -192,7 +196,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     profile = await response.Content.ReadFromJsonAsync<UserProfileDetailsDto>();
-                    Snackbar.Add("Profil mis à jour !", Severity.Success);
+                    Snackbar.Add(Loc["ProfileUpdated"], Severity.Success);
                 }
                 else
                 {
@@ -214,7 +218,7 @@
         var model = new UpdateUserEmailDto { NewEmail = profile.Email };
 
         var parameters = new DialogParameters<DialogEditEmail> { { x => x.Model, model } };
-        var dialog = await DialogService.ShowAsync<DialogEditEmail>("Modifier mon email", parameters);
+        var dialog = await DialogService.ShowAsync<DialogEditEmail>(Loc["EditEmailDialogTitle"], parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -225,7 +229,7 @@
                 var response = await Http.PutAsJsonAsync("api/users/profile/email", updatedModel);
                 if (response.IsSuccessStatusCode)
                 {
-                    Snackbar.Add("Email mis à jour. Veuillez vérifier votre messagerie.", Severity.Success);
+                    Snackbar.Add(Loc["EmailUpdated"], Severity.Success);
                     await Logout(); // Force logout for re-confirmation
                 }
                 else
@@ -245,7 +249,7 @@
     {
         var model = new ChangePasswordDto();
         var parameters = new DialogParameters<DialogChangePassword> { { x => x.Model, model } };
-        var dialog = await DialogService.ShowAsync<DialogChangePassword>("Changer mot de passe", parameters);
+        var dialog = await DialogService.ShowAsync<DialogChangePassword>(Loc["ChangePasswordDialogTitle"], parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -256,7 +260,7 @@
                 var response = await Http.PutAsJsonAsync("api/users/profile/password", updatedModel);
                 if (response.IsSuccessStatusCode)
                 {
-                    Snackbar.Add("Mot de passe modifié avec succès.", Severity.Success);
+                    Snackbar.Add(Loc["PasswordUpdated"], Severity.Success);
                 }
                 else
                 {
@@ -275,12 +279,12 @@
     {
         var parameters = new DialogParameters<DialogConfirmation>
         {
-            { x => x.ContentText, "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible." },
-            { x => x.ButtonText, "Supprimer" },
+            { x => x.ContentText, Loc["ConfirmDeleteAccountMessage"] },
+            { x => x.ButtonText, Loc["ConfirmDeleteButton"] },
             { x => x.Color, Color.Error }
         };
 
-        var dialog = await DialogService.ShowAsync<DialogConfirmation>("Suppression de compte", parameters);
+        var dialog = await DialogService.ShowAsync<DialogConfirmation>(Loc["DeleteAccountDialogTitle"], parameters);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -294,7 +298,7 @@
                 }
                 else
                 {
-                    Snackbar.Add("Erreur lors de la suppression.", Severity.Error);
+                    Snackbar.Add(Loc["DeleteError"], Severity.Error);
                 }
             }
             catch (Exception ex)

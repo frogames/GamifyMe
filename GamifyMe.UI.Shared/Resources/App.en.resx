@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="MyPass" xml:space="preserve">
+    <value>My Pass</value>
+  </data>
+  <data name="Objectives" xml:space="preserve">
+    <value>Objectives</value>
+  </data>
+  <data name="Store" xml:space="preserve">
+    <value>Store</value>
+  </data>
+  <data name="Inventory" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="Leaderboard" xml:space="preserve">
+    <value>Leaderboard</value>
+  </data>
+  <data name="Management" xml:space="preserve">
+    <value>Management</value>
+  </data>
+  <data name="Scanner" xml:space="preserve">
+    <value>Scanner</value>
+  </data>
+  <data name="Bonus" xml:space="preserve">
+    <value>Bonus</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="HomeSubtitle" xml:space="preserve">
+    <value>Achieve your objectives, get them validated by staff, and earn credits to spend in the store!</value>
+  </data>
+  <data name="AccessMyQRCode" xml:space="preserve">
+    <value>Access my QR code</value>
+  </data>
+  <data name="AvailableObjectives" xml:space="preserve">
+    <value>available objectives</value>
+  </data>
+  <data name="ItemsInStore" xml:space="preserve">
+    <value>items in store</value>
+  </data>
+  <data name="OwnedItems" xml:space="preserve">
+    <value>owned items</value>
+  </data>
+  <data name="AvailableGroups" xml:space="preserve">
+    <value>available groups</value>
+  </data>
+  <data name="ViewBestScores" xml:space="preserve">
+    <value>View top scores</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="MyObjectives" xml:space="preserve">
+    <value>My Objectives</value>
+  </data>
+  <data name="NoObjectivesAvailable" xml:space="preserve">
+    <value>No objectives available at the moment.</value>
+  </data>
+  <data name="Cat_Principal" xml:space="preserve">
+    <value>Main</value>
+  </data>
+  <data name="Desc_Principal" xml:space="preserve">
+    <value>Your most important missions</value>
+  </data>
+  <data name="Cat_Evenement" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="Desc_Evenement" xml:space="preserve">
+    <value>To note in your agenda</value>
+  </data>
+  <data name="Cat_Secondaire" xml:space="preserve">
+    <value>Secondary</value>
+  </data>
+  <data name="Desc_Secondaire" xml:space="preserve">
+    <value>As soon as you have some free time</value>
+  </data>
+  <data name="Cat_Demarrage" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="Desc_Demarrage" xml:space="preserve">
+    <value>Unlocks new objectives</value>
+  </data>
+  <data name="Cat_Rechargement" xml:space="preserve">
+    <value>Cooldown</value>
+  </data>
+  <data name="Desc_Rechargement" xml:space="preserve">
+    <value>Coming back soon</value>
+  </data>
+  <data name="Cat_Onboarding" xml:space="preserve">
+    <value>Onboarding</value>
+  </data>
+  <data name="Desc_Onboarding" xml:space="preserve">
+    <value>Welcome path for new users</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="PhysicalObjects" xml:space="preserve">
+    <value>Physical Objects</value>
+  </data>
+  <data name="Interfaces" xml:space="preserve">
+    <value>Interfaces</value>
+  </data>
+  <data name="Sounds" xml:space="preserve">
+    <value>Sounds</value>
+  </data>
+  <data name="QRCodes" xml:space="preserve">
+    <value>QR Codes</value>
+  </data>
+  <data name="Boosts" xml:space="preserve">
+    <value>Boosts</value>
+  </data>
+  <data name="NoItemsMatch" xml:space="preserve">
+    <value>No items match your search.</value>
+  </data>
+  <data name="Physical" xml:space="preserve">
+    <value>Physical</value>
+  </data>
+  <data name="Digital" xml:space="preserve">
+    <value>Digital</value>
+  </data>
+  <data name="Acquired" xml:space="preserve">
+    <value>OWNED</value>
+  </data>
+  <data name="JoinGroup" xml:space="preserve">
+    <value>Join a Group</value>
+  </data>
+  <data name="JoinGroupDescription" xml:space="preserve">
+    <value>Join a group to contribute to its success! Every XP point you earn is also added to your group's total.</value>
+  </data>
+  <data name="CurrentGroupMessage" xml:space="preserve">
+    <value>You are a member of group {0}. If you change groups, your future XP gains will go to the new group.</value>
+  </data>
+  <data name="Leave" xml:space="preserve">
+    <value>Leave</value>
+  </data>
+  <data name="Join" xml:space="preserve">
+    <value>Join</value>
+  </data>
+  <data name="Closed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="Current" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>members</value>
+  </data>
+  <data name="TotalXP" xml:space="preserve">
+    <value>Total XP</value>
+  </data>
+  <data name="ChangeGroupTitle" xml:space="preserve">
+    <value>Change group?</value>
+  </data>
+  <data name="ChangeGroupMessage" xml:space="preserve">
+    <value>Do you really want to join group '{0}'? Your future XP points will go to this group.</value>
+  </data>
+  <data name="LeaveGroupTitle" xml:space="preserve">
+    <value>Leave group?</value>
+  </data>
+  <data name="LeaveGroupMessage" xml:space="preserve">
+    <value>Do you really want to leave your current group? You will no longer earn XP for this group.</value>
+  </data>
+  <data name="YesJoin" xml:space="preserve">
+    <value>Yes, join</value>
+  </data>
+  <data name="YesLeave" xml:space="preserve">
+    <value>Yes, leave</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="WelcomeToGroup" xml:space="preserve">
+    <value>Welcome to group {0}!</value>
+  </data>
+  <data name="GroupLeft" xml:space="preserve">
+    <value>You have left the group.</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>My Profile</value>
+  </data>
+  <data name="UnableToLoadProfile" xml:space="preserve">
+    <value>Unable to load profile.</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="EditNameTitle" xml:space="preserve">
+    <value>Edit name</value>
+  </data>
+  <data name="EditEmailTitle" xml:space="preserve">
+    <value>Edit email</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>Level {0}</value>
+  </data>
+  <data name="XpForNextLevel" xml:space="preserve">
+    <value>{0} XP left for next level!</value>
+  </data>
+  <data name="Credits" xml:space="preserve">
+    <value>Credits</value>
+  </data>
+  <data name="NoRecentActivity" xml:space="preserve">
+    <value>No recent activity.</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="DeleteAccount" xml:space="preserve">
+    <value>Delete my account</value>
+  </data>
+  <data name="ConfirmDeleteAccountMessage" xml:space="preserve">
+    <value>Are you sure you want to delete your account? This action is irreversible.</value>
+  </data>
+  <data name="ConfirmDeleteButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="EditNameDialogTitle" xml:space="preserve">
+    <value>Edit my name</value>
+  </data>
+  <data name="EditEmailDialogTitle" xml:space="preserve">
+    <value>Edit my email</value>
+  </data>
+  <data name="ChangePasswordDialogTitle" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="DeleteAccountDialogTitle" xml:space="preserve">
+    <value>Delete account</value>
+  </data>
+  <data name="ProfileUpdated" xml:space="preserve">
+    <value>Profile updated!</value>
+  </data>
+  <data name="EmailUpdated" xml:space="preserve">
+    <value>Email updated. Please check your inbox.</value>
+  </data>
+  <data name="PasswordUpdated" xml:space="preserve">
+    <value>Password changed successfully.</value>
+  </data>
+  <data name="DeleteError" xml:space="preserve">
+    <value>Error during deletion.</value>
+  </data>
+  <data name="LevelShort" xml:space="preserve">
+    <value>Lvl</value>
+  </data>
+  <data name="BoostXP" xml:space="preserve">
+    <value>XP BOOST</value>
+  </data>
+  <data name="BonusXP" xml:space="preserve">
+    <value>XP</value>
+  </data>
+  <data name="BonusCredits" xml:space="preserve">
+    <value>Credits</value>
+  </data>
+  <data name="MultipliedFem" xml:space="preserve">
+    <value>multiplied</value>
+  </data>
+  <data name="MultipliedMasc" xml:space="preserve">
+    <value>multiplied</value>
+  </data>
+  <data name="Days" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="Hours" xml:space="preserve">
+    <value>hours</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="And" xml:space="preserve">
+    <value>and</value>
+  </data>
+  <data name="BonusDescription" xml:space="preserve">
+    <value>{0} {1} by {2} for another {3}!</value>
+  </data>
+</root>

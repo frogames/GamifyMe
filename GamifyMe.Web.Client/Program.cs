@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 // On garde ce using pour le JwtHandler
 using GamifyMe.Web.Client.Services;
+using Microsoft.JSInterop;
+using System.Linq;
 
 namespace GamifyMe.Web.Client
 {
@@ -44,6 +46,8 @@ namespace GamifyMe.Web.Client
 
             // On force l'utilisation du namespace UI.Shared pour lever l'ambiguïté
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
+            
+            builder.Services.AddLocalization();
 
             builder.Services.AddAuthorizationCore();
 
@@ -57,7 +61,56 @@ namespace GamifyMe.Web.Client
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.NotificationService>();
 
-            await builder.Build().RunAsync();
+            var host = builder.Build();
+
+            try
+            {
+                var js = host.Services.GetRequiredService<IJSRuntime>();
+                var cookieValue = await js.InvokeAsync<string>("eval", "document.cookie");
+                
+                if (!string.IsNullOrEmpty(cookieValue))
+                {
+                    var cultureCookie = cookieValue.Split(';')
+                        .Select(c => c.Trim())
+                        .FirstOrDefault(c => c.StartsWith("GamifyMeCulture="));
+
+                    if (!string.IsNullOrEmpty(cultureCookie))
+                    {
+                        var value = cultureCookie.Substring("GamifyMeCulture=".Length);
+                        value = System.Net.WebUtility.UrlDecode(value);
+                        var cultureCode = "fr";
+
+                        // Parse c=XX|uic=YY
+                        if (value.Contains("c="))
+                        {
+                            var parts = value.Split('|');
+                            var cPart = parts.FirstOrDefault(p => p.StartsWith("c="));
+                            if (cPart != null)
+                            {
+                                cultureCode = cPart.Substring(2);
+                            }
+                        }
+                        
+                        // Debug log for console
+                        Console.WriteLine($"[Client] Setting culture to: {cultureCode}");
+
+                        if (!string.IsNullOrEmpty(cultureCode))
+                        {
+                            var culture = new System.Globalization.CultureInfo(cultureCode);
+                            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+                            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            System.Globalization.CultureInfo.CurrentCulture = culture;
+                            System.Globalization.CultureInfo.CurrentUICulture = culture;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // console.log error?
+            }
+
+            await host.RunAsync();
         }
     }
 }

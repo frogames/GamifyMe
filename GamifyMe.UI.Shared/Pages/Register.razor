@@ -76,33 +76,42 @@
             // uri.Query ressemble à "?establishmentId=333..."
             var query = uri.Query;
 
-            if (!string.IsNullOrEmpty(query) && query.Contains("establishmentId="))
+            // Support both 'establishmentId' and 'est_id' query parameters
+            // Manual parsing to avoid dependency issues
+            var queryDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrEmpty(query))
             {
-                // On coupe la chaîne pour récupérer ce qui est après le "="
-                var parts = query.Split("establishmentId=");
-                if (parts.Length > 1)
+               var q = query.StartsWith("?") ? query.Substring(1) : query;
+               foreach (var part in q.Split('&'))
+               {
+                   var kv = part.Split('=');
+                   if (kv.Length >= 2)
+                   {
+                       var key = System.Net.WebUtility.UrlDecode(kv[0]);
+                       var value = System.Net.WebUtility.UrlDecode(kv[1]);
+                       queryDictionary[key] = value;
+                   }
+               }
+            }
+            
+            var estIdStr = queryDictionary.TryGetValue("establishmentId", out var eid) ? eid : 
+                           queryDictionary.TryGetValue("est_id", out var estid) ? estid : null;
+            if (!string.IsNullOrEmpty(estIdStr) && Guid.TryParse(estIdStr, out var guid))
+            {
+                registerModel.EstablishmentId = guid;
+                Console.WriteLine($"[Register] ID valide trouvé : {guid}");
+                // Fetch establishment name
+                try
                 {
-                    // On prend la partie droite et on s'arrête au prochain "&" s'il y en a un
-                    var idString = parts[1].Split('&')[0];
-
-                    if (Guid.TryParse(idString, out var guid))
-                    {
-                        registerModel.EstablishmentId = guid;
-                        Console.WriteLine($"[Register] ID valide trouvé : {guid}");
-                        
-                        // Fetch establishment name
-                        try 
-                        {
-                            var nameDto = await Http.GetFromJsonAsync<EstablishmentNameDto>($"api/users/establishment-name/{guid}");
-                            establishmentName = nameDto?.Name;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"[Register] Erreur récupération nom établissement : {ex.Message}");
-                        }
-                    }
+                    var nameDto = await Http.GetFromJsonAsync<EstablishmentNameDto>($"api/users/establishment-name/{guid}");
+                    establishmentName = nameDto?.Name;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Register] Erreur récupération nom établissement : {ex.Message}");
                 }
             }
+
         }
         catch
         {
