@@ -114,6 +114,7 @@ namespace GamifyMe.Api.Controllers
                 Name = g.Name,
                 IconName = g.IconName,
                 Color = g.Color,
+                ImageUrl = g.ImageUrl,
                 MemberCount = g.Members.Count,
                 TotalXp = g.TotalXp
             }).ToList();
@@ -140,6 +141,7 @@ namespace GamifyMe.Api.Controllers
                 Name = g.Name,
                 IconName = g.IconName,
                 Color = g.Color,
+                ImageUrl = g.ImageUrl,
                 MemberCount = g.Members.Count,
                 TotalXp = g.TotalXp
             }).ToList();

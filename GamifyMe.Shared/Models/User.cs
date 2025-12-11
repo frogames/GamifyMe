@@ -51,6 +51,7 @@ namespace GamifyMe.Shared.Models
         [NotMapped]
         public int CurrencyBalance { get; set; }
 
+        public bool HasCompletedOnboarding { get; set; } = false;
         public bool IsEmailConfirmed { get; set; } = false; // Par défaut, non confirmé
         public string? EmailConfirmationToken { get; set; }
     }

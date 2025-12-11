@@ -104,7 +104,45 @@
                         </MudText>
                     </div>
                 }
+
+                @if (!Objective.IsUnique)
+                {
+                    <div class="d-flex align-center mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Repeat" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                        <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
+                             Validé <strong>@Objective.ValidationCount</strong> fois
+                        </MudText>
+                    </div>
+
+                    @if (Objective.IsStreakEnabled)
+                    {
+                        <div class="d-flex align-center mt-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Loop" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                            <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">
+                                <strong>Série :</strong> Doit être validé @FormatStreakFrequency(Objective)
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (Objective.IsStreakEnabled && Objective.CurrentStreak > 0)
+                    {
+                         <div class="d-flex align-center mt-2 p-1" style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; width: fit-content; border: 1px solid #ff9800;">
+                            <div class="d-flex align-center streak-badge" style="animation: pulse-orange 2s infinite;">
+                                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Color="Color.Warning" Class="mr-2" />
+                                <MudText Typo="Typo.subtitle2" Color="Color.Warning" Style="font-weight: bold; color: #ff9800 !important;">Série en cours : @Objective.CurrentStreak</MudText>
+                            </div>
+                         </div>
+                    }
+                }
             </div>
+
+            <style>
+                @@keyframes pulse-orange {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
+                }
+            </style>
             
              <MudDivider Class="my-4" />
              <div class="d-flex justify-center gap-4">
@@ -172,5 +210,22 @@
         }
         
         return sb.ToString(); 
+    }
+
+    private string FormatStreakFrequency(ObjectiveDto obj)
+    {
+        switch (obj.StreakFrequency)
+        {
+            case StreakFrequency.Hourly:
+                 return $"toutes les heures (max {obj.StreakTerminalHours}h)";
+            case StreakFrequency.Daily:
+                return "tous les jours";
+            case StreakFrequency.Weekly:
+                return "toutes les semaines";
+            case StreakFrequency.Monthly:
+                return "tous les mois";
+            default:
+                return "régulièrement";
+        }
     }
 }

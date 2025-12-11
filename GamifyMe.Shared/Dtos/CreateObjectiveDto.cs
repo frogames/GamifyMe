@@ -45,5 +45,11 @@ namespace GamifyMe.Shared.Dtos
 
         public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
         public int SortOrder { get; set; }
+
+        public bool IsStreakEnabled { get; set; } = false;
+        public int? StreakTerminalHours { get; set; }
+        public StreakFrequency StreakFrequency { get; set; } = StreakFrequency.Hourly;
+        public string? StreakExcludedDays { get; set; }
+        public string? StreakExcludedMonths { get; set; }
     }
 }

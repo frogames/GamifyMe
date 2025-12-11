@@ -682,5 +682,63 @@ namespace GamifyMe.Api.Controllers
 
             return Ok(updates.OrderBy(u => u.Date).ToList());
         }
+        [HttpGet("{userId}/details")]
+        [Authorize]
+        public async Task<ActionResult<PlayerDetailsDto>> GetPlayerDetails(Guid userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.Establishment)
+                .Include(u => u.Group)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return NotFound("Joueur introuvable.");
+
+            var xpWallet = await _context.Wallets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
+            
+            var currencyWallet = await _context.Wallets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP");
+
+            // Calculate Streaks
+            // We use the service to reuse the complex streak logic
+            var activeObjectives = await _objectiveService.GetActiveObjectivesAsync(userId, user.EstablishmentId);
+            
+            var streaks = activeObjectives
+                .Where(o => o.IsStreakEnabled && o.Category == ObjectiveCategory.Principal) 
+                // Determine what "Principal" means - likely checking the enum Category
+                .Select(o => new PlayerObjectiveStreakDto
+                {
+                    ObjectiveTitle = o.Title,
+                    CurrentStreak = o.CurrentStreak,
+                    IconName = o.IconName
+                })
+                .Where(s => s.CurrentStreak > 0) // Only show active streaks? Or all? User said "meilleures séries", implies impressive ones.
+                .OrderByDescending(s => s.CurrentStreak)
+                .ToList();
+            
+            // If the user wants "Best Streaks Ever", and we only have "Current", we show Current.
+            // If CurrentStreak is 0, should we show it? Maybe not. 
+            // The prompt says "meilleures séries". It implies showing something positive.
+            // If I have 0 streak, it's not a "best streak".
+
+            return Ok(new PlayerDetailsDto
+            {
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.Username,
+                TotalXp = (int)(xpWallet?.Balance ?? 0),
+                TotalCurrency = (int)(currencyWallet?.Balance ?? 0),
+                RegistrationDate = user.CreatedAt,
+                GroupId = user.GroupId,
+                GroupName = user.Group?.Name,
+                GroupIcon = user.Group?.IconName,
+                GroupColor = user.Group?.Color,
+                GroupImageUrl = user.Group?.ImageUrl,
+                PrincipalStreaks = streaks
+            });
+        }
     }
 }

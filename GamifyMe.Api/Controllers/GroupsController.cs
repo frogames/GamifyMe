@@ -38,6 +38,7 @@ namespace GamifyMe.Api.Controllers
                     TotalXp = g.TotalXp,
                     MemberCount = g.Members.Count,
                     RegistrationDurationHours = g.RegistrationDurationHours,
+                    ImageUrl = g.ImageUrl,
                     CreatedAt = g.CreatedAt
                 })
                 .ToListAsync();
@@ -65,6 +66,7 @@ namespace GamifyMe.Api.Controllers
                 TotalXp = group.TotalXp,
                 MemberCount = group.Members.Count,
                 RegistrationDurationHours = group.RegistrationDurationHours,
+                ImageUrl = group.ImageUrl,
                 CreatedAt = group.CreatedAt
             });
         }
@@ -74,6 +76,12 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<GroupDto>> CreateGroup(CreateGroupDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+
+            string? imageUrl = null;
+            if (!string.IsNullOrEmpty(request.ImageBase64))
+            {
+                imageUrl = await SaveImage(request.ImageBase64);
+            }
 
             var group = new Group
             {
@@ -85,6 +93,7 @@ namespace GamifyMe.Api.Controllers
                 Color = request.Color,
                 TotalXp = 0,
                 RegistrationDurationHours = request.RegistrationDurationHours,
+                ImageUrl = imageUrl,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -101,6 +110,7 @@ namespace GamifyMe.Api.Controllers
                 TotalXp = group.TotalXp,
                 MemberCount = 0,
                 RegistrationDurationHours = group.RegistrationDurationHours,
+                ImageUrl = group.ImageUrl,
                 CreatedAt = group.CreatedAt
             });
         }
@@ -120,6 +130,13 @@ namespace GamifyMe.Api.Controllers
             group.Color = request.Color;
             group.RegistrationDurationHours = request.RegistrationDurationHours;
 
+            if (!string.IsNullOrEmpty(request.ImageBase64))
+            {
+                 group.ImageUrl = await SaveImage(request.ImageBase64);
+            }
+            // Note: If Base64 is empty, we keep existing image. To delete, we'd need a flag or specific value.
+            // For now, simple update/overwrite.
+
             await _context.SaveChangesAsync();
 
             return Ok(new GroupDto
@@ -132,8 +149,47 @@ namespace GamifyMe.Api.Controllers
                 TotalXp = group.TotalXp,
                 MemberCount = await _context.Users.CountAsync(u => u.GroupId == group.Id),
                 RegistrationDurationHours = group.RegistrationDurationHours,
+                ImageUrl = group.ImageUrl,
                 CreatedAt = group.CreatedAt
             });
+        }
+        
+        private async Task<string> SaveImage(string base64Image)
+        {
+            try 
+            {
+                // Format data:image/png;base64,.....
+                var parts = base64Image.Split(',');
+                var data = parts.Length > 1 ? parts[1] : parts[0];
+                var bytes = Convert.FromBase64String(data);
+                
+                // Determine extension (simple check)
+                string ext = "jpg";
+                if (base64Image.Contains("png")) ext = "png";
+                else if (base64Image.Contains("jpeg")) ext = "jpeg";
+                else if (base64Image.Contains("webp")) ext = "webp";
+
+                var fileName = $"group_{Guid.NewGuid()}.{ext}";
+                
+                // Assuming 'wwwroot/uploads' exists or we map it
+                // For Docker, we should ensure the folder exists.
+                // We'll write to a static folder served by API.
+                // In Program.cs, usually "wwwroot" is served.
+                
+                // Shared volume is mounted at wwwroot/images
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "groups");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+                
+                return $"/images/groups/{fileName}";
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error saving image: {ex.Message}");
+                return string.Empty; 
+            }
         }
 
         [HttpDelete("{id}")]

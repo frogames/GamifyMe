@@ -1,0 +1,47 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h5" Class="mb-4" Align="Align.Center">⚡ Mise à jour des Objectifs</MudText>
+
+        @if (ReturnedObjectives.Any())
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Success" Class="mb-2" Style="font-weight: bold;">🔄 De retour (Rechargés) :</MudText>
+            <MudList T="string" Dense="true" Class="mb-4">
+                @foreach (var obj in ReturnedObjectives)
+                {
+                    <MudListItem Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Success">
+                        @obj.Title
+                    </MudListItem>
+                }
+            </MudList>
+        }
+
+        @if (NewObjectives.Any())
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Warning" Class="mb-2" Style="font-weight: bold;">✨ Nouveaux Objectifs :</MudText>
+            <MudList T="string" Dense="true">
+                @foreach (var obj in NewObjectives)
+                {
+                    <MudListItem Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Warning">
+                        @obj.Title
+                    </MudListItem>
+                }
+            </MudList>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" FullWidth="true">C'est parti !</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public List<ObjectiveDto> ReturnedObjectives { get; set; } = new();
+    [Parameter] public List<ObjectiveDto> NewObjectives { get; set; } = new();
+
+    private void Close() => MudDialog.Close();
+}

@@ -1,7 +1,7 @@
 @using System.Globalization
 @inject NavigationManager Navigation
 
-<MudSelect T="string" Label="Langue / Language" AdornmentIcon="@Icons.Material.Filled.Language" Value="@CultureInfo.CurrentCulture.TwoLetterISOLanguageName" ValueChanged="OnCultureChanged" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4">
+<MudSelect T="string" Label="Langue / Language" AdornmentIcon="@Icons.Material.Filled.Language" Value="@CultureInfo.CurrentCulture.TwoLetterISOLanguageName" ValueChanged="OnCultureChanged" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4" Style="width: 300px;">
     <MudSelectItem Value="@("fr")">Français</MudSelectItem>
     <MudSelectItem Value="@("en")">English</MudSelectItem>
     <MudSelectItem Value="@("de")">Deutsch</MudSelectItem>

@@ -12,6 +12,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDialogService DialogService
 @inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
+@inject IJSRuntime JSRuntime
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 @implements IDisposable
 
@@ -43,11 +44,56 @@
                 <div class="objectives-table">
                     @foreach (var obj in group.Value)
                     {
-                        // For "Rechargement" objectives, force gray color
+// Logic for gradient visualization
                         bool isRecharging = obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow;
-                        var bgColor = isRecharging ? "#9E9E9E" : (!string.IsNullOrEmpty(obj.Color) ? obj.Color : "#ffffff");
-                        var textColor = ColorHelper.GetContrastColor(bgColor);
-                        var style = $"background-color: {bgColor}; color: {textColor};";
+                        string baseColor = !string.IsNullOrEmpty(obj.Color) ? obj.Color : "#ffffff";
+                        string grayColor = "#9E9E9E";
+                        string style, textColor;
+
+                        if (isRecharging && obj.FrequencyHours.HasValue && obj.FrequencyHours.Value > 0)
+                        {
+                            // Recharging: Color = Elapsed (recovered), Gray = Remaining
+                            double totalMinutes = obj.FrequencyHours.Value * 60.0;
+                            double remainingMinutes = (obj.NextAvailableDate.Value - DateTime.UtcNow).TotalMinutes;
+                            double elapsedMinutes = totalMinutes - remainingMinutes;
+                            double percent = Math.Max(0, Math.Min(100, (elapsedMinutes / totalMinutes) * 100.0));
+                            
+                            textColor = ColorHelper.GetContrastColor(baseColor);
+                            style = $"background: linear-gradient(90deg, {baseColor} {(int)percent}%, {grayColor} {(int)percent}%); color: {textColor};";
+                        }
+                        else if (obj.ExpirationDate.HasValue && !isRecharging)
+                        {
+                            // Lifetime: Color = Elapsed (lived), Gray = Remaining (to live)
+                            DateTime start = obj.DisplayStartDate ?? obj.CreatedAt;
+                            double totalMinutes = (obj.ExpirationDate.Value - start).TotalMinutes;
+                            
+                            if (totalMinutes > 0)
+                            {
+                                double remainingMinutesExpiration = (obj.ExpirationDate.Value - DateTime.UtcNow).TotalMinutes;
+                                double percent = Math.Max(0, Math.Min(100, (remainingMinutesExpiration / totalMinutes) * 100.0));
+                                
+                                textColor = ColorHelper.GetContrastColor(baseColor);
+                                style = $"background: linear-gradient(90deg, {baseColor} {(int)percent}%, {grayColor} {(int)percent}%); color: {textColor};";
+                            }
+                            else
+                            {
+                                textColor = ColorHelper.GetContrastColor(baseColor);
+                                style = $"background-color: {baseColor}; color: {textColor};";
+                            }
+                        }
+                        else if (isRecharging)
+                        {
+                             // Recharging fallback (no frequency info)
+                             textColor = ColorHelper.GetContrastColor(grayColor);
+                             style = $"background-color: {grayColor}; color: {textColor};";
+                        }
+                        else
+                        {
+                             // Standard active
+                             textColor = ColorHelper.GetContrastColor(baseColor);
+                             style = $"background-color: {baseColor}; color: {textColor};";
+                        }
+
                         var iconStyle = $"color: {textColor};";
 
                         bool isNew = obj.CreatedAt > _lastVisit;
@@ -116,7 +162,7 @@
                                 </div>
                             </div>
 
-                            <!-- Column 4: Status / Timer -->
+                            <!-- Column 4: Status / Timer / Streak -->
                             <div class="col-status">
                                 @if (isRecharging)
                                 {
@@ -135,6 +181,34 @@
                                         <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Small" Class="mr-1" Style="@($"color: {textColor};")"/>
                                         <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeToLive)</MudText>
                                     </div>
+                                }
+                                else if (!obj.IsUnique && obj.IsStreakEnabled && obj.CurrentStreak > 0 && obj.StreakExpirationDate.HasValue && !isRecharging)
+                                {
+                                    // Streak is active AND not cooling down -> User should validate soon!
+                                    var timeToDie = obj.StreakExpirationDate!.Value - DateTime.UtcNow;
+                                    <div class="d-flex align-center justify-end">
+                                        <div class="d-flex align-center" style="background-color: #ffebee; border: 1px solid #ef5350; padding: 4px 10px; border-radius: 16px;">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Color="Color.Error" Class="mr-1" />
+                                            <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight: bold;">Sauvez la série ! @TimeFormatter.GetTimeRemaining(timeToDie)</MudText>
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @* STREAK & COUNT FEEDBACK *@
+                                @if (!obj.IsUnique && obj.IsStreakEnabled && obj.CurrentStreak > 0)
+                                {
+                                    <div class="d-flex align-center justify-end mt-1">
+                                        <div class="d-flex align-center streak-badge" style="background: rgba(255, 165, 0, 0.9); padding: 4px 10px; border-radius: 16px; box-shadow: 0 0 10px rgba(255, 165, 0, 0.6); animation: pulse-orange 2s infinite;">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Style="color: white;" Class="mr-1" />
+                                            <MudText Typo="Typo.subtitle2" Style="color: white; font-weight: bold;">@obj.CurrentStreak</MudText>
+                                        </div>
+                                    </div>
+                                }
+                                @if (!obj.IsUnique && obj.ValidationCount > 0)
+                                {
+                                     <div class="d-flex align-center justify-end mt-1">
+                                         <MudText Typo="Typo.caption" Style="@($"color: {textColor}; opacity: 0.8; font-size: 0.75rem;")"> Validé @obj.ValidationCount fois</MudText>
+                                     </div>
                                 }
                             </div>
                         </div>
@@ -202,7 +276,12 @@
             align-items: flex-start !important;
         }
     }
-
+    
+    @@keyframes pulse-orange {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 165, 0, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0); }
+    }
 </style>
 
 @code {
@@ -257,6 +336,10 @@
             objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active") ?? new List<ObjectiveDto>();
             GroupObjectives();
             
+            // Check for updates (New / Returned from cooldown)
+            // We run this *after* grouping but *before* marking as seen, though order here mostly matters for UI
+            await CheckForUpdates();
+
             await NotificationService.MarkAsSeenAsync("objectives");
         }
         catch (Exception ex)
@@ -292,8 +375,7 @@
         {
             string displayCategory;
 
-            // Logic for "Rechargement" (Cooldown)
-            if (obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow)
+            if (IsRecharging(obj))
             {
                 displayCategory = ObjectiveCategory.Rechargement.ToString();
             }
@@ -310,6 +392,78 @@
         }
     }
 
+    private bool IsRecharging(ObjectiveDto obj)
+    {
+        return obj.IsAlreadyCompleted && obj.NextAvailableDate.HasValue && obj.NextAvailableDate > DateTime.UtcNow;
+    }
+
+    private async Task CheckForUpdates()
+    {
+        try
+        {
+            var storageKey = "gamifyme_objectives_state";
+            var jsonState = await JSRuntime.InvokeAsync<string>("localStorage.getItem", storageKey);
+            
+            var currentActiveIds = objectives
+                .Where(o => !IsRecharging(o))
+                .Select(o => o.Id)
+                .ToHashSet();
+
+            var currentCooldownIds = objectives
+                .Where(o => IsRecharging(o))
+                .Select(o => o.Id)
+                .ToHashSet();
+
+            List<ObjectiveDto> newObjs = new();
+            List<ObjectiveDto> returnedObjs = new();
+
+            if (!string.IsNullOrEmpty(jsonState))
+            {
+                var state = System.Text.Json.JsonSerializer.Deserialize<ObjectiveState>(jsonState);
+                if (state != null)
+                {
+                    foreach (var obj in objectives.Where(o => !IsRecharging(o)))
+                    {
+                        // Returned: Was in Cooldown, Now Active
+                        if (state.CooldownIds.Contains(obj.Id))
+                        {
+                            returnedObjs.Add(obj);
+                        }
+                        // New: Was NOT Active AND NOT Cooldown before
+                        else if (!state.ActiveIds.Contains(obj.Id))
+                        {
+                            // Filter out "Onboarding" from being announced as "New" if they are basic flow? 
+                            // Or keep them. Let's keep them for now.
+                            // Also filter out if it was just created very recently? 
+                            // The request says "New Objectives". 
+                            newObjs.Add(obj);
+                        }
+                    }
+                }
+            }
+
+            // Save new state BEFORE showing dialog, so we don't show it again on refresh
+            var newState = new ObjectiveState { ActiveIds = currentActiveIds, CooldownIds = currentCooldownIds };
+            var newJson = System.Text.Json.JsonSerializer.Serialize(newState);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", storageKey, newJson);
+
+            // Show Dialog if needed
+            if (newObjs.Any() || returnedObjs.Any())
+            {
+                 var parameters = new DialogParameters { 
+                     ["ReturnedObjectives"] = returnedObjs,
+                     ["NewObjectives"] = newObjs
+                 };
+                 var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+                 DialogService.Show<ObjectivesUpdateDialog>("", parameters, options);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking updates: {ex.Message}");
+        }
+    }
+
     private void OpenDetails(ObjectiveDto obj)
     {
         var parameters = new DialogParameters<ObjectiveDetailsDialog> { { x => x.Objective, obj } };
@@ -321,5 +475,11 @@
             NoHeader = true // Remove default header
         };
         DialogService.Show<ObjectiveDetailsDialog>("", parameters, options);
+    }
+
+    public class ObjectiveState
+    {
+        public HashSet<Guid> ActiveIds { get; set; } = new();
+        public HashSet<Guid> CooldownIds { get; set; } = new();
     }
 }

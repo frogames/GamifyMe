@@ -11,12 +11,12 @@ namespace GamifyMe.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
+            /*migrationBuilder.AddColumn<DateTime>(
                 name: "CreatedAt",
                 table: "StoreItems",
                 type: "timestamp without time zone",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));*/
         }
 
         /// <inheritdoc />

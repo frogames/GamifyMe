@@ -136,8 +136,17 @@ namespace GamifyMe.Api.Services
                 validObjectives.Add(obj);
             }
 
+            // Fetch user status regarding onboarding
+            bool hasCompletedOnboarding = false;
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null) hasCompletedOnboarding = user.HasCompletedOnboarding;
+
             // --- ONBOARDING LOGIC ---
-            var onboardingObjectives = validObjectives.Where(o => o.Category == ObjectiveCategory.Onboarding).ToList();
+            // If user has completed onboarding, we ignore onboarding objectives (they are considered "done" or "hidden")
+            var onboardingObjectives = hasCompletedOnboarding 
+                ? new List<Objective>() 
+                : validObjectives.Where(o => o.Category == ObjectiveCategory.Onboarding).ToList();
+
             // All other non-onboarding objectives (Principal, Event, Secondary, etc.)
             var standardObjectives = validObjectives.Where(o => o.Category != ObjectiveCategory.Onboarding).ToList();
 
@@ -280,10 +289,151 @@ namespace GamifyMe.Api.Services
                 // Now find max depth starting from 'current'.
                 chainLen = GetMaxChainDepth(current, allActiveObjectives, new HashSet<Guid>());
 
+                // Calculate Validation Count (All time)
+                int validationCount = 0;
+                var objectiveValidations = userValidations.Where(v => v.ObjectiveId == obj.Id).OrderByDescending(v => v.ValidatedAt).ToList();
+                validationCount = objectiveValidations.Count;
+
+                int currentStreak = 0;
+                DateTime? streakExpiration = null;
+                if (obj.IsStreakEnabled && !obj.IsUnique)
+                {
+                    if (objectiveValidations.Any())
+                    {
+                        var lastVal = objectiveValidations[0].ValidatedAt;
+                        
+                        // --- HOURLY LOGIC ---
+                        if (obj.StreakFrequency == StreakFrequency.Hourly)
+                        {
+                            currentStreak = 1; 
+                            double hoursSinceLast = (now - lastVal).TotalHours;
+                            if (obj.StreakTerminalHours.HasValue && hoursSinceLast > obj.StreakTerminalHours.Value)
+                            {
+                                currentStreak = 0;
+                            }
+                            else
+                            {
+                                if (obj.StreakTerminalHours.HasValue)
+                                    streakExpiration = lastVal.AddHours(obj.StreakTerminalHours.Value);
+
+                                for (int i = 0; i < objectiveValidations.Count - 1; i++)
+                                {
+                                    var currentValTime = objectiveValidations[i].ValidatedAt;
+                                    var prevValTime = objectiveValidations[i+1].ValidatedAt;
+                                    var gap = (currentValTime - prevValTime).TotalHours;
+                                    if (obj.StreakTerminalHours.HasValue && gap <= obj.StreakTerminalHours.Value)
+                                        currentStreak++;
+                                    else
+                                        break;
+                                }
+                            }
+                        }
+                        // --- DAILY LOGIC ---
+                        else if (obj.StreakFrequency == StreakFrequency.Daily)
+                        {
+                             // Simple Daily Logic:
+                             // Streak is unbroken if last validation was Today OR "Yesterday (or last valid day)".
+                             // If "Yesterday" was skipped but was an excluded day, we look further back.
+                             
+                             // 1. Check if "current" streak is alive (did we miss the deadline?)
+                             // Deadline for Daily is usually "End of Today" (if not done today) or "End of Tomorrow" (if done today).
+                             // Actually, if I did it TODAY, my streak is safe until TOMORROW end.
+                             // If I did it YESTERDAY, my streak is safe until TODAY end.
+                             // If I did it 2 days ago, and yesterday was REQUIRED, streak is dead.
+
+                             // Parse Excluded Days
+                             var excludedDays = new HashSet<DayOfWeek>();
+                             if (!string.IsNullOrEmpty(obj.StreakExcludedDays))
+                             {
+                                 foreach(var s in obj.StreakExcludedDays.Split(','))
+                                     if(int.TryParse(s, out int d)) excludedDays.Add((DayOfWeek)d);
+                             }
+
+                             // Is Streak Alive?
+                             // We check if we missed any REQUIRED day between LastValidation.Date and Today.Date (exclusive of LastValidation, inclusive of Today if checked? No, Today is active opportunity).
+                             // Actually, if validation is TODAY, streak satisfies today.
+                             // If validation is YESTERDAY, streak is PENDING today.
+                             // If validation < YESTERDAY, we check days in between.
+                             
+                             bool isStreakAlive = true;
+                             var dateCursor = lastVal.Date.AddDays(1);
+                             var today = now.Date;
+
+                             while (dateCursor < today)
+                             {
+                                 if (!excludedDays.Contains(dateCursor.DayOfWeek))
+                                 {
+                                     isStreakAlive = false;
+                                     break;
+                                 }
+                                 dateCursor = dateCursor.AddDays(1);
+                             }
+
+                             if (!isStreakAlive)
+                             {
+                                 currentStreak = 0;
+                             }
+                             else
+                             {
+                                 // Streak is alive! Now count history.
+                                 currentStreak = 1;
+                                 
+                                 // We need to iterate backwards validations and ensure no gaps.
+                                 // We can group validations by Date to avoid multi-validation per day issues.
+                                 var distinctDates = objectiveValidations.Select(v => v.ValidatedAt.Date).Distinct().ToList(); // Sorted Desc
+                                 
+                                 for(int i = 0; i < distinctDates.Count - 1; i++)
+                                 {
+                                     var dCurrent = distinctDates[i];
+                                     var dPrev = distinctDates[i+1];
+                                     
+                                     // Check gaps between dCurrent and dPrev
+                                     bool gapOk = true;
+                                     var checkDate = dPrev.AddDays(1);
+                                     while(checkDate < dCurrent)
+                                     {
+                                          if (!excludedDays.Contains(checkDate.DayOfWeek))
+                                          {
+                                              gapOk = false; 
+                                              break;
+                                          }
+                                          checkDate = checkDate.AddDays(1);
+                                     }
+                                     
+                                     if (gapOk) currentStreak++;
+                                     else break;
+                                 }
+                                 
+                                 // Calculate Expiration: End of Next Required Day
+                                 // If done today, next required is... distinctDates[0] is LastVal Date.
+                                 // If LastVal == Today, we are good for today. Next deadline is End of "Next Required Day".
+                                 // If LastVal < Today (and alive), deadline is End of Today (if required) or Next Required.
+                                 
+                                 var baseDateForNext = (lastVal.Date == today) ? today.AddDays(1) : today;
+                                 // Find first required day starting from baseDateForNext
+                                 while (excludedDays.Contains(baseDateForNext.DayOfWeek))
+                                 {
+                                     baseDateForNext = baseDateForNext.AddDays(1);
+                                 }
+                                 streakExpiration = baseDateForNext.AddDays(1).AddSeconds(-1); // End of that day
+                             }
+                        }
+                        // --- WEEKLY/MONTHLY (Simplification: just basic period specific logic or fallback) ---
+                        else
+                        {
+                            // Placeholder: Simple count
+                            currentStreak = objectiveValidations.Count;
+                        }
+                    }
+                }
+
                 var dto = MapToDto(obj, isAlreadyCompleted);
                 dto.NextAvailableDate = nextAvailableDate;
                 dto.ActiveMultiplier = totalMultiplier;
                 dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
+                dto.ValidationCount = validationCount;
+                dto.CurrentStreak = currentStreak;
+                dto.StreakExpirationDate = streakExpiration;
 
                 if (obj.LifespanHours.HasValue)
                 {
@@ -393,7 +543,12 @@ namespace GamifyMe.Api.Services
                 Prerequisites = prerequisiteObjectives,
                 LifespanHours = request.LifespanHours,
                 Category = DetermineCategory(request),
-                SortOrder = request.SortOrder
+                SortOrder = request.SortOrder,
+                IsStreakEnabled = request.IsStreakEnabled,
+                StreakTerminalHours = request.StreakTerminalHours,
+                StreakFrequency = request.StreakFrequency,
+                StreakExcludedDays = request.StreakExcludedDays,
+                StreakExcludedMonths = request.StreakExcludedMonths
             };
 
             _context.Objectives.Add(objective);
@@ -438,6 +593,11 @@ namespace GamifyMe.Api.Services
             // Automatic Categorization Logic
             objective.Category = DetermineCategory(request);
             objective.SortOrder = request.SortOrder;
+            objective.IsStreakEnabled = request.IsStreakEnabled;
+            objective.StreakTerminalHours = request.StreakTerminalHours;
+            objective.StreakFrequency = request.StreakFrequency;
+            objective.StreakExcludedDays = request.StreakExcludedDays;
+            objective.StreakExcludedMonths = request.StreakExcludedMonths;
 
             await _context.SaveChangesAsync();
             return true;
@@ -517,7 +677,12 @@ namespace GamifyMe.Api.Services
                 Category = obj.Category,
                 UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>(),
                 SortOrder = obj.SortOrder,
-                CreatedAt = obj.CreatedAt
+                CreatedAt = obj.CreatedAt,
+                IsStreakEnabled = obj.IsStreakEnabled,
+                StreakTerminalHours = obj.StreakTerminalHours,
+                StreakFrequency = obj.StreakFrequency,
+                StreakExcludedDays = obj.StreakExcludedDays,
+                StreakExcludedMonths = obj.StreakExcludedMonths
             };
         }
     }

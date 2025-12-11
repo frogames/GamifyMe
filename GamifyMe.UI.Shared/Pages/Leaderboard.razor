@@ -8,6 +8,7 @@
 
 @inject HttpClient Http
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Classements</PageTitle>
 
@@ -37,7 +38,7 @@
                 }
 
                 <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersXpLeaderboard.Count joueurs classés</MudText>
-                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
+                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
@@ -68,7 +69,7 @@
                 }
 
                 <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
-                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser">
+                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
@@ -109,7 +110,16 @@
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                {
+                                     <MudAvatar Size="Size.Small" Class="mr-2">
+                                         <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                     </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                }
                                 <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                             </div>
                         </MudTd>
@@ -143,7 +153,16 @@
                         <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
                         <MudTd DataLabel="Groupe">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                {
+                                     <MudAvatar Size="Size.Small" Class="mr-2">
+                                         <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                     </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                }
                                 <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                             </div>
                         </MudTd>
@@ -156,6 +175,12 @@
 </MudContainer>
 
 @code {
+    private string GetImageSrc(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl)) return "";
+        return $"{Http.BaseAddress}{imageUrl.TrimStart('/')}?v={Guid.NewGuid()}";
+    }
+
     private List<UserLeaderboardEntryDto> usersXpLeaderboard = new();
     private List<UserLeaderboardEntryDto> usersCurrencyLeaderboard = new();
     private List<GroupLeaderboardEntryDto> groupsXpLeaderboard = new();
@@ -291,4 +316,32 @@
             builder.AddContent(0, rank.ToString());
         }
     };
+
+    private async Task OnUserRowClick(TableRowClickEventArgs<UserLeaderboardEntryDto> args)
+    {
+        // Don't open if it's me? User request didn't specify. Usually clicking yourself is fine.
+        await OpenPlayerDetails(args.Item.UserId);
+    }
+
+    private async Task OpenPlayerDetails(Guid userId)
+    {
+        try
+        {
+            // Show loading or just wait? Better to wait and show dialog instantly or use a loading indicator.
+            // Using IDialogService to show loading might be overkill.
+            
+            var details = await Http.GetFromJsonAsync<PlayerDetailsDto>($"api/users/{userId}/details");
+            if (details != null)
+            {
+                var parameters = new DialogParameters { ["PlayerDetails"] = details };
+                var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+                DialogService.Show<PlayerDetailsDialog>("Détails du joueur", parameters, options);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching player details: {ex.Message}");
+            Snackbar.Add("Impossible de charger les détails du joueur.", Severity.Error);
+        }
+    }
 }

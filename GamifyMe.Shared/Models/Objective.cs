@@ -38,6 +38,12 @@
 
         public ObjectiveCategory Category { get; set; } = ObjectiveCategory.Secondaire;
         public int SortOrder { get; set; } = 0;
+
+        public bool IsStreakEnabled { get; set; } = false;
+        public int? StreakTerminalHours { get; set; }
+        public StreakFrequency StreakFrequency { get; set; } = StreakFrequency.Hourly;
+        public string? StreakExcludedDays { get; set; } // Comma separated integers (0=Sunday, 6=Saturday)
+        public string? StreakExcludedMonths { get; set; } // Comma separated integers (1-12)
     }
 
     public enum ObjectiveCategory
@@ -48,5 +54,13 @@
         Demarrage,
         Rechargement,
         Onboarding,
+    }
+
+    public enum StreakFrequency
+    {
+        Hourly,
+        Daily,
+        Weekly,
+        Monthly
     }
 }

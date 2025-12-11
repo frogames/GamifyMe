@@ -3,6 +3,7 @@ using System;
 using GamifyMe.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GamifyMe.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251211123439_AddUserHasCompletedOnboarding")]
+    partial class AddUserHasCompletedOnboarding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,9 +110,6 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -177,9 +177,6 @@ namespace GamifyMe.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsStreakEnabled")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsUnique")
                         .HasColumnType("boolean");
 
@@ -191,18 +188,6 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StreakExcludedDays")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StreakExcludedMonths")
-                        .HasColumnType("text");
-
-                    b.Property<int>("StreakFrequency")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("StreakTerminalHours")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")

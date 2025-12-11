@@ -19,6 +19,7 @@ namespace GamifyMe.Shared.Dtos
         public string Name { get; set; } = string.Empty;
         public string? IconName { get; set; }
         public string? Color { get; set; }
+        public string? ImageUrl { get; set; }
         public int MemberCount { get; set; }
         public int TotalXp { get; set; }
     }

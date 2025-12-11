@@ -11,6 +11,16 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@code {
+    private string GetImageSrc(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl)) return "";
+        // Appending a random query parameter to bypass browser caching
+        return $"{Http.BaseAddress}{imageUrl.TrimStart('/')}?v={Guid.NewGuid()}";
+    }
+}
 
 <PageTitle>Gestion des Groupes</PageTitle>
 
@@ -51,6 +61,37 @@
                                 </MudBadge>
                             </MudTooltip>
                             <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1">Icône : @groupModel.IconName</MudText>
+                        </div>
+                        
+                         <div class="d-flex flex-column align-center">
+                            <MudTooltip Text="Optionnel : Upload une image (remplace l'icône)">
+                                <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                                    <ActivatorContent>
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   Color="Color.Primary" 
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            @(string.IsNullOrEmpty(_imageBase64) ? "Uploader Image" : "Changer Image")
+                                        </MudButton>
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                            </MudTooltip>
+                            @if (!string.IsNullOrEmpty(_imageBase64))
+                            {
+                                <MudAvatar Size="Size.Large" Class="mt-2">
+                                    <MudImage Src="@_imageBase64" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                </MudAvatar>
+                            } 
+                            else if (editingGroupId != null)
+                            {
+                                var existingGroup = groupsList.FirstOrDefault(g => g.Id == editingGroupId);
+                                if (existingGroup != null && !string.IsNullOrEmpty(existingGroup.ImageUrl))
+                                {
+                                     <MudAvatar Size="Size.Large" Class="mt-2">
+                                         <MudImage Src="@GetImageSrc(existingGroup.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                     </MudAvatar>
+                                     <MudText Typo="Typo.caption">(Image actuelle)</MudText>
+                                }
+                            }
                         </div>
 
                         <div style="width: 200px;">
@@ -98,7 +139,16 @@
                     <RowTemplate Context="group">
                         <MudTd DataLabel="Nom">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                {
+                                    <MudAvatar Size="Size.Small" Class="mr-2">
+                                        <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                    </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                }
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
                         </MudTd>
@@ -119,6 +169,12 @@
     }
 </MudContainer>
 
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+</style>
+
 @code {
     private bool showForm = false;
     private Guid? editingGroupId;
@@ -127,6 +183,7 @@
     private bool isBusy = false;
     private string? successMessage;
     private string? errorMessage;
+    private string _imageBase64; // To hold uploaded image
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,7 +208,26 @@
         groupModel = new UpdateGroupDto();
         groupModel.IconName = "fas fa-star"; // Default icon
         groupModel.Color = "#FFFFFF"; // Default color
+        _imageBase64 = null;
         showForm = true;
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        if (file == null) return;
+        try
+        {
+            // Max 2MB
+            var resizedFile = await file.RequestImageFileAsync(file.ContentType, 600, 600);
+            var buffer = new byte[resizedFile.Size];
+            await resizedFile.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024).ReadAsync(buffer);
+            _imageBase64 = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+            groupModel.ImageBase64 = _imageBase64;
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add($"Erreur upload: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task HandleCreateGroup()
@@ -167,13 +243,15 @@
                 Description = groupModel.Description, 
                 IconName = groupModel.IconName,
                 Color = groupModel.Color,
-                RegistrationDurationHours = groupModel.RegistrationDurationHours
+                RegistrationDurationHours = groupModel.RegistrationDurationHours,
+                ImageBase64 = _imageBase64
             };
             var response = await Http.PostAsJsonAsync("api/groups", createDto);
             if (response.IsSuccessStatusCode)
             {
                 successMessage = "Groupe créé !";
                 groupModel = new UpdateGroupDto();
+                _imageBase64 = null;
                 await LoadData();
                 showForm = false;
             }
@@ -194,6 +272,7 @@
             Color = !string.IsNullOrEmpty(group.Color) ? group.Color : "#FFFFFF",
             RegistrationDurationHours = group.RegistrationDurationHours
         };
+        _imageBase64 = null; // Reset upload preview. Existing image is handled by display logic.
         showForm = true;
     }
 
@@ -202,6 +281,7 @@
         editingGroupId = null;
         groupModel = new UpdateGroupDto();
         errorMessage = null;
+        _imageBase64 = null;
         showForm = false;
     }
 
@@ -211,6 +291,8 @@
         isBusy = true;
         try
         {
+            groupModel.ImageBase64 = _imageBase64; // Ensure latest upload is attached
+            
             var response = await Http.PutAsJsonAsync($"api/groups/{editingGroupId.Value}", groupModel);
             if (response.IsSuccessStatusCode)
             {

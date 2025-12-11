@@ -10,6 +10,7 @@ namespace GamifyMe.Shared.Dtos
         public int TotalXp { get; set; }
         public int MemberCount { get; set; }
         public int? RegistrationDurationHours { get; set; }
+        public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -121,6 +121,51 @@
                     @if (!newObjective.IsUnique)
                     {
                         <MudTextField T="int?" Label="Fréquence (Heures)" @bind-Value="newObjective.FrequencyHours" HelperText="Délai minimum entre deux validations (en heures)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+                         
+                        <div class="d-flex align-center gap-4 mb-3" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px;">
+                            <MudSwitch T="bool" @bind-Value="newObjective.IsStreakEnabled" Label="Activer les Séries (Streaks)" Color="Color.Warning" />
+                            @if (newObjective.IsStreakEnabled)
+                            {
+                                <div class="d-flex gap-4 mb-2 flex-wrap">
+                                    <MudSelect T="StreakFrequency" Label="Fréquence de la Série" @bind-Value="newObjective.StreakFrequency" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 300px;">
+                                        <MudSelectItem Value="StreakFrequency.Hourly">Par Heure</MudSelectItem>
+                                        <MudSelectItem Value="StreakFrequency.Daily">Quotidien (Jours)</MudSelectItem>
+                                        <MudSelectItem Value="StreakFrequency.Weekly">Hebdomadaire</MudSelectItem>
+                                        <MudSelectItem Value="StreakFrequency.Monthly">Mensuel</MudSelectItem>
+                                    </MudSelect>
+
+                                    @if (newObjective.StreakFrequency == StreakFrequency.Hourly)
+                                    {
+                                        <MudTextField T="int?" Label="Délai max (Heures)" @bind-Value="newObjective.StreakTerminalHours" HelperText="Temps max entre 2 validations" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                                    }
+                                </div>
+
+                                @if (newObjective.StreakFrequency == StreakFrequency.Daily)
+                                {
+                                    <MudText Typo="Typo.caption" Class="mb-1 d-block">Jours EXCLUS (la série ne cassera pas ces jours-là) :</MudText>
+                                    <div class="d-flex gap-2 flex-wrap mb-2">
+                                        @foreach (var day in Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>())
+                                        {
+                                            var isChecked = IsDayExcluded(day);
+                                            <MudCheckBox T="bool" Value="@isChecked" ValueChanged="@((v) => ToggleDayExclusion(day, v))" Label="@ToFrenchDay(day)" Dense="true" Color="Color.Primary" Size="Size.Small" />
+                                        }
+                                    </div>
+                                }
+
+                                @if (newObjective.StreakFrequency == StreakFrequency.Monthly)
+                                {
+                                    <MudText Typo="Typo.caption" Class="mb-1 d-block">Mois EXCLUS (vacances, etc) :</MudText>
+                                    <div class="d-flex gap-2 flex-wrap mb-2">
+                                        @for (int m = 1; m <= 12; m++)
+                                        {
+                                            int month = m;
+                                            var isChecked = IsMonthExcluded(month);
+                                            <MudCheckBox T="bool" Value="@isChecked" ValueChanged="@((v) => ToggleMonthExclusion(month, v))" Label="@ToFrenchMonth(month)" Dense="true" Color="Color.Primary" Size="Size.Small" />
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
                     }
 
 
@@ -340,7 +385,13 @@
             LifespanHours = objectiveToEdit.LifespanHours,
             Category = objectiveToEdit.Category,
             SortOrder = objectiveToEdit.SortOrder,
-            Color = !string.IsNullOrEmpty(objectiveToEdit.Color) ? objectiveToEdit.Color : "#FFFFFF"
+            Color = !string.IsNullOrEmpty(objectiveToEdit.Color) ? objectiveToEdit.Color : "#FFFFFF",
+            // FIXED: Copy Streak properties
+            IsStreakEnabled = objectiveToEdit.IsStreakEnabled,
+            StreakTerminalHours = objectiveToEdit.StreakTerminalHours,
+            StreakFrequency = objectiveToEdit.StreakFrequency,
+            StreakExcludedDays = objectiveToEdit.StreakExcludedDays,
+            StreakExcludedMonths = objectiveToEdit.StreakExcludedMonths
         };
         showForm = true;
     }
@@ -420,7 +471,12 @@
                 PrerequisiteObjectiveIds = objectiveToDuplicate.PrerequisiteObjectiveIds != null ? new List<Guid>(objectiveToDuplicate.PrerequisiteObjectiveIds) : new List<Guid>(),
                 LifespanHours = objectiveToDuplicate.LifespanHours,
                 Category = objectiveToDuplicate.Category,
-                SortOrder = objectiveToDuplicate.SortOrder
+                SortOrder = objectiveToDuplicate.SortOrder,
+                IsStreakEnabled = objectiveToDuplicate.IsStreakEnabled,
+                StreakTerminalHours = objectiveToDuplicate.StreakTerminalHours,
+                StreakFrequency = objectiveToDuplicate.StreakFrequency,
+                StreakExcludedDays = objectiveToDuplicate.StreakExcludedDays,
+                StreakExcludedMonths = objectiveToDuplicate.StreakExcludedMonths
             };
 
             var response = await Http.PostAsJsonAsync("api/objectives", duplicate);
@@ -564,17 +620,66 @@
         }
         else
         {
-            sb.Append("🔄 RÉPÉTABLE : Le joueur peut valider cet objectif plusieurs fois.");
+            sb.Append("🔄 RÉPÉTABLE : Le joueur peut valider cet objectif plusieurs fois. Le compteur de validations sera affiché au joueur.");
             if (newObjective.FrequencyHours.HasValue && newObjective.FrequencyHours > 0)
                 sb.Append($" Un délai d'attente de {newObjective.FrequencyHours} heures est imposé entre chaque validation.");
             else
                 sb.Append(" Aucune limite de temps entre deux validations.");
+
+            if (newObjective.IsStreakEnabled)
+            {
+                sb.Append(" 🔥 SÉRIE ACTIVÉE : ");
+                switch(newObjective.StreakFrequency) {
+                    case StreakFrequency.Hourly: sb.Append("Validation requise HEURE PAR HEURE."); 
+                        if (newObjective.StreakTerminalHours.HasValue) sb.Append($" (Délai max: {newObjective.StreakTerminalHours}h)."); break;
+                    case StreakFrequency.Daily: sb.Append("Validation requise CHAQUE JOUR."); break;
+                    case StreakFrequency.Weekly: sb.Append("Validation requise CHAQUE SEMAINE."); break;
+                    case StreakFrequency.Monthly: sb.Append("Validation requise CHAQUE MOIS."); break;
+                }
+                sb.Append(" Une série sera maintenue.");
+            }
         }
 
         return sb.ToString();
     }
-}
+    
+    // UI Helpers for Checkboxes
+    private bool IsDayExcluded(DayOfWeek day)
+    {
+        if (string.IsNullOrEmpty(newObjective.StreakExcludedDays)) return false;
+        var parts = newObjective.StreakExcludedDays.Split(',');
+        return parts.Contains(((int)day).ToString());
+    }
+    
+    private void ToggleDayExclusion(DayOfWeek day, bool isChecked)
+    {
+        var current = new HashSet<string>(string.IsNullOrEmpty(newObjective.StreakExcludedDays) ? Array.Empty<string>() : newObjective.StreakExcludedDays.Split(','));
+        string val = ((int)day).ToString();
+        if (isChecked) current.Add(val);
+        else current.Remove(val);
+        newObjective.StreakExcludedDays = string.Join(",", current.Where(s => !string.IsNullOrEmpty(s)));
+    }
 
+    private bool IsMonthExcluded(int month)
+    {
+        if (string.IsNullOrEmpty(newObjective.StreakExcludedMonths)) return false;
+        var parts = newObjective.StreakExcludedMonths.Split(',');
+        return parts.Contains(month.ToString());
+    }
+
+    private void ToggleMonthExclusion(int month, bool isChecked)
+    {
+        var current = new HashSet<string>(string.IsNullOrEmpty(newObjective.StreakExcludedMonths) ? Array.Empty<string>() : newObjective.StreakExcludedMonths.Split(','));
+        string val = month.ToString();
+        if (isChecked) current.Add(val);
+        else current.Remove(val);
+        newObjective.StreakExcludedMonths = string.Join(",", current.Where(s => !string.IsNullOrEmpty(s)));
+    }
+    
+    private string ToFrenchDay(DayOfWeek d) => System.Globalization.CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetDayName(d);
+    private string ToFrenchMonth(int m) => System.Globalization.CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetMonthName(m);
+
+}
 <style>
     .custom-hover-row:hover {
         background-color: rgba(128, 128, 128, 0.1) !important;

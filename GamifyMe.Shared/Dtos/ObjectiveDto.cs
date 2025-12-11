@@ -48,5 +48,13 @@ namespace GamifyMe.Shared.Dtos
         public List<string> UnlockedObjectiveTitles { get; set; } = new();
         public int SortOrder { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int ValidationCount { get; set; }
+        public int CurrentStreak { get; set; }
+        public bool IsStreakEnabled { get; set; }
+        public int? StreakTerminalHours { get; set; }
+        public DateTime? StreakExpirationDate { get; set; }
+        public StreakFrequency StreakFrequency { get; set; }
+        public string? StreakExcludedDays { get; set; }
+        public string? StreakExcludedMonths { get; set; }
     }
 }

@@ -339,6 +339,33 @@ namespace GamifyMe.Api.Controllers
 
             var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
 
+            // --- 7. CHECK ONBOARDING COMPLETION ---
+            if (objective.Category == ObjectiveCategory.Onboarding && !user.HasCompletedOnboarding)
+            {
+                 // Get all ACTIVE onboarding objectives IDs for this establishment
+                 var allOnboardingIds = await _context.Objectives
+                     .Where(o => o.EstablishmentId == establishmentId && o.Category == ObjectiveCategory.Onboarding && o.IsActive)
+                     .Select(o => o.Id)
+                     .ToListAsync();
+
+                 if (allOnboardingIds.Any())
+                 {
+                     // Get validated ones
+                     var validatedIds = await _context.Validations
+                         .Where(v => v.UserId == user.Id && allOnboardingIds.Contains(v.ObjectiveId))
+                         .Select(v => v.ObjectiveId)
+                         .Distinct()
+                         .ToListAsync();
+                     
+                     // If validated count >= all count, then done
+                     if (validatedIds.Count >= allOnboardingIds.Count)
+                     {
+                         user.HasCompletedOnboarding = true;
+                         await _context.SaveChangesAsync();
+                     }
+                 }
+            }
+
             // --- 6. RETOUR AU CLIENT (Pour l'affichage des gains) ---
             return Ok(new ValidationResponseDto
             {

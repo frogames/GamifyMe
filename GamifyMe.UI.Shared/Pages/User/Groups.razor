@@ -48,7 +48,16 @@
                         }
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                {
+                                    <MudAvatar Size="Size.Large">
+                                        <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                    </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Size="Size.Large" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                }
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6">@group.Name</MudText>
@@ -118,6 +127,12 @@
     private string? currentGroupName;
     private bool isLoading = true;
     private DateTime _lastVisit;
+
+    private string GetImageSrc(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl)) return "";
+        return $"{Http.BaseAddress}{imageUrl.TrimStart('/')}?v={Guid.NewGuid()}";
+    }
 
     protected override async Task OnInitializedAsync()
     {
