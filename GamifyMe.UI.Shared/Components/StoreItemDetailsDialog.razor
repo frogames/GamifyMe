@@ -124,45 +124,48 @@
 
                 
                 <!-- Footer with 5px padding and 50px gap -->
-                <div class="d-flex justify-space-between align-end w-100 mt-auto mb-1" style="padding: 0 5px 5px 5px; gap: 50px; cursor: default;" @onclick:stopPropagation="true">
-                    <div class="d-flex flex-column align-start gap-1">
-                         <!-- Price -->
-                         <div class="d-flex align-center">
-                             <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" Size="Size.Small" Style="font-weight:bold;">
-                                 @Item.Price Crédits
-                             </MudChip>
-                         </div>
-                         <!-- Stock -->
-                         @if (Item.ItemType != StoreItemType.Digital)
-                         {
+                @if (ShowPurchaseButton)
+                {
+                    <div class="d-flex justify-space-between align-end w-100 mt-auto mb-1" style="padding: 0 5px 5px 5px; gap: 50px; cursor: default;" @onclick:stopPropagation="true">
+                        <div class="d-flex flex-column align-start gap-1">
+                             <!-- Price -->
                              <div class="d-flex align-center">
-                                 <MudText Typo="Typo.body1" Style="font-weight:bold;" Class="mr-2">Stock :</MudText>
-                                 @if (Item.Stock == 0)
-                                 {
-                                     <MudText Color="Color.Error" Style="font-weight:bold;">Épuisé</MudText>
-                                 }
-                                 else if (Item.Stock < 10)
-                                 {
-                                     <MudText Color="Color.Warning" Style="font-weight:bold;">Plus que @Item.Stock !</MudText>
-                                 }
-                                 else
-                                 {
-                                     <MudText Color="Color.Inherit" Style="font-weight:bold;">@Item.Stock</MudText>
-                                 }
+                                 <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" Size="Size.Small" Style="font-weight:bold;">
+                                     @Item.Price Crédits
+                                 </MudChip>
                              </div>
-                         }
-                    </div>
+                             <!-- Stock -->
+                             @if (Item.ItemType != StoreItemType.Digital)
+                             {
+                                 <div class="d-flex align-center">
+                                     <MudText Typo="Typo.body1" Style="font-weight:bold;" Class="mr-2">Stock :</MudText>
+                                     @if (Item.Stock == 0)
+                                     {
+                                         <MudText Color="Color.Error" Style="font-weight:bold;">Épuisé</MudText>
+                                     }
+                                     else if (Item.Stock < 10)
+                                     {
+                                         <MudText Color="Color.Warning" Style="font-weight:bold;">Plus que @Item.Stock !</MudText>
+                                     }
+                                     else
+                                     {
+                                         <MudText Color="Color.Inherit" Style="font-weight:bold;">@Item.Stock</MudText>
+                                     }
+                                 </div>
+                             }
+                        </div>
 
-                    <MudButton Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" 
-                               Variant="Variant.Filled" 
-                               OnClick="Buy" 
-                               Size="Size.Large"
-                               Class="px-6 rounded-pill"
-                               Style="font-weight: bold; color: white;"
-                               Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique) || UserCurrencyBalance < Item.Price || (UserHasActiveBoost && Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)))">
-                        @(Item.IsOwned && Item.IsUnique ? "Acquis" : "ACHETER")
-                    </MudButton>
-                </div>
+                        <MudButton Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" 
+                                   Variant="Variant.Filled" 
+                                   OnClick="Buy" 
+                                   Size="Size.Large"
+                                   Class="px-6 rounded-pill"
+                                   Style="font-weight: bold; color: white;"
+                                   Disabled="@(Item.Stock == 0 || (Item.IsOwned && Item.IsUnique) || UserCurrencyBalance < Item.Price || (UserHasActiveBoost && Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase)))">
+                            @(Item.IsOwned && Item.IsUnique ? "Acquis" : "ACHETER")
+                        </MudButton>
+                    </div>
+                }
             </MudContainer>
     </DialogContent>
 </MudDialog>
@@ -174,6 +177,7 @@
     [Parameter] public int UserCurrencyBalance { get; set; }
     [Parameter] public bool UserHasActiveBoost { get; set; }
     [Parameter] public EventCallback<string> OnPlaySound { get; set; }
+    [Parameter] public bool ShowPurchaseButton { get; set; } = true;
 
     private bool _showFullImage = false;
 

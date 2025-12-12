@@ -500,6 +500,7 @@ namespace GamifyMe.Api.Services
                 {
                     Id = o.Id,
                     Title = o.Title,
+                    IsStreakEnabled = o.IsStreakEnabled,
                     CreatedAt = o.CreatedAt
                 })
                 .ToListAsync();

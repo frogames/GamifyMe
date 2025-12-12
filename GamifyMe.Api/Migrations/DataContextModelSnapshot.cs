@@ -22,6 +22,65 @@ namespace GamifyMe.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.Badge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("CriteriaThreshold")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CriteriaType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CriteriaValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DocPointsReward")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("IconName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("RewardStoreItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("XpReward")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Badges");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.BonusPeriod", b =>
                 {
                     b.Property<Guid>("Id")
@@ -403,6 +462,36 @@ namespace GamifyMe.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("GamifyMe.Shared.Models.UserBadge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BadgeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EstablishmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsFavorite")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BadgeId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserBadges");
+                });
+
             modelBuilder.Entity("GamifyMe.Shared.Models.UserInventory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -613,6 +702,25 @@ namespace GamifyMe.Api.Migrations
                     b.Navigation("Establishment");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("GamifyMe.Shared.Models.UserBadge", b =>
+                {
+                    b.HasOne("GamifyMe.Shared.Models.Badge", "Badge")
+                        .WithMany()
+                        .HasForeignKey("BadgeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GamifyMe.Shared.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Badge");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GamifyMe.Shared.Models.UserInventory", b =>

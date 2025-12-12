@@ -19,11 +19,13 @@ namespace GamifyMe.Api.Controllers
     {
         private readonly DataContext _context;
         private readonly ObjectiveService _objectiveService;
+        private readonly BadgesService _badgesService;
 
-        public DashboardController(DataContext context, ObjectiveService objectiveService)
+        public DashboardController(DataContext context, ObjectiveService objectiveService, BadgesService badgesService)
         {
             _context = context;
             _objectiveService = objectiveService;
+            _badgesService = badgesService;
         }
 
         [HttpGet("activity-logs")]
@@ -366,6 +368,17 @@ namespace GamifyMe.Api.Controllers
                  }
             }
 
+            // --- 8. CHECK BADGES UNLOCK ---
+            try
+            {
+                await _badgesService.CheckAndUnlockBadgesAsync(user.Id, establishmentId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DashboardController] Error checking badges: {ex.Message}");
+                // Non-blocking error
+            }
+
             // --- 6. RETOUR AU CLIENT (Pour l'affichage des gains) ---
             return Ok(new ValidationResponseDto
             {
@@ -378,6 +391,7 @@ namespace GamifyMe.Api.Controllers
                 ScanSoundUrl = soundUrl
             });
         }
+
 
         private async Task<string?> GetUserActiveScanSoundUrl(Guid userId)
         {

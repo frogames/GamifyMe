@@ -51,6 +51,10 @@
         @Loc["Leaderboard"]
     </MudNavLink>
 
+    <MudNavLink Href="badges" Icon="@Icons.Material.Filled.MilitaryTech">
+        Badges
+    </MudNavLink>
+
     <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
         <MudDivider Class="my-2" />
         <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">
@@ -70,6 +74,9 @@
         </MudNavLink>
         <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">
             @Loc["Groups"]
+        </MudNavLink>
+        <MudNavLink Href="admin/badges" Icon="@Icons.Material.Filled.MilitaryTech">
+            Badges
         </MudNavLink>
         <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">
             @Loc["Bonus"]

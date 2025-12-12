@@ -122,7 +122,7 @@
                     {
                         <MudTextField T="int?" Label="Fréquence (Heures)" @bind-Value="newObjective.FrequencyHours" HelperText="Délai minimum entre deux validations (en heures)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
                          
-                        <div class="d-flex align-center gap-4 mb-3" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px;">
+                        <div class="d-flex align-center gap-4 mb-3" style="background-color: var(--mud-palette-background); padding: 10px; border-radius: 4px;">
                             <MudSwitch T="bool" @bind-Value="newObjective.IsStreakEnabled" Label="Activer les Séries (Streaks)" Color="Color.Warning" />
                             @if (newObjective.IsStreakEnabled)
                             {
@@ -210,7 +210,7 @@
                         <MudDropZone T="ObjectiveDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
                     </ChildContent>
                     <ItemRenderer>
-                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid #eee;">
+                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
                             <div class="d-flex align-center mr-4 grab-cursor">
                                 <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
                             </div>

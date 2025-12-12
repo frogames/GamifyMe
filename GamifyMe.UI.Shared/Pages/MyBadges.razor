@@ -1,0 +1,186 @@
+@page "/badges"
+@attribute [Authorize]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Mes Badges</PageTitle>
+
+<style>
+    .colored-progress .mud-progress-linear-bar {
+        background-color: var(--mud-progress-linear-color) !important;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" GutterBottom="true">Mes Badges</MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudPaper Class="pa-4 mb-6" Elevation="2">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.h6">Progression Globale (@Math.Round(((double)unlockedCount / (badges.Count > 0 ? badges.Count : 1) * 100))%)</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">
+                    <b>@unlockedCount</b> / <b>@badges.Count</b> Badges débloqués
+                </MudText>
+            </div>
+            <MudProgressLinear Value="@((double)unlockedCount / (badges.Count > 0 ? badges.Count : 1) * 100)" 
+                               Color="Color.Primary" 
+                               Size="Size.Large" 
+                               Striped="true" 
+                               Class="my-2" />
+        </MudPaper>
+
+        var groupedBadges = badges.GroupBy(b => b.IsFavorite ? "Favori" : (b.Category ?? "Général"))
+                                  .OrderByDescending(g => g.Key == "Favori")
+                                  .ThenBy(g => g.Key);
+        
+        @foreach (var group in groupedBadges)
+        {
+            <MudText Typo="Typo.h5" Class="mt-6 mb-4 pl-2" Color="Color.Primary">@group.Key</MudText>
+            
+            <MudGrid>
+                @foreach (var badge in group)
+                {
+                    <MudItem xs="6" sm="4" md="3" lg="2">
+                        <MudCard Class="d-flex flex-column align-center pa-2 cursor-pointer hover-scale inner-glow-card" 
+                                 Elevation="3" 
+                                 Style="@(badge.IsUnlocked ? $"border: 2px solid {badge.Color};" : "")"
+                                 @onclick="@(() => OpenDetails(badge))">
+                            
+                            <div class="d-flex justify-center align-center mt-2 mb-2" 
+                                 style="@($"background-color: {badge.Color}20; width: 80px; height: 80px; clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%); overflow:hidden;")">
+                                @if (!string.IsNullOrEmpty(badge.ImageUrl))
+                                {
+                                     <MudAvatar Style="width:100%; height:100%;">
+                                        <MudImage Src="@GetImageSrc(badge.ImageUrl)" ObjectFit="ObjectFit.Cover" />
+                                    </MudAvatar>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" 
+                                             Style="@($"font-size: 3rem; color: {badge.Color};")" />
+                                }
+                            </div>
+
+                            <MudText Typo="Typo.subtitle2" Align="Align.Center" Style="font-weight: bold; line-height: 1.2;">@badge.Name</MudText>
+                            
+                            @if (badge.IsUnlocked)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Success" Class="mt-1">Débloqué</MudText>
+                                @if(badge.IsFavorite) { <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Error" Size="Size.Small" Class="mt-1"/> }
+                            }
+                            else
+                            {
+                                <MudProgressLinear Value="@(badge.CriteriaThreshold > 0 ? (badge.CurrentValue / (double)badge.CriteriaThreshold) * 100 : 0)"
+    Class="my-2 colored-progress"
+    Size="Size.Large"
+    Striped="true"
+    Style="@($"--mud-progress-linear-color: {badge.Color};")" />
+                            }
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    }
+</MudContainer>
+
+@code {
+    private List<BadgeDto> badges = new();
+    private bool isLoading = true;
+    private int unlockedCount => badges.Count(b => b.IsUnlocked);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBadges();
+        await CheckNewUnlocks();
+    }
+
+    private async Task LoadBadges()
+    {
+        try
+        {
+            isLoading = true;
+            badges = await Http.GetFromJsonAsync<List<BadgeDto>>("api/user-badges") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading badges: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CheckNewUnlocks()
+    {
+        try
+        {
+            // Call check endpoint to see if we unlocked anything NEW just now (e.g. Total Login days or just visiting checks)
+            var newBadges = await Http.PostAsync("api/user-badges/check", null);
+            if (newBadges.IsSuccessStatusCode)
+            {
+                var unlocked = await newBadges.Content.ReadFromJsonAsync<List<BadgeDto>>();
+                if (unlocked != null && unlocked.Any())
+                {
+                    // Update local list visual immediately
+                    foreach (var nb in unlocked)
+                    {
+                        var existing = badges.FirstOrDefault(b => b.Id == nb.Id);
+                        if (existing != null)
+                        {
+                            existing.IsUnlocked = true;
+                            existing.UnlockedAt = nb.UnlockedAt;
+                        }
+                    }
+                    StateHasChanged();
+
+                    // Show Modal
+                    var parameters = new DialogParameters { ["Badges"] = unlocked };
+                    var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+                    await DialogService.ShowAsync<BadgeUnlockDialog>("Nouveaux Badges !", parameters, options);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking unlocks: {ex.Message}");
+        }
+    }
+
+    private async Task OpenDetails(BadgeDto badge)
+    {
+        var parameters = new DialogParameters { ["Badge"] = badge };
+        
+        // Pass callback to refresh list when favorite changes (to remove heart from old favorite)
+        parameters.Add("OnFavoriteChanged", EventCallback.Factory.Create(this, async () => await LoadBadges()));
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, NoHeader = true };
+        var dialog = await DialogService.ShowAsync<BadgeDetailsDialog>(badge.Name, parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            // If result ok, maybe refresh data anyway? We used callback already.
+        }
+    }
+
+    private string GetImageSrc(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl)) return "";
+        if (imageUrl.StartsWith("http")) return imageUrl;
+        return $"{Http.BaseAddress.ToString().TrimEnd('/')}/{imageUrl.TrimStart('/')}";
+    }
+}

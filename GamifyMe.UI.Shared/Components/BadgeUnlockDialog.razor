@@ -1,0 +1,61 @@
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Style="font-size: 4rem;" Class="mb-4 animate-bounce" />
+            
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Félicitations !</MudText>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-6">Vous avez débloqué de nouveaux badges !</MudText>
+
+             <MudCarousel Class="mud-width-full" Style="height:300px;" ShowArrows="@(Badges.Count > 1)" ShowBullets="@(Badges.Count > 1)" AutoCycle="true" TData="object">
+                @foreach (var badge in Badges)
+                {
+                    <MudCarouselItem Transition="Transition.Slide" Color="@Color.Transparent">
+                         <div class="d-flex flex-column align-center justify-center h-100">
+                             <div class="d-flex justify-center align-center mb-4 rounded-circle" style="@($"background-color: {badge.Color}20; width: 120px; height: 120px;")">
+                                <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" Style="@($"font-size: 5rem; color: {badge.Color};")" />
+                            </div>
+                            <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">@badge.Name</MudText>
+                            <MudText Typo="Typo.body2" Align="Align.Center">@badge.Description</MudText>
+
+                             @if(badge.XpReward > 0 || badge.DocPointsReward > 0 || badge.RewardStoreItemId.HasValue)
+                            {
+                                <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Récompenses :</MudText>
+                                <div class="d-flex justify-center gap-2">
+                                    @if(badge.XpReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Warning">@badge.XpReward XP</MudChip> }
+                                    @if(badge.DocPointsReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Success">@badge.DocPointsReward DOC</MudChip> }
+                                    @if(badge.RewardStoreItemId.HasValue) { <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.CardGiftcard">Objet</MudChip> }
+                                </div>
+                            }
+                         </div>
+                    </MudCarouselItem>
+                }
+             </MudCarousel>
+
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit" Variant="Variant.Filled" FullWidth="true">Génial !</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .animate-bounce {
+        animation: bounce 1s infinite;
+    }
+    @@keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+</style>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public List<BadgeDto> Badges { get; set; } = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+}

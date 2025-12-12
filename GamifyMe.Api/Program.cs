@@ -43,6 +43,7 @@ builder.Services.AddSingleton<CurrencyService>();
 // Business Logic Services
 builder.Services.AddScoped<ObjectiveService>();
 builder.Services.AddScoped<StoreService>();
+builder.Services.AddScoped<BadgesService>();
 
 // JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -75,8 +76,13 @@ using (var scope = app.Services.CreateScope())
     try
     {
         Console.WriteLine("Applying database migrations...");
+        Console.WriteLine("Applying database migrations...");
         dbContext.Database.Migrate();
         Console.WriteLine("Database migrations applied successfully.");
+
+        Console.WriteLine("Seeding Badges...");
+        BadgeSeeder.SeedAsync(dbContext).Wait();
+        Console.WriteLine("Badges seeded.");
     }
     catch (Exception ex)
     {

@@ -10,6 +10,9 @@ namespace GamifyMe.Shared.Dtos
         public int TotalXp { get; set; }
         public int TotalCurrency { get; set; }
         public string? GroupName { get; set; }
+        public string? FavoriteBadgeIcon { get; set; }
+        public string? FavoriteBadgeColor { get; set; }
+        public string? FavoriteBadgeImageUrl { get; set; }
     }
 
     public class GroupLeaderboardEntryDto

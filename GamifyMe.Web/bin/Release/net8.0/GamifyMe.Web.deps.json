@@ -437,6 +437,17 @@
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
+        },
+        "resources": {
+          "de/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "de"
+          },
+          "en/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "en"
+          },
+          "es/GamifyMe.UI.Shared.resources.dll": {
+            "locale": "es"
+          }
         }
       },
       "GamifyMe.Web.Client/1.0.0": {

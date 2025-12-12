@@ -41,3 +41,17 @@ d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\rjsmcshtml.dswa.cache.json
 d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets.build.json.cache
 d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets.build.endpoints.json
 d:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\staticwebassets\msbuild.GamifyMe.UI.Shared.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+D:\GamifyMe\GamifyMe.UI.Shared\bin\Release\net8.0\de\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.UI.Shared\bin\Release\net8.0\en\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.UI.Shared\bin\Release\net8.0\es\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.Resources.App.resources
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.Resources.App.de.resources
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.Resources.App.en.resources
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.Resources.App.es.resources
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\GamifyMe.UI.Shared.csproj.GenerateResource.cache
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\de\GamifyMe.UI.Shared.resources.cs
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\de\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\en\GamifyMe.UI.Shared.resources.cs
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\en\GamifyMe.UI.Shared.resources.dll
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\es\GamifyMe.UI.Shared.resources.cs
+D:\GamifyMe\GamifyMe.UI.Shared\obj\Release\net8.0\es\GamifyMe.UI.Shared.resources.dll

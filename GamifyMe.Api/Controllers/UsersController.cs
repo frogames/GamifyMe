@@ -24,13 +24,17 @@ namespace GamifyMe.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly ObjectiveService _objectiveService;
+        private readonly StoreService _storeService;
+        private readonly BadgesService _badgesService;
 
-        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService, ObjectiveService objectiveService)
+        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService, ObjectiveService objectiveService, StoreService storeService, BadgesService badgesService)
         {
             _context = context;
             _configuration = configuration;
             _emailService = emailService;
             _objectiveService = objectiveService;
+            _storeService = storeService;
+            _badgesService = badgesService;
         }
 
         [HttpPost("register")]
@@ -219,6 +223,8 @@ namespace GamifyMe.Api.Controllers
             var userId = GetCurrentUserId();
             if (userId == Guid.Empty) return Unauthorized();
 
+            await _storeService.CleanExpiredInventoryAsync(userId);
+
             var user = await _context.Users
                 .Include(u => u.Establishment)
                 .Include(u => u.Group)
@@ -331,7 +337,8 @@ namespace GamifyMe.Api.Controllers
                 ActiveUiTheme = activeTheme,
                 ActiveQrCodeStyle = activeQrStyle,
                 ActiveBoostMultiplier = boostMultiplier,
-                BoostEndsAt = boostEndsAt
+                BoostEndsAt = boostEndsAt,
+                Badges = await _badgesService.GetAllBadgesAsync(userId)
             });
         }
 
@@ -341,6 +348,8 @@ namespace GamifyMe.Api.Controllers
         {
             var userId = GetCurrentUserId();
             if (userId == Guid.Empty) return Unauthorized();
+
+            await _storeService.CleanExpiredInventoryAsync(userId);
 
             var inventory = await _context.UserInventories
                 .Include(ui => ui.StoreItem)
@@ -737,7 +746,8 @@ namespace GamifyMe.Api.Controllers
                 GroupIcon = user.Group?.IconName,
                 GroupColor = user.Group?.Color,
                 GroupImageUrl = user.Group?.ImageUrl,
-                PrincipalStreaks = streaks
+                PrincipalStreaks = streaks,
+                Badges = await _badgesService.GetAllBadgesAsync(userId)
             });
         }
     }

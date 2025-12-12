@@ -47,7 +47,24 @@
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur"> @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
+                        <MudTd DataLabel="Joueur"> 
+                            <div class="d-flex align-center">
+                                @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                {
+                                     @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                     {
+                                         <MudAvatar Size="Size.Small" Class="mr-2">
+                                             <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
+                                         </MudAvatar>
+                                     }
+                                     else
+                                     {
+                                         <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                     }
+                                }
+                                @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
+                            </div>
+                        </MudTd>
 
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
                     </RowTemplate>
@@ -78,7 +95,24 @@
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">@(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username</MudTd>
+                        <MudTd DataLabel="Joueur">
+                            <div class="d-flex align-center">
+                                @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                {
+                                     @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                     {
+                                         <MudAvatar Size="Size.Small" Class="mr-2">
+                                             <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
+                                         </MudAvatar>
+                                     }
+                                     else
+                                     {
+                                         <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                     }
+                                }
+                                @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
+                            </div>
+                        </MudTd>
 
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
                     </RowTemplate>

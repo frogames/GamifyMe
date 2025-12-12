@@ -15,11 +15,13 @@ namespace GamifyMe.Api.Controllers
     {
         private readonly StoreService _storeService;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly BadgesService _badgesService;
 
-        public StoreController(StoreService storeService, IWebHostEnvironment webHostEnvironment)
+        public StoreController(StoreService storeService, IWebHostEnvironment webHostEnvironment, BadgesService badgesService)
         {
             _storeService = storeService;
             _webHostEnvironment = webHostEnvironment;
+            _badgesService = badgesService;
         }
 
         [HttpGet("active")]
@@ -70,6 +72,12 @@ namespace GamifyMe.Api.Controllers
             {
                 if (message.StartsWith("Erreur d'achat")) return StatusCode(500, message);
                 return BadRequest(message);
+            }
+
+            // Trigger Badge Check
+            if (establishmentId.HasValue)
+            {
+                _ = Task.Run(() => _badgesService.CheckAndUnlockBadgesAsync(userId, establishmentId.Value));
             }
 
             return Ok(message);

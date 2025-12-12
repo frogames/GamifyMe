@@ -14,8 +14,30 @@ namespace GamifyMe.Api.Services
             _dbContext = context;
         }
 
+        public async Task CleanExpiredInventoryAsync(Guid userId)
+        {
+            try 
+            {
+                var expiredItems = await _dbContext.UserInventories
+                    .Where(ui => ui.UserId == userId && ui.ExpiresAt != null && ui.ExpiresAt < DateTime.UtcNow)
+                    .ToListAsync();
+
+                if (expiredItems.Any())
+                {
+                    _dbContext.UserInventories.RemoveRange(expiredItems);
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error cleaning expired inventory for user {userId}: {ex.Message}");
+            }
+        }
+
         public async Task<List<StoreItemDto>> GetActiveStoreItemsAsync(Guid userId)
         {
+            await CleanExpiredInventoryAsync(userId);
+
             var items = await _dbContext.StoreItems
                 .Where(item => item.IsActive && item.Stock > 0)
                 .OrderBy(item => item.SortOrder)

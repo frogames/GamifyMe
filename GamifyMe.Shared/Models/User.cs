@@ -41,6 +41,7 @@ namespace GamifyMe.Shared.Models
         public Group? Group { get; set; }
 
         public List<UserObjective> UserObjectives { get; set; } = new();
+        public List<UserBadge> UserBadges { get; set; } = new();
 
         // --- PROPRIÉTÉS CALCULÉES / NON MAPPÉES ---
         [NotMapped]

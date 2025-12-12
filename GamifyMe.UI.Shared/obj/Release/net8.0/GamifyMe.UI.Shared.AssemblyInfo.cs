@@ -13,10 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97564dad1811715139ced9be8f09e3bddb2d8582")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3ba060ce6c4bd78986b90beb77492a4f319515d")]
 [assembly: System.Reflection.AssemblyProductAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GamifyMe.UI.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Resources.NeutralResourcesLanguageAttribute("fr")]
 
 // Généré par la classe MSBuild WriteCodeFragment.
 

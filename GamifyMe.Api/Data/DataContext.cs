@@ -26,6 +26,8 @@ namespace GamifyMe.Api.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<BonusPeriod> BonusPeriods { get; set; }
         public DbSet<UserObjective> UserObjectives { get; set; }
+        public DbSet<Badge> Badges { get; set; }
+        public DbSet<UserBadge> UserBadges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +56,13 @@ namespace GamifyMe.Api.Data
                 .HasOne(uo => uo.Objective)
                 .WithMany(o => o.UserObjectives)
                 .HasForeignKey(uo => uo.ObjectiveId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // --- Configuration UserBadge ---
+            modelBuilder.Entity<UserBadge>()
+                .HasOne(ub => ub.User)
+                .WithMany(u => u.UserBadges)
+                .HasForeignKey(ub => ub.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // --- Filtre Global de Sécurité (Multi-Tenant) ---

@@ -1,0 +1,291 @@
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<style>
+    .colored-progress .mud-progress-linear-bar {
+        background-color: var(--mud-progress-linear-color) !important;
+    }
+</style>
+
+<MudDialog Class="custom-dialog-content" Style="background-color: transparent; box-shadow: none; overflow: visible;">
+    <DialogContent>
+        <style>
+            .custom-dialog-content .mud-dialog-content {
+                padding: 0 !important;
+            }
+        </style>
+        @{
+            var bgColor = !string.IsNullOrEmpty(Badge.Color) ? Badge.Color : "var(--mud-palette-surface)";
+            var textColor = ColorHelper.GetContrastColor(bgColor);
+            var style = !string.IsNullOrEmpty(Badge.Color) ? $"background-color: {bgColor}; color: {textColor};" : "background-color: var(--mud-palette-surface);";
+            var iconColor = textColor == "white" ? Color.Surface : Color.Default;
+             // Ensure contrast for chips and progress bars if background is dark
+        }
+
+        <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px; cursor: pointer; position: relative;")" @onclick="Cancel">
+            <div class="d-flex flex-column align-center mb-4">
+                 @* 1. Shield/Icon *@
+                 <div class="d-flex justify-center align-center mb-4" 
+                      style="@($"background-color: rgba(255,255,255,0.2); width: 120px; height: 120px; clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%); overflow:hidden;")">
+                    @if (!string.IsNullOrEmpty(Badge.ImageUrl))
+                    {
+                        <MudImage Src="@($"{Http.BaseAddress}{Badge.ImageUrl.TrimStart('/')}")" ObjectFit="ObjectFit.Cover" Style="width:100%;height:100%;" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@IconLibrary.GetIcon(Badge.IconName)" Style="@($"font-size: 5rem; color: {textColor};")" />
+                    }
+                </div>
+                
+                @* 2. Name *@
+                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Style="@($"color: {textColor}; font-weight: bold;")">@Badge.Name</MudText>
+                
+                @* 3. Criteria Description (Type) *@
+
+                
+                @* How to Progress Explanation *@
+                <MudText Typo="Typo.caption" Align="Align.Center" Class="mb-2 d-block" Style="@($"color: {textColor}; font-style: italic; opacity: 0.9;")">
+                    @GetProgressExplanation(Badge)
+                </MudText>
+
+                @* 4. Progression *@
+                @if (!Badge.IsUnlocked)
+                {
+                    <div style="width: 50%; margin: 8px auto;">
+                         <MudText Typo="Typo.body2" Class="mb-1" Align="Align.Center" Style="@($"color: {textColor};")">@Math.Round(Badge.CurrentValue) / @Badge.CriteriaThreshold</MudText>
+                         <MudProgressLinear Value="@Badge.CurrentValue" Max="@Badge.CriteriaThreshold" Color="@(textColor == "white" ? Color.Default : Color.Primary)" Class="my-2" Style="height: 10px; border-radius: 0;" Striped="true" />
+                    </div>
+                }
+                else
+                {
+                     <MudText Typo="Typo.body2" Class="mb-4" Align="Align.Center" Color="Color.Success" Style="font-weight: bold;">Badge débloqué le @Badge.UnlockedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudText>
+                }
+
+                @* 5. Description *@
+                <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4 mt-2 px-2" Style="@($"color: {textColor};")">@Badge.Description</MudText>
+
+                @* 6. Requirements Lists *@
+                @* Required Objectives (Specific List) *@
+                @if (Badge.CriteriaType == GamifyMe.Shared.Models.BadgeCriteriaType.ObjectivesCompletedSelected && Badge.RequiredObjectives != null && Badge.RequiredObjectives.Any())
+                {
+                    <div class="mt-2 w-100 px-3">
+                        <MudText Typo="Typo.subtitle2" Style="@($"color: {textColor}; font-weight: bold;")" Class="mb-1">Objectifs requis :</MudText>
+                        <div class="d-flex flex-column gap-1">
+                            @foreach (var obj in Badge.RequiredObjectives)
+                            {
+                                <div class="d-flex align-center pa-2 hover-effect cursor-pointer" @onclick="@(() => OpenObjectiveDetails(obj))" 
+                                     style="@($"background-color: {(obj.IsAlreadyCompleted ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.1)")}; border-radius: 4px; color: {textColor};")">
+                                     
+                                     @if (obj.IsAlreadyCompleted)
+                                     {
+                                         <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" Class="mr-2"/>
+                                     }
+                                     else
+                                     {
+                                         <MudIcon Icon="@Icons.Material.Filled.RadioButtonUnchecked" Size="Size.Small" Color="@(textColor == "white" ? Color.Surface : Color.Default)" Class="mr-2"/>
+                                     }
+
+                                     <MudText Typo="Typo.body2" Style="@(obj.IsAlreadyCompleted ? "opacity: 0.8;" : "")">@obj.Title</MudText>
+                                     <MudSpacer />
+                                     <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="@(textColor == "white" ? Color.Surface : Color.Default)" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                 @* Required Store Items (Specific List) *@
+                @if (Badge.CriteriaType == GamifyMe.Shared.Models.BadgeCriteriaType.StoreItemsPurchasedSelected && Badge.RequiredStoreItems != null && Badge.RequiredStoreItems.Any())
+                {
+                    <div class="mt-2 w-100 px-3">
+                        <MudText Typo="Typo.subtitle2" Style="@($"color: {textColor}; font-weight: bold;")" Class="mb-1">Objets requis :</MudText>
+                        <div class="d-flex flex-column gap-1">
+                            @foreach (var item in Badge.RequiredStoreItems)
+                            {
+                                <div class="d-flex align-center pa-2 hover-effect cursor-pointer" @onclick="@(() => OpenStoreItemDetails(item))"
+                                     style="@($"background-color: {(item.IsOwned ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.1)")}; border-radius: 4px; color: {textColor};")">
+                                     
+                                     @if (item.IsOwned)
+                                     {
+                                         <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" Class="mr-2"/>
+                                     }
+                                     else
+                                     {
+                                         <MudIcon Icon="@Icons.Material.Filled.RadioButtonUnchecked" Size="Size.Small" Color="@(textColor == "white" ? Color.Surface : Color.Default)" Class="mr-2"/>
+                                     }
+
+                                     <MudText Typo="Typo.body2" Style="@(item.IsOwned ? "opacity: 0.8;" : "")">@item.Name</MudText>
+                                     <MudSpacer />
+                                     <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="@(textColor == "white" ? Color.Surface : Color.Default)" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+
+                @* 7. Rewards Section *@
+                @if (Badge.XpReward > 0 || Badge.DocPointsReward > 0 || (Badge.RewardStoreItemId.HasValue && !string.IsNullOrEmpty(Badge.RewardStoreItemName)))
+                {
+                     <MudDivider Class="my-3 w-100" Style="@($"background-color: {textColor}; opacity: 0.2;")"/>
+                     <MudText Typo="Typo.subtitle2" Class="mb-2" Align="Align.Center" Style="@($"color: {textColor}; font-weight: bold;")">Récompenses :</MudText>
+                     
+                     <div class="d-flex flex-wrap justify-center gap-2 w-100">
+                        @if (Badge.XpReward > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="fas fa-star" Class="mr-1">@Badge.XpReward XP</MudChip>
+                        }
+                        @if (Badge.DocPointsReward > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="fas fa-coins" Class="mr-1">@Badge.DocPointsReward Crédits</MudChip>
+                        }
+                        
+                         @* Reward Item Display integrated here *@
+                        @if (Badge.RewardStoreItemId.HasValue && !string.IsNullOrEmpty(Badge.RewardStoreItemName))
+                        {
+                             <div class="d-flex align-center justify-center pa-1 cursor-pointer hover-scale" 
+                                  style="background-color: var(--mud-palette-info-lighten); border-radius: 16px; padding-right: 12px !important; color: var(--mud-palette-info-darken);"
+                                  @onclick="@(() => OpenStoreItemDetails(Badge.RewardStoreItem))">
+                                 <MudIcon Icon="@Icons.Material.Filled.Redeem" Class="mx-2" Size="Size.Small"/>
+                                 <MudText Typo="Typo.caption" Style="font-weight: 600;">@Badge.RewardStoreItemName</MudText>
+                             </div>
+                        }
+                    </div>
+                }
+
+            </div>
+            
+            @if (Badge.IsUnlocked)
+            {
+                <div class="d-flex justify-center mt-4">
+                     @if (Badge.IsFavorite)
+                    {
+                        <div @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                             <MudButton Color="@(textColor == "white" ? Color.Inherit : Color.Error)" StartIcon="@Icons.Material.Filled.Favorite" Variant="Variant.Text" Disabled="true" Style="@($"color: {textColor};")">Favori Actuel</MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                         <div @onclick:stopPropagation="true">
+                            <MudButton Color="@(textColor == "white" ? Color.Inherit : Color.Primary)" StartIcon="@Icons.Material.Filled.FavoriteBorder" OnClick="SetFavorite" Variant="Variant.Outlined" Disabled="isBusy" Style="@($"border-color: {textColor}; color: {textColor};")">
+                                @if(isBusy) { <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/> }
+                                Définir comme Favori
+                            </MudButton>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public BadgeDto Badge { get; set; } = new();
+    
+    // We might need a callback to refresh parent if Favorite changes
+    [Parameter] public EventCallback OnFavoriteChanged { get; set; }
+
+    private bool isBusy = false;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task SetFavorite()
+    {
+        isBusy = true;
+        try
+        {
+            var response = await Http.PostAsync($"api/user-badges/{Badge.Id}/favorite", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Badge défini comme favori !", Severity.Success);
+                Badge.IsFavorite = true;
+                await OnFavoriteChanged.InvokeAsync();
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la mise à jour.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private string GetCriteriaDescription(BadgeDto badge)
+    {
+        return badge.CriteriaType switch
+        {
+            GamifyMe.Shared.Models.BadgeCriteriaType.LevelReached => "Atteindre le niveau",
+            GamifyMe.Shared.Models.BadgeCriteriaType.TotalXpEarned => "Gagner de l'XP total",
+            GamifyMe.Shared.Models.BadgeCriteriaType.TotalCurrencyEarned => "Amasser des Crédits",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectivesCompletedCount => "Valider des objectifs (nb)",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectiveSpecificCount => !string.IsNullOrEmpty(badge.TargetObjectiveName) ? $"Valider l'objectif : {badge.TargetObjectiveName}" : "Valider un objectif spécifique (X fois)",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StreakLength => !string.IsNullOrEmpty(badge.TargetObjectiveName) ? $"Réaliser une série sur : {badge.TargetObjectiveName}" : "Réaliser une série (streak)",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StoreItemsPurchasedCount => "Acheter des objets",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectivesCompletedSelected => "Compléter la sélection d'objectifs",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StoreItemsPurchasedSelected => "Collectionner les objets requis",
+            GamifyMe.Shared.Models.BadgeCriteriaType.OnboardingCompleted => "Onboarding Complété",
+            _ => badge.CriteriaType.ToString()
+        };
+
+    }
+
+    private string GetProgressExplanation(BadgeDto badge)
+    {
+        return badge.CriteriaType switch
+        {
+            GamifyMe.Shared.Models.BadgeCriteriaType.LevelReached => $"Montez niveau {badge.CriteriaThreshold} en gagnant de l'XP.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.TotalXpEarned => "Gagnez de l'XP en validant des objectifs pour atteindre le total requis.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.TotalCurrencyEarned => "Économisez vos crédits pour atteindre le solde requis.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectivesCompletedCount => $"Validez {badge.CriteriaThreshold} objectifs (tous types confondus).",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectiveSpecificCount => !string.IsNullOrEmpty(badge.TargetObjectiveName) 
+                ? $"Validez l'objectif '{badge.TargetObjectiveName}' {badge.CriteriaThreshold} fois." 
+                : "Validez l'objectif spécifique requis le nombre de fois indiqué.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StreakLength => !string.IsNullOrEmpty(badge.TargetObjectiveName)
+                ? $"Validez l'objectif '{badge.TargetObjectiveName}' {badge.CriteriaThreshold} fois de suite sans briser la série."
+                : $"Atteignez une série de {badge.CriteriaThreshold} validations consécutives sur n'importe quel objectif.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StoreItemsPurchasedCount => $"Achetez {badge.CriteriaThreshold} objets dans la boutique.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.ObjectivesCompletedSelected => "Validez chacun des objectifs de la liste ci-dessous au moins une fois.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.StoreItemsPurchasedSelected => "Achetez tous les objets de la liste ci-dessous pour compléter la collection.",
+
+            GamifyMe.Shared.Models.BadgeCriteriaType.Manual => "Ce badge est une récompense spéciale attribuée par le staff.",
+            GamifyMe.Shared.Models.BadgeCriteriaType.OnboardingCompleted => "Complétez le tutoriel d'introduction.",
+            _ => "Complétez les conditions requises pour débloquer ce badge."
+        };
+    }
+
+    private void OpenStoreItemDetails(StoreItemDto? item)
+    {
+        if (item == null) return;
+        var parameters = new DialogParameters<StoreItemDetailsDialog>
+        {
+            { x => x.Item, item },
+            { x => x.ShowPurchaseButton, false }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<StoreItemDetailsDialog>("Détails", parameters, options);
+    }
+
+    private void OpenObjectiveDetails(ObjectiveDto? obj)
+    {
+        if (obj == null) return;
+        var parameters = new DialogParameters<ObjectiveDetailsDialog>
+        {
+            { x => x.Objective, obj }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ObjectiveDetailsDialog>("Détails", parameters, options);
+    }
+}

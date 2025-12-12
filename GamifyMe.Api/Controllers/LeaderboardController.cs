@@ -32,6 +32,9 @@ namespace GamifyMe.Api.Controllers
                 .Where(u => u.EstablishmentId == establishmentId && u.Role == Roles.User) 
                 .Include(u => u.Wallets)
                 .Include(u => u.Group)
+                .Include(u => u.UserBadges)
+                .ThenInclude(ub => ub.Badge)
+                .AsSplitQuery()
                 .ToListAsync();
 
             var leaderboard = users
@@ -51,7 +54,10 @@ namespace GamifyMe.Api.Controllers
                     Level = LevelHelpers.GetLevelFromXp(x.Xp),
                     TotalXp = x.Xp,
                     TotalCurrency = x.Currency,
-                    GroupName = x.User.Group?.Name
+                    GroupName = x.User.Group?.Name,
+                    FavoriteBadgeIcon = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.IconName,
+                    FavoriteBadgeColor = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.Color,
+                    FavoriteBadgeImageUrl = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.ImageUrl
                 })
                 .Take(50)
                 .ToList();
@@ -68,6 +74,9 @@ namespace GamifyMe.Api.Controllers
                 .Where(u => u.EstablishmentId == establishmentId && u.Role == Roles.User) 
                 .Include(u => u.Wallets)
                 .Include(u => u.Group)
+                .Include(u => u.UserBadges)
+                .ThenInclude(ub => ub.Badge)
+                .AsSplitQuery()
                 .ToListAsync();
 
             var leaderboard = users
@@ -87,7 +96,10 @@ namespace GamifyMe.Api.Controllers
                     Level = LevelHelpers.GetLevelFromXp(x.Xp),
                     TotalXp = x.Xp,
                     TotalCurrency = x.Currency,
-                    GroupName = x.User.Group?.Name
+                    GroupName = x.User.Group?.Name,
+                    FavoriteBadgeIcon = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.IconName,
+                    FavoriteBadgeColor = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.Color,
+                    FavoriteBadgeImageUrl = x.User.UserBadges.FirstOrDefault(ub => ub.IsFavorite)?.Badge.ImageUrl
                 })
                 .Take(50)
                 .ToList();

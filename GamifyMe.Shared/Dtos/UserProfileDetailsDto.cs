@@ -36,5 +36,6 @@
         // Boost XP
         public int ActiveBoostMultiplier { get; set; } = 1;
         public DateTime? BoostEndsAt { get; set; }
+        public List<BadgeDto> Badges { get; set; } = new();
     }
 }

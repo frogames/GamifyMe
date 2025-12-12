@@ -18,8 +18,17 @@ namespace GamifyMe.UI.Shared.Helpers
             { "Fire", Icons.Material.Filled.LocalFireDepartment },
             { "Flash", Icons.Material.Filled.FlashOn },
             { "ThumbUp", Icons.Material.Filled.ThumbUp },
-            { "AutoAwesome", Icons.Material.Filled.AutoAwesome },
-            { "Bolt", Icons.Material.Filled.Bolt },
+            { "Level1", Icons.Material.Filled.LooksOne },
+            { "Level2", Icons.Material.Filled.LooksTwo },
+            { "Level3", Icons.Material.Filled.Looks3 },
+            { "Level4", Icons.Material.Filled.Looks4 },
+            { "Level5", Icons.Material.Filled.Looks5 },
+            { "Level6", Icons.Material.Filled.Looks6 },
+            { "Level7", Icons.Material.Filled.Filter7 },
+            { "Level8", Icons.Material.Filled.Filter8 },
+            { "Level9", Icons.Material.Filled.Filter9 },
+            { "Level10", Icons.Material.Filled.Filter9Plus }, // No filter 10, use 9+ or Score
+
 
             // --- SPORT & SANTÉ ---
             { "Dumbbell", Icons.Material.Filled.FitnessCenter },
