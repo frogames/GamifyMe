@@ -23,7 +23,8 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<List<BadgeDto>>> GetMyBadges()
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var badges = await _badgesService.GetAllBadgesAsync(userId);
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            var badges = await _badgesService.GetAllBadgesAsync(userId, establishmentId);
             return Ok(badges);
         }
 

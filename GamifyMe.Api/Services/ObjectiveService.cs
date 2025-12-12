@@ -481,9 +481,10 @@ namespace GamifyMe.Api.Services
             return 1 + maxChildDepth;
         }
 
-        public async Task<List<ObjectiveDto>> GetAllObjectivesFullListAsync()
+        public async Task<List<ObjectiveDto>> GetAllObjectivesFullListAsync(Guid establishmentId)
         {
             var objectives = await _context.Objectives
+                .Where(o => o.EstablishmentId == establishmentId)
                 .Include(o => o.Prerequisites)
                 .OrderBy(o => o.Category)
                 .ThenBy(o => o.SortOrder)
@@ -492,9 +493,10 @@ namespace GamifyMe.Api.Services
             return objectives.Select(o => MapToDto(o, false)).ToList();
         }
 
-        public async Task<List<ObjectiveSimpleDto>> GetAllObjectivesSimpleListAsync()
+        public async Task<List<ObjectiveSimpleDto>> GetAllObjectivesSimpleListAsync(Guid establishmentId)
         {
             return await _context.Objectives
+                .Where(o => o.EstablishmentId == establishmentId)
                 .OrderBy(o => o.SortOrder)
                 .Select(o => new ObjectiveSimpleDto
                 {

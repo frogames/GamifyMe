@@ -28,7 +28,8 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<List<StoreItemDto>>> GetActiveStoreItems()
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var items = await _storeService.GetActiveStoreItemsAsync(userId);
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            var items = await _storeService.GetActiveStoreItemsAsync(userId, establishmentId);
             return Ok(items);
         }
 
@@ -54,7 +55,8 @@ namespace GamifyMe.Api.Controllers
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
         public async Task<ActionResult<List<StoreItemDto>>> GetAllStoreItemsSimpleList()
         {
-            var items = await _storeService.GetAllStoreItemsSimpleListAsync();
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            var items = await _storeService.GetAllStoreItemsSimpleListAsync(establishmentId);
             return Ok(items);
         }
 

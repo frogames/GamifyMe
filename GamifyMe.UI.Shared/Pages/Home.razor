@@ -219,7 +219,7 @@
     {
         try
         {
-             var badges = await Http.GetFromJsonAsync<List<BadgeDto>>("api/badges/all");
+             var badges = await Http.GetFromJsonAsync<List<BadgeDto>>("api/user-badges");
              badgeCount = badges?.Count ?? 0;
              StateHasChanged();
         }

@@ -34,12 +34,12 @@ namespace GamifyMe.Api.Services
             }
         }
 
-        public async Task<List<StoreItemDto>> GetActiveStoreItemsAsync(Guid userId)
+        public async Task<List<StoreItemDto>> GetActiveStoreItemsAsync(Guid userId, Guid establishmentId)
         {
             await CleanExpiredInventoryAsync(userId);
 
             var items = await _dbContext.StoreItems
-                .Where(item => item.IsActive && item.Stock > 0)
+                .Where(item => item.EstablishmentId == establishmentId && item.IsActive && item.Stock > 0)
                 .OrderBy(item => item.SortOrder)
                 .ToListAsync();
 
@@ -79,9 +79,10 @@ namespace GamifyMe.Api.Services
             .ToList();
         }
 
-        public async Task<List<StoreItemDto>> GetAllStoreItemsSimpleListAsync()
+        public async Task<List<StoreItemDto>> GetAllStoreItemsSimpleListAsync(Guid establishmentId)
         {
             return await _dbContext.StoreItems
+                .Where(item => item.EstablishmentId == establishmentId)
                 .OrderBy(item => item.SortOrder)
                 .Select(item => new StoreItemDto
                 {

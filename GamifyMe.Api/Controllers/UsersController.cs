@@ -338,7 +338,7 @@ namespace GamifyMe.Api.Controllers
                 ActiveQrCodeStyle = activeQrStyle,
                 ActiveBoostMultiplier = boostMultiplier,
                 BoostEndsAt = boostEndsAt,
-                Badges = await _badgesService.GetAllBadgesAsync(userId)
+                Badges = await _badgesService.GetAllBadgesAsync(userId, user.EstablishmentId)
             });
         }
 
@@ -747,7 +747,7 @@ namespace GamifyMe.Api.Controllers
                 GroupColor = user.Group?.Color,
                 GroupImageUrl = user.Group?.ImageUrl,
                 PrincipalStreaks = streaks,
-                Badges = await _badgesService.GetAllBadgesAsync(userId)
+                Badges = await _badgesService.GetAllBadgesAsync(userId, user.EstablishmentId)
             });
         }
     }

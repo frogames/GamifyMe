@@ -18,9 +18,10 @@ namespace GamifyMe.Api.Services
             _objectiveService = objectiveService;
         }
 
-        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId)
+        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId, Guid establishmentId)
         {
             var badges = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -80,10 +81,16 @@ namespace GamifyMe.Api.Services
             }
 
             // Fetch reference data for rich details (Objectives & StoreItems)
-            var allObjectives = await _context.Objectives.AsNoTracking().ToListAsync();
+            var allObjectives = await _context.Objectives
+                .Where(o => o.EstablishmentId == establishmentId)
+                .AsNoTracking()
+                .ToListAsync();
             var objectivesMap = allObjectives.ToDictionary(o => o.Id, o => MapObjectiveToDto(o));
 
-            var allStoreItems = await _context.StoreItems.AsNoTracking().ToListAsync();
+            var allStoreItems = await _context.StoreItems
+                .Where(s => s.EstablishmentId == establishmentId)
+                .AsNoTracking()
+                .ToListAsync();
             var storeItemsMap = allStoreItems.ToDictionary(i => i.Id, i => MapStoreItemToDto(i));
 
             return badges.Select(b => {
@@ -101,11 +108,21 @@ namespace GamifyMe.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
+            if (!userBadges.Any()) return new List<BadgeDto>();
+
+            var establishmentId = userBadges.First().EstablishmentId;
+
             // We need reference data here too if we want full details in the popup
-             var allObjectives = await _context.Objectives.AsNoTracking().ToListAsync();
+            var allObjectives = await _context.Objectives
+                .Where(o => o.EstablishmentId == establishmentId)
+                .AsNoTracking()
+                .ToListAsync();
             var objectivesMap = allObjectives.ToDictionary(o => o.Id, o => MapObjectiveToDto(o));
 
-            var allStoreItems = await _context.StoreItems.AsNoTracking().ToListAsync();
+            var allStoreItems = await _context.StoreItems
+                .Where(s => s.EstablishmentId == establishmentId)
+                .AsNoTracking()
+                .ToListAsync();
             var storeItemsMap = allStoreItems.ToDictionary(i => i.Id, i => MapStoreItemToDto(i));
 
             return userBadges.Select(ub => MapToDto(ub.Badge, ub, null, null, null, 0, null, storeItemsMap, objectivesMap, null, 0)).ToList();

@@ -4,6 +4,7 @@ using GamifyMe.Api.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace GamifyMe.Api.Controllers
 {
@@ -24,6 +25,9 @@ namespace GamifyMe.Api.Controllers
         {
             var order = await _context.Orders.Include(o => o.StoreItem).FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return NotFound("Commande introuvable.");
+
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            if (order.EstablishmentId != establishmentId) return NotFound("Commande introuvable.");
 
             // Allow if Pending OR (Completed AND DateCompleted is null - for migrated items)
             // OR (Physical AND Completed AND DateCompleted is close to DatePurchased - for bugged items)
@@ -58,6 +62,9 @@ namespace GamifyMe.Api.Controllers
         {
             var order = await _context.Orders.Include(o => o.StoreItem).FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return NotFound("Commande introuvable.");
+
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            if (order.EstablishmentId != establishmentId) return NotFound("Commande introuvable.");
 
             // Allow if Pending OR (Completed AND DateCompleted is null)
             // OR (Physical AND Completed AND DateCompleted is close to DatePurchased - for bugged items)

@@ -103,6 +103,7 @@ namespace GamifyMe.Api.Controllers
             // 1. Trouver l'utilisateur
             var user = await _context.Users.FirstOrDefaultAsync(u => u.QrCode == userQrCode);
             if (user == null) return NotFound("Joueur introuvable (QR Code invalide).");
+            if (user.EstablishmentId != establishmentId) return NotFound("Ce joueur appartient à un autre établissement.");
 
             // 2. Récupérer les commandes en attente (Click & Collect ou Digital non livré)
             var pendingOrdersCount = await _context.Orders
@@ -136,11 +137,13 @@ namespace GamifyMe.Api.Controllers
             // 1. Trouver l'utilisateur et l'objectif
             var user = await _context.Users.FirstOrDefaultAsync(u => u.QrCode == userQrCode);
             if (user == null) return NotFound("Joueur introuvable (QR Code invalide).");
+            if (user.EstablishmentId != establishmentId) return NotFound("Ce joueur appartient à un autre établissement.");
 
             if (!Guid.TryParse(objectiveIdString, out var objectiveId)) return BadRequest("ID Objectif invalide.");
 
             var objective = await _context.Objectives.FindAsync(objectiveId);
             if (objective == null) return NotFound("Objectif introuvable.");
+            if (objective.EstablishmentId != establishmentId) return NotFound("Objectif introuvable dans cet établissement.");
 
             // 2. Récupérer le portefeuille XP et Monnaie (pour la mise à jour)
             var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "XP");

@@ -60,7 +60,8 @@ namespace GamifyMe.Api.Controllers
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<ActionResult<List<ObjectiveSimpleDto>>> GetAllObjectivesSimpleList()
         {
-            var objectives = await _objectiveService.GetAllObjectivesSimpleListAsync();
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            var objectives = await _objectiveService.GetAllObjectivesSimpleListAsync(establishmentId);
             return Ok(objectives);
         }
 
@@ -69,7 +70,8 @@ namespace GamifyMe.Api.Controllers
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
         public async Task<ActionResult<List<ObjectiveDto>>> GetAllObjectivesFullList()
         {
-            var objectives = await _objectiveService.GetAllObjectivesFullListAsync();
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            var objectives = await _objectiveService.GetAllObjectivesFullListAsync(establishmentId);
             return Ok(objectives);
         }
 
