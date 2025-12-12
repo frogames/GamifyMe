@@ -126,7 +126,7 @@
 
                     @if (Objective.IsStreakEnabled && Objective.CurrentStreak > 0)
                     {
-                         <div class="d-flex align-center mt-2 p-1" style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; width: fit-content; border: 1px solid #ff9800;">
+                         <div class="d-flex align-center mt-4 px-3 py-2" style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; width: fit-content; border: 1px solid #ff9800;">
                             <div class="d-flex align-center streak-badge" style="animation: pulse-orange 2s infinite;">
                                 <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Color="Color.Warning" Class="mr-2" />
                                 <MudText Typo="Typo.subtitle2" Color="Color.Warning" Style="font-weight: bold; color: #ff9800 !important;">Série en cours : @Objective.CurrentStreak</MudText>

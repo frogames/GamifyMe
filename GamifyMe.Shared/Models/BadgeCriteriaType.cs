@@ -13,7 +13,9 @@ namespace GamifyMe.Shared.Models
         StreakLength, // Best streak length
         StoreItemsPurchasedCount, // Shopaholic
         StoreItemsPurchasedSelected, // Purchased specific set of items
-        Manual, // Given by staff manually
+
+        TopOneIndividual, // #1 in individual leaderboard
+        TopOneGroup, // Member of #1 group
         OnboardingCompleted // Completed user onboarding
     }
 }

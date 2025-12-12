@@ -20,17 +20,40 @@
     <MudText Typo="Typo.body1" Class="mb-8 text-secondary">@Loc["HomeSubtitle"]</MudText>
     <MudGrid Class="mb-8" Spacing="2">
         <!-- Mon Pass Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/my-qrcode"))">
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
-                    <MudIcon Icon="@Icons.Material.Filled.QrCode2" Color="Color.Primary" Class="mb-2 home-card-icon" />
+                     <MudIcon Icon="@Icons.Material.Filled.QrCode2" Color="Color.Primary" Class="mb-2 home-card-icon" />
                     <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">@Loc["MyPass"]</MudText>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@Loc["AccessMyQRCode"]</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
+
+         <!-- Mes Badges Card -->
+        <MudItem xs="6" sm="4" md="3">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/badges"))">
+                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Color="Color.Warning" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Mes Badges</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@badgeCount badges disponibles</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Mon Profil Card -->
+        <MudItem xs="6" sm="4" md="3">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/profile"))">
+                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Info" Class="mb-2 home-card-icon" />
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Mon Profil</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Voir mes stats</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
         <!-- Objectifs Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/objectives"))">
                 @if (NotificationService.NewObjectivesCount > 0)
                 {
@@ -44,7 +67,7 @@
             </MudCard>
         </MudItem>
         <!-- Boutique Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/store"))">
                 @if (NotificationService.NewStoreItemsCount > 0)
                 {
@@ -58,7 +81,7 @@
             </MudCard>
         </MudItem>
         <!-- Inventaire Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/inventory"))">
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Info" Class="mb-2 home-card-icon" />
@@ -68,7 +91,7 @@
             </MudCard>
         </MudItem>
         <!-- Groupes Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100 position-relative" @onclick="@(() => Navigation.NavigateTo("/groups"))">
                 @if (NotificationService.NewGroupsCount > 0)
                 {
@@ -82,7 +105,7 @@
             </MudCard>
         </MudItem>
         <!-- Classements Card -->
-        <MudItem xs="6" sm="4">
+        <MudItem xs="6" sm="4" md="3">
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/leaderboard"))">
                 <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Class="mb-2 home-card-icon" />
@@ -169,6 +192,7 @@
     // Wait, reusing existing LoadCounts logic for Inventory is better to keep functionality.
     
     private int inventoryCount;
+    private int badgeCount;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -176,6 +200,7 @@
         {
             await NotificationService.LoadCountsAsync();
             await LoadInventoryCount();
+            await LoadBadgesCount();
         }
     }
 
@@ -188,6 +213,17 @@
              StateHasChanged();
         }
         catch { inventoryCount = 0; }
+    }
+
+    private async Task LoadBadgesCount()
+    {
+        try
+        {
+             var badges = await Http.GetFromJsonAsync<List<BadgeDto>>("api/badges/all");
+             badgeCount = badges?.Count ?? 0;
+             StateHasChanged();
+        }
+        catch { badgeCount = 0; }
     }
     
     public void Dispose()

@@ -16,8 +16,8 @@ namespace GamifyMe.Api.Data
                 // but reading 'Any' might be affected if we are in a context with a user.
                 // Here we are likely in a scope without user (startup).
                 
-                // Check Level Badges 2 to 10
-                for (int i = 2; i <= 6; i++)
+                // Check Level Badges 2 to 9 (User requested restoration, 0 rewards, deleted Level 1)
+                for (int i = 2; i <= 9; i++)
                 {
                     string badgeName = $"Niveau {i}";
                     
@@ -39,8 +39,8 @@ namespace GamifyMe.Api.Data
                             CriteriaType = BadgeCriteriaType.LevelReached,
                             CriteriaThreshold = i,
                             CriteriaValue = i.ToString(),
-                            XpReward = 0, // Usually level up grants rewards via other means? Or maybe give some credits.
-                            DocPointsReward = i * 10, // Example reward
+                            XpReward = 0, 
+                            DocPointsReward = 0, 
                             RewardStoreItemId = null,
                             CreatedAt = DateTime.UtcNow
                         };

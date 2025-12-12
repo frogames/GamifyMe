@@ -162,7 +162,6 @@
                                 </div>
                             </div>
 
-                            <!-- Column 4: Status / Timer / Streak -->
                             <div class="col-status">
                                 @if (isRecharging)
                                 {
@@ -182,25 +181,19 @@
                                         <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@TimeFormatter.GetTimeRemaining(timeToLive)</MudText>
                                     </div>
                                 }
-                                else if (!obj.IsUnique && obj.IsStreakEnabled && obj.CurrentStreak > 0 && obj.StreakExpirationDate.HasValue && !isRecharging)
-                                {
-                                    // Streak is active AND not cooling down -> User should validate soon!
-                                    var timeToDie = obj.StreakExpirationDate!.Value - DateTime.UtcNow;
-                                    <div class="d-flex align-center justify-end">
-                                        <div class="d-flex align-center" style="background-color: #ffebee; border: 1px solid #ef5350; padding: 4px 10px; border-radius: 16px;">
-                                            <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Color="Color.Error" Class="mr-1" />
-                                            <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight: bold;">Sauvez la série ! @TimeFormatter.GetTimeRemaining(timeToDie)</MudText>
-                                        </div>
-                                    </div>
-                                }
                                 
                                 @* STREAK & COUNT FEEDBACK *@
                                 @if (!obj.IsUnique && obj.IsStreakEnabled && obj.CurrentStreak > 0)
                                 {
+                                    bool isWarning = obj.StreakExpirationDate.HasValue && !isRecharging;
+                                    var timeToDie = obj.StreakExpirationDate.HasValue ? obj.StreakExpirationDate.Value - DateTime.UtcNow : TimeSpan.Zero;
+                                    
                                     <div class="d-flex align-center justify-end mt-1">
-                                        <div class="d-flex align-center streak-badge" style="background: rgba(255, 165, 0, 0.9); padding: 4px 10px; border-radius: 16px; box-shadow: 0 0 10px rgba(255, 165, 0, 0.6); animation: pulse-orange 2s infinite;">
-                                            <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Style="color: white;" Class="mr-1" />
-                                            <MudText Typo="Typo.subtitle2" Style="color: white; font-weight: bold;">@obj.CurrentStreak</MudText>
+                                        <div class="d-flex align-center streak-badge" style="@(isWarning ? "background: #ffebee; border: 1px solid #ef5350;" : "background: rgba(255, 165, 0, 0.9);") padding: 4px 10px; border-radius: 16px; box-shadow: 0 0 10px rgba(255, 165, 0, 0.6); animation: pulse-orange 2s infinite;">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Size="Size.Small" Style="@(isWarning ? "color: #ef5350;" : "color: white;")" Class="mr-1" />
+                                            <MudText Typo="Typo.subtitle2" Style="@((isWarning ? "color: #ef5350;" : "color: white;") + " font-weight: bold;")">
+                                                @obj.CurrentStreak @(isWarning ? $" | {TimeFormatter.GetTimeRemaining(timeToDie)}" : "")
+                                            </MudText>
                                         </div>
                                     </div>
                                 }

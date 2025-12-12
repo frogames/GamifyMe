@@ -316,12 +316,39 @@ namespace GamifyMe.Api.Services
                              if (activeObjectives.Any(o => o.CurrentStreak >= badge.CriteriaThreshold)) conditionsMet = true;
                          }
                          break;
-                    case BadgeCriteriaType.Manual:
-                        // Can only be given manually
-                        conditionsMet = false;
+                    case BadgeCriteriaType.TopOneIndividual:
+                        // Check if user has the highest XP in the establishment
+                        var bestIndividualXp = await _context.Wallets
+                            .Where(w => w.CurrencyCode == "XP" && w.User.EstablishmentId == establishmentId)
+                            .MaxAsync(w => (int?)w.Balance) ?? 0;
+                        
+                        conditionsMet = currentXp > 0 && currentXp >= bestIndividualXp;
+                        break;
+                    case BadgeCriteriaType.TopOneGroup:
+                        if (user.GroupId.HasValue)
+                        {
+                            // Calculate group XPs
+                            // Note: This is heavy, optimization would be to cache leaderboard or store group XP in Group table
+                            var groupXps = await _context.Groups
+                                .Where(g => g.EstablishmentId == establishmentId)
+                                .Select(g => new 
+                                { 
+                                    g.Id, 
+                                    TotalXp = g.Members.SelectMany(m => m.Wallets).Where(w => w.CurrencyCode == "XP").Sum(w => w.Balance) 
+                                })
+                                .OrderByDescending(g => g.TotalXp)
+                                .FirstOrDefaultAsync();
+
+                            if (groupXps != null && groupXps.Id == user.GroupId)
+                            {
+                                conditionsMet = true;
+                            }
+                        }
                         break;
                     case BadgeCriteriaType.OnboardingCompleted:
-                        conditionsMet = hasCompletedOnboarding;
+                        // User reported issue: badge given even if HasCompletedOnboarding=false.
+                        // Ensure we strictly check the boolean.
+                        conditionsMet = user.HasCompletedOnboarding == true;
                         break;
                 }
 
@@ -506,6 +533,8 @@ namespace GamifyMe.Api.Services
                 rewardItem = storeItemsMap[b.RewardStoreItemId.Value];
                 rewardItemName = rewardItem.Name;
             }
+
+
 
             List<ObjectiveDto>? requiredObjectives = null;
             if (b.CriteriaType == BadgeCriteriaType.ObjectivesCompletedSelected && !string.IsNullOrEmpty(b.CriteriaValue) && objectivesMap != null)

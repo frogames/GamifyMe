@@ -38,7 +38,7 @@
                 }
 
                 <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersXpLeaderboard.Count joueurs classés</MudText>
-                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto">
+                <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
@@ -68,6 +68,9 @@
 
                         <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                    </PagerContent>
                 </MudTable>
             }
         </MudTabPanel>
@@ -86,7 +89,7 @@
                 }
 
                 <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
-                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto">
+                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
                     <HeaderContent>
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
@@ -116,6 +119,9 @@
 
                         <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                    </PagerContent>
                 </MudTable>
             }
         </MudTabPanel>
@@ -159,6 +165,9 @@
                         </MudTd>
                         <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                    </PagerContent>
                 </MudTable>
             }
         </MudTabPanel>
@@ -202,11 +211,21 @@
                         </MudTd>
                         <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                    </PagerContent>
                 </MudTable>
             }
         </MudTabPanel>
     </MudTabs>
 </MudContainer>
+
+<style>
+    .leaderboard-row:hover td {
+        background-color: var(--mud-palette-action-hover) !important;
+        transition: background-color 0.2s;
+    }
+</style>
 
 @code {
     private string GetImageSrc(string imageUrl)

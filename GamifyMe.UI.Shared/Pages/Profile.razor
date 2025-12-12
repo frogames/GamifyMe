@@ -91,7 +91,7 @@
         @if (profile.RecentActivity != null && profile.RecentActivity.Any())
         {
             <MudList T="string" Dense="true" DisablePadding="true">
-                @foreach (var activity in profile.RecentActivity)
+                @foreach (var activity in profile.RecentActivity.Skip((currentPage - 1) * 10).Take(10))
                 {
                     <MudListItem Icon="@activity.Icon" IconColor="Color.Primary">
                         <div class="d-flex justify-space-between align-center width-100">
@@ -118,6 +118,12 @@
                     <MudDivider />
                 }
             </MudList>
+            @if (profile.RecentActivity.Count > 10)
+            {
+                <div class="d-flex justify-center mt-4">
+                    <MudPagination Color="Color.Primary" Count="@((int)Math.Ceiling((double)profile.RecentActivity.Count / 10))" Selected="@currentPage" SelectedChanged="PageChanged" />
+                </div>
+            }
         }
         else
         {
@@ -144,6 +150,12 @@
 @code {
     private UserProfileDetailsDto? profile;
     private bool isLoading = true;
+    private int currentPage = 1;
+
+    private void PageChanged(int i)
+    {
+        currentPage = i;
+    }
 
     protected override async Task OnInitializedAsync()
     {

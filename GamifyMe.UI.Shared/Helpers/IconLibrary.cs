@@ -125,5 +125,11 @@ namespace GamifyMe.UI.Shared.Helpers
 
             return IconsMap.ContainsKey(iconName) ? IconsMap[iconName] : Icons.Material.Filled.HelpOutline;
         }
+
+        public static string GetIconViewBox(string iconName)
+        {
+            // Fallback pour les anciennes références, retourne toujours 24x24
+            return "0 0 24 24";
+        }
     }
 }

@@ -71,6 +71,10 @@
                                             </ActivatorContent>
                                         </MudFileUpload>
                                     </MudTooltip>
+                                    @if (!string.IsNullOrEmpty(_imageBase64) || !string.IsNullOrEmpty(newBadge.ImageUrl))
+                                    {
+                                         <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" OnClick="ClearImage" Class="mt-1">Supprimer l'image</MudButton>
+                                    }
                                     @if (!string.IsNullOrEmpty(_imageBase64))
                                     {
                                         <MudAvatar Size="Size.Large" Class="mt-2">
@@ -482,6 +486,13 @@
         }
     }
 
+    private void ClearImage()
+    {
+        _imageBase64 = null;
+        newBadge.ImageUrl = null;
+        newBadge.ImageBase64 = null; // Ensure this is cleared if it exists on DTO
+    }
+
     private async Task OpenIconPicker()
     {
         var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
@@ -501,7 +512,8 @@
         BadgeCriteriaType.ObjectivesCompletedSelected => "Compléter une Sélection d'Objectifs",
         BadgeCriteriaType.StoreItemsPurchasedSelected => "Posséder une Sélection d'Objets (Set)",
         BadgeCriteriaType.OnboardingCompleted => "Onboarding Complété",
-        BadgeCriteriaType.Manual => "Attribution Manuelle",
+        BadgeCriteriaType.TopOneIndividual => "Être #1 Classement Individuel (XP)",
+        BadgeCriteriaType.TopOneGroup => "Être dans le Groupe #1 (XP)",
         _ => type.ToString()
     };
 
@@ -516,8 +528,9 @@
         BadgeCriteriaType.StoreItemsPurchasedCount => "Débloqué après avoir acheté un certain nombre d'objets à la boutique (tous confondus).",
         BadgeCriteriaType.ObjectivesCompletedSelected => "Le joueur doit valider chacun des objectifs sélectionnés dans la liste ci-dessous (au moins une fois).",
         BadgeCriteriaType.StoreItemsPurchasedSelected => "Le joueur doit posséder simultanément tous les objets sélectionnés dans la liste ci-dessous (Collection/Set).",
-        BadgeCriteriaType.Manual => "Ce badge ne peut pas être débloqué automatiquement. Il doit être attribué manuellement par un administrateur via le profil du joueur.",
         BadgeCriteriaType.OnboardingCompleted => "Ce badge est débloqué automatiquement lorsque le joueur termine l'onboarding (tutoriel).",
+        BadgeCriteriaType.TopOneIndividual => "Le joueur doit atteindre la 1ère place du classement individuel par XP.",
+        BadgeCriteriaType.TopOneGroup => "Le joueur doit être membre du groupe étant à la 1ère place du classement de groupe par XP.",
         _ => "Pas de description disponible."
     };
 }
