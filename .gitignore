@@ -26,3 +26,6 @@ DEPLOYMENT_PROCEDURE.md
 
 # Ignorer le projet de tests temporairement
 GamifyMe.Tests/
+
+# Environment Files
+.env

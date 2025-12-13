@@ -88,6 +88,7 @@ jobs:
             export SMTP_PORT="${{ secrets.SMTP_PORT }}"
             export SMTP_SENDER_EMAIL="${{ secrets.SMTP_SENDER_EMAIL }}"
             export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+            export AppUrl="https://meritopass.com"
             
             # Redémarrage (Up détache et recrée si l'image a changé, et attend que ce soit healthy)
             docker compose -f docker-compose.prod.yml up -d --force-recreate --wait --remove-orphans

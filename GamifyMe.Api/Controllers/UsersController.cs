@@ -86,9 +86,9 @@ namespace GamifyMe.Api.Controllers
                 {
                     var appUrl = _configuration["AppUrl"];
                     var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
-                    var subject = "Confirmez votre compte GamifyMe";
+                    var subject = "Confirmez votre compte MeritoPass";
                     var body = $@"
-                        <h1>Bienvenue sur GamifyMe !</h1>
+                        <h1>Bienvenue sur MeritoPass !</h1>
                         <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
                         <p><a href='{confirmationLink}'>Confirmer mon email</a></p>
                         <p>Si le lien ne fonctionne pas, copiez-collez l'URL suivante dans votre navigateur : {confirmationLink}</p>";
@@ -607,10 +607,10 @@ namespace GamifyMe.Api.Controllers
             {
                 var appUrl = _configuration["AppUrl"];
                 var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
-                var subject = "Confirmez votre nouvel email GamifyMe";
+                var subject = "Confirmez votre nouvel email MeritoPass";
                 var body = $@"
                     <h1>Modification d'email</h1>
-                    <p>Vous avez demandé à changer votre adresse email. Veuillez cliquer sur le lien ci-dessous pour confirmer cette nouvelle adresse :</p>
+                    <p>Vous avez demandé à changer votre adresse email pour votre compte MeritoPass. Veuillez cliquer sur le lien ci-dessous pour confirmer cette nouvelle adresse :</p>
                     <p><a href='{confirmationLink}'>Confirmer mon nouvel email</a></p>";
 
                 await _emailService.SendEmailAsync(user.Email, subject, body);
