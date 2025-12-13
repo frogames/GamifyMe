@@ -18,7 +18,6 @@ SMTP_HOST="smtp.hostinger.com"
 SMTP_PORT="465"
 SMTP_SENDER_EMAIL="contact@meritopass.com"
 SMTP_PASSWORD="bfRg6ZUBfD2sUj_"
-AppUrl="https://meritopass.com"
 EOT
     echo -e "${GREEN}Fichier .env créé avec succès !${NC}"
     echo -e "${RED}ATTENTION : Modifiez le mot de passe SMTP dans le fichier .env si nécessaire.${NC}"
