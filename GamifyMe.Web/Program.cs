@@ -78,7 +78,7 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Clear();
 var cookieProvider = new Microsoft.AspNetCore.Localization.CookieRequestCultureProvider
 {
-    CookieName = "GamifyMeCulture"
+    CookieName = "MeritoPassCulture"
 };
 localizationOptions.RequestCultureProviders.Add(cookieProvider);
 localizationOptions.RequestCultureProviders.Add(new Microsoft.AspNetCore.Localization.QueryStringRequestCultureProvider());
@@ -98,7 +98,7 @@ app.MapGet("/Culture/Set", (HttpContext context, string culture, string redirect
     Console.WriteLine($"[Culture/Set] Request to set culture: {culture}, Redirect: {redirectUri}");
     if (culture != null)
     {
-        var cookieName = "GamifyMeCulture";
+        var cookieName = "MeritoPassCulture";
         var cookieValue = Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
             new Microsoft.AspNetCore.Localization.RequestCulture(culture, culture));
 

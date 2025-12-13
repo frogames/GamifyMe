@@ -1,5 +1,6 @@
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using Microsoft.Extensions.Options;
 
 namespace GamifyMe.Api.Services
@@ -19,30 +20,35 @@ namespace GamifyMe.Api.Services
         {
             var smtpSettings = _configuration.GetSection("Smtp");
             var host = smtpSettings["Host"];
-            var port = int.Parse(smtpSettings["Port"] ?? "587");
+            var port = int.Parse(smtpSettings["Port"] ?? "465");
             var senderEmail = smtpSettings["SenderEmail"];
             var password = smtpSettings["Password"];
 
             try
             {
-                using var client = new SmtpClient(host, port)
-                {
-                    Credentials = new NetworkCredential(senderEmail, password),
-                    EnableSsl = true,
-                    Timeout = 10000 // 10 secondes timeout
-                };
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("MeritoPass", senderEmail));
+                message.To.Add(new MailboxAddress("", to));
+                message.Subject = subject;
 
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(senderEmail!, "GamifyMe"),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(to);
+                var bodyBuilder = new BodyBuilder { HtmlBody = body };
+                message.Body = bodyBuilder.ToMessageBody();
 
-                await client.SendMailAsync(mailMessage);
+                using var client = new SmtpClient();
+                // Utilisation de 10 secondes de timeout pour chaque étape
+                client.Timeout = 10000; 
+
+                // Connexion avec Auto (STARTTLS souvent sur 587, SSL sur 465)
+                await client.ConnectAsync(host, port, SecureSocketOptions.Auto);
+
+                // Authentification
+                await client.AuthenticateAsync(senderEmail, password);
+
+                // Envoi
+                await client.SendAsync(message);
                 _logger.LogInformation($"Email sent to {to}");
+
+                await client.DisconnectAsync(true);
             }
             catch (Exception ex)
             {

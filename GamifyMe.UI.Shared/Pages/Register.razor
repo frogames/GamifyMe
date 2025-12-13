@@ -128,9 +128,12 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Compte créé avec succès ! Un email de validation vous a été envoyé. Veuillez vérifier votre boîte mail pour activer votre compte.", Severity.Success, config =>
+                var message = await response.Content.ReadAsStringAsync();
+                // Clean up string if JSON formatted or quoted
+                message = message.Trim('"');
+                Snackbar.Add(message, Severity.Success, config =>
                 {
-                    config.VisibleStateDuration = 5000; // Affiche pendant 5 secondes
+                    config.VisibleStateDuration = 5000;
                 });
                 await Task.Delay(2000); // Laisse le temps de lire le message
                 Navigation.NavigateTo("login");

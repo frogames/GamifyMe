@@ -15,6 +15,10 @@ services:
       # 3. Username=postgres : Le nom d'utilisateur vu sur la capture
       # 4. Password=Canon060570
       - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Port=5432;Database=gamifyme_db;Username=postgres;Password=Canon060570;Include Error Detail=true
+      - Smtp__Host=${SMTP_HOST}
+      - Smtp__Port=${SMTP_PORT}
+      - Smtp__SenderEmail=${SMTP_SENDER_EMAIL}
+      - Smtp__Password=${SMTP_PASSWORD}
     volumes:
       - gamifyme_images:/app/wwwroot/images
 

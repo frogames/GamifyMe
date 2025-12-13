@@ -237,3 +237,6 @@ D:\GamifyMe\GamifyMe.Api\obj\Debug\net8.0\refint\GamifyMe.Api.dll
 D:\GamifyMe\GamifyMe.Api\obj\Debug\net8.0\GamifyMe.Api.pdb
 D:\GamifyMe\GamifyMe.Api\obj\Debug\net8.0\GamifyMe.Api.genruntimeconfig.cache
 D:\GamifyMe\GamifyMe.Api\obj\Debug\net8.0\ref\GamifyMe.Api.dll
+D:\GamifyMe\GamifyMe.Api\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+D:\GamifyMe\GamifyMe.Api\bin\Debug\net8.0\MailKit.dll
+D:\GamifyMe\GamifyMe.Api\bin\Debug\net8.0\MimeKit.dll

@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}=== DÉPLOIEMENT GAMIFYME ===${NC}"
+echo -e "${GREEN}=== DÉPLOIEMENT MERITOPASS ===${NC}"
 
 # 1. Vérification du fichier .env
 if [ ! -f .env ]; then
@@ -16,7 +16,7 @@ ASPNETCORE_ENVIRONMENT=Production
 Jwt__Key="Ceci est une phrase secrète très très longue pour satisfaire l'algorithme HMAC SHA512 qui est gourmand en bits 123456789"
 SMTP_HOST="smtp.hostinger.com"
 SMTP_PORT="465
-SMTP_SENDER_EMAIL="contact@gamifyme.fun"
+SMTP_SENDER_EMAIL="contact@meritopass.com"
 SMTP_PASSWORD="bfRg6ZUBfD2sUj_"
 EOT
     echo -e "${GREEN}Fichier .env créé avec succès !${NC}"
