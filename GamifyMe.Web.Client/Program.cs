@@ -30,7 +30,7 @@ namespace GamifyMe.Web.Client
                 }
                 else
                 {
-                    // En production (gamifyme.fun), on utilise l'URL d'origine
+                    // En production (meritopass.com), on utilise l'URL d'origine
                     // Nginx se chargera de router /api vers le backend
                     client.BaseAddress = new Uri(baseAddress);
                 }
@@ -72,11 +72,11 @@ namespace GamifyMe.Web.Client
                 {
                     var cultureCookie = cookieValue.Split(';')
                         .Select(c => c.Trim())
-                        .FirstOrDefault(c => c.StartsWith("GamifyMeCulture="));
+                        .FirstOrDefault(c => c.StartsWith("MeritoPassCulture="));
 
                     if (!string.IsNullOrEmpty(cultureCookie))
                     {
-                        var value = cultureCookie.Substring("GamifyMeCulture=".Length);
+                        var value = cultureCookie.Substring("MeritoPassCulture=".Length);
                         value = System.Net.WebUtility.UrlDecode(value);
                         var cultureCode = "fr";
 
