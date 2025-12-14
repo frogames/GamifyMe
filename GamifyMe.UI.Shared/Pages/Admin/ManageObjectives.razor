@@ -43,7 +43,7 @@
 
                     <div class="d-flex gap-4 mb-3">
                         <MudTextField T="int" Label="Récompense XP" @bind-Value="newObjective.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Required="true" />
-                        <MudTextField T="int" Label="Récompense Crédits" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Required="true" />
+                        <MudTextField T="int" Label="@($"Récompense {CurrencyName}")" @bind-Value="newObjective.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Required="true" />
                     </div>
 
                     <MudSelect T="ObjectiveCategory" Label="Catégorie" @bind-Value="newObjective.Category" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Disabled="@IsCategoryAutomatic" Required="true" >
@@ -245,7 +245,7 @@
                                     <MudItem xs="2">
                                         <div class="d-flex gap-1">
                                             <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward Crédits</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward @CurrencyName</MudChip>
                                         </div>
                                     </MudItem>
                                     <MudItem xs="1" Class="d-flex justify-end">
@@ -276,6 +276,7 @@
     private TimeSpan? eventTime;
     private TimeSpan? endTime;
     private Guid? selectedPrerequisiteId;
+    private string CurrencyName = "Crédits";
     
     private List<ObjectiveDto> _dropZoneItems = new();
     private MudDropContainer<ObjectiveDto>? _dropContainer;
@@ -303,6 +304,14 @@
                 .ThenBy(o => o.SortOrder)
                 .ToList();
             
+            // Allow failure for this one, non-critical
+            try 
+            {
+                var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+                if (profile != null) CurrencyName = profile.CurrencyName ?? "Crédits";
+            }
+            catch {}
+
             StateHasChanged();
             _dropContainer?.Refresh();
         }
@@ -501,7 +510,11 @@
 
     private async Task ShowWealthEstimation()
     {
-        var parameters = new DialogParameters { ["Objectives"] = allObjectivesFullList };
+        var parameters = new DialogParameters 
+        { 
+            ["Objectives"] = allObjectivesFullList,
+            ["CurrencyName"] = CurrencyName
+        };
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
         await DialogService.ShowAsync<WealthEstimationDialog>("Estimation Richesse", parameters, options);
     }

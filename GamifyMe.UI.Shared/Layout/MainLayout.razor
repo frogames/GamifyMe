@@ -12,6 +12,7 @@
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
 @inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
@@ -36,7 +37,8 @@
 
 <AuthorizeView>
     <Authorized>
-        <MudLayout>
+        <CascadingValue Value="userStats">
+            <MudLayout>
             <MudAppBar Elevation="1" Style="@($"flex-wrap: wrap; padding-right: 8px; {(ThemeService.CurrentTheme == CustomThemes.DefaultTheme ? "background: linear-gradient(135deg, #8E24AA 0%, #00ACC1 100%);" : "")}")">
                 <div class="d-flex align-center justify-space-between" style="width: 100%;">
                     @* GAUCHE: Menu + Logo *@
@@ -55,7 +57,7 @@
                         {
                             @* Desktop: Stats complètes (Caché sur Mobile) *@
                             <div class="d-none d-sm-flex align-center gap-2 mr-4">
-                                <MudText Typo="Typo.caption" Class="mr-2"><b>@userStats.EstablishmentName</b> @(string.IsNullOrEmpty(userStats.GroupName) ? "" : $" - {userStats.GroupName}")</MudText>
+                                <MudText Typo="Typo.caption" Class="mr-2"><b>@userStats.EstablishmentName</b></MudText>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.EmojiEvents">@Loc["LevelShort"] @userStats.Level</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Bolt">@userStats.CurrentXp XP</MudChip>
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MonetizationOn">@userStats.CurrencyBalance</MudChip>
@@ -120,8 +122,10 @@
                     @Body
 
                 </MudContainer>
+                <AppFooter IsAppMode="@IsAppMode" />
             </MudMainContent>
-        </MudLayout>
+            </MudLayout>
+        </CascadingValue>
     </Authorized>
     <NotAuthorized>
         <MudLayout>
@@ -137,6 +141,9 @@
 @code {
     bool _drawerOpen = true;
     private UserProfileDetailsDto? userStats;
+    private int _lastTrackedLevel = -1; // -1 indicates not yet loaded
+    private string? _lastIdentifiedEmail = null;
+    private bool IsAppMode = false;
     private bool IsScannerPage => Navigation.Uri.Contains("/scanner", StringComparison.OrdinalIgnoreCase);
 
     private System.Timers.Timer? _timer;
@@ -149,6 +156,12 @@
         ThemeService.OnChange += StateHasChanged;
         Navigation.LocationChanged += OnLocationChanged;
         UserStateService.OnUserDataChanged += HandleUserDataChanged;
+        
+        try 
+        {
+            IsAppMode = await JS.InvokeAsync<bool>("siteUtils.isStandalone");
+        }
+        catch { /* JS might not be ready or Prerendering */ }
     }
 
     private void HandleUserDataChanged()
@@ -191,6 +204,37 @@
                 userStats = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
                 if (userStats != null)
                 {
+                    // Identify User in Brevo if not already done for this session/email
+                    if (_lastIdentifiedEmail != userStats.Email)
+                    {
+                        try
+                        {
+                            await JS.InvokeVoidAsync("brevoInterop.identify", userStats.Email, new 
+                            { 
+                                FIRSTNAME = userStats.FirstName, 
+                                LASTNAME = userStats.Username,
+                                ROLE = userStats.Role,
+                                ESTABLISHMENT = userStats.EstablishmentName
+                            });
+                            _lastIdentifiedEmail = userStats.Email;
+                        }
+                        catch (Exception ex) 
+                        { 
+                            Console.WriteLine($"[MainLayout] Error identifying user to Brevo: {ex.Message}"); 
+                        }
+                    }
+
+                    // Track LEVEL event
+                    if (_lastTrackedLevel != -1 && userStats.Level > _lastTrackedLevel)
+                    {
+                        try 
+                        {
+                            await JS.InvokeVoidAsync("brevoInterop.trackEvent", "LEVEL", new { level = userStats.Level });
+                        }
+                        catch {}
+                    }
+                    _lastTrackedLevel = userStats.Level;
+
                     ThemeService.SetTheme(userStats.ActiveUiTheme);
                     
                     if (userStats.ActiveBoostMultiplier > 1 && userStats.BoostEndsAt.HasValue)

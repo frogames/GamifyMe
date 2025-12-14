@@ -1,0 +1,28 @@
+@using MudBlazor
+
+@if (!IsAppMode)
+{
+    <MudPaper Elevation="0" Class="py-4 mt-8" Style="background-color: var(--mud-palette-surface); border-top: 1px solid var(--mud-palette-divider);">
+        <MudContainer MaxWidth="MaxWidth.Large">
+            <div class="d-flex flex-wrap justify-space-between align-center gap-4">
+                
+                @* Copyright *@
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    &copy; @DateTime.Now.Year MeritoPass. Tous droits réservés.
+                </MudText>
+
+                @* Links *@
+                <div class="d-flex gap-4">
+                    <MudLink Href="/legal-notice" Typo="Typo.caption" Color="Color.Default">Mentions Légales</MudLink>
+                    <MudLink Href="/privacy-policy" Typo="Typo.caption" Color="Color.Default">Confidentialité</MudLink>
+                    <MudLink Href="/terms" Typo="Typo.caption" Color="Color.Default">CGU</MudLink>
+                </div>
+
+            </div>
+        </MudContainer>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public bool IsAppMode { get; set; }
+}

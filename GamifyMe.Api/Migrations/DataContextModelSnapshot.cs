@@ -131,6 +131,22 @@ namespace GamifyMe.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("CurrencyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsChallengesEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsGroupsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsShopEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -713,7 +729,7 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("GamifyMe.Shared.Models.User", "User")
-                        .WithMany()
+                        .WithMany("UserBadges")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -826,6 +842,8 @@ namespace GamifyMe.Api.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("UserBadges");
 
                     b.Navigation("UserObjectives");
 

@@ -1,4 +1,7 @@
-﻿using GamifyMe.Api.Constants;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using GamifyMe.Shared.Constants;
 using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
 using Microsoft.AspNetCore.Authorization;

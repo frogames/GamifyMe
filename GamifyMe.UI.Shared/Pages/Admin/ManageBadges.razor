@@ -120,7 +120,7 @@
                             }
                             else if (newBadge.CriteriaType == BadgeCriteriaType.TotalCurrencyEarned)
                             {
-                                <MudTextField T="int" Label="Crédits (Solde actuel) requis" @bind-Value="newBadge.CriteriaThreshold" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="int" Label="@($"Solde de {CurrencyName} (Solde actuel) requis")" @bind-Value="newBadge.CriteriaThreshold" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             }
                             else if (newBadge.CriteriaType == BadgeCriteriaType.ObjectivesCompletedCount)
                             {
@@ -188,7 +188,7 @@
                             <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Récompenses</MudText>
                             <div class="d-flex gap-4">
                                 <MudTextField T="int" Label="XP" @bind-Value="newBadge.XpReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
-                                <MudTextField T="int" Label="Crédits" @bind-Value="newBadge.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                                <MudTextField T="int" Label="@CurrencyName" @bind-Value="newBadge.DocPointsReward" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
                             </div>
                             <MudSelect T="Guid?" Label="Objet offert (Optionnel)" @bind-Value="newBadge.RewardStoreItemId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mt-2">
                                 @foreach (var item in storeItems)
@@ -251,7 +251,7 @@
              <MudTd>
                  <div class="d-flex gap-1">
                      @if(badge.XpReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@badge.XpReward XP</MudChip> }
-                     @if(badge.DocPointsReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">@badge.DocPointsReward DOC</MudChip> }
+                     @if(badge.DocPointsReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">@badge.DocPointsReward @CurrencyName</MudChip> }
                  </div>
              </MudTd>
              <MudTd>
@@ -323,12 +323,18 @@
         }
     }
 
+    private string CurrencyName = "Crédits";
+
     private async Task LoadConfigData()
     {
          try
         {
             allObjectives = await Http.GetFromJsonAsync<List<ObjectiveSimpleDto>>("api/objectives/list-all") ?? new();
             storeItems = await Http.GetFromJsonAsync<List<StoreItemDto>>("api/store/list-all") ?? new();
+            
+            // Fetch currency name
+             var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
+             if (profile != null) CurrencyName = profile.CurrencyName;
         }
         catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
@@ -504,7 +510,7 @@
     {
         BadgeCriteriaType.LevelReached => "Atteindre un Niveau",
         BadgeCriteriaType.TotalXpEarned => "Gagner de l'XP (Total)",
-        BadgeCriteriaType.TotalCurrencyEarned => "Solde de Crédits (Min)",
+        BadgeCriteriaType.TotalCurrencyEarned => $"Solde de {CurrencyName} (Min)",
         BadgeCriteriaType.ObjectivesCompletedCount => "Nombre d'Objectifs Validés",
         BadgeCriteriaType.ObjectiveSpecificCount => "Valider un Objectif Spécifique (X fois)",
         BadgeCriteriaType.StreakLength => "Série de Validations (Streak)",
@@ -521,7 +527,7 @@
     {
         BadgeCriteriaType.LevelReached => "Le badge est débloqué automatiquement lorsque le joueur atteint le niveau spécifié.",
         BadgeCriteriaType.TotalXpEarned => "Débloqué lorsque le cumul total d'XP gagné par le joueur dépasse le montant défini.",
-        BadgeCriteriaType.TotalCurrencyEarned => "Débloqué lorsque le solde actuel de Crédits du joueur atteint le montant défini.",
+        BadgeCriteriaType.TotalCurrencyEarned => $"Débloqué lorsque le solde actuel de {CurrencyName} du joueur atteint le montant défini.",
         BadgeCriteriaType.ObjectivesCompletedCount => "Débloqué après avoir validé un certain nombre d'objectifs (tous confondus).",
         BadgeCriteriaType.ObjectiveSpecificCount => "Débloqué après avoir validé un objectif précis un certain nombre de fois.",
         BadgeCriteriaType.StreakLength => "Débloqué en validant des objectifs consécutivement sans briser la série.",

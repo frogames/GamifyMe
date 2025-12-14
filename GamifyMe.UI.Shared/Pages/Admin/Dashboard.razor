@@ -1,0 +1,60 @@
+@page "/admin/dashboard"
+@using GamifyMe.Shared.Dtos
+@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Tableau de bord</MudText>
+
+    @if (_stats == null)
+    {
+         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="d-flex flex-column align-center justify-center pa-4 mud-theme-primary" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h3">@_stats.UserCount @(_stats.MaxUsers > 0 ? $"/ {_stats.MaxUsers}" : "")</MudText>
+                    <MudText Typo="Typo.subtitle1">Utilisateurs</MudText>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="d-flex flex-column align-center justify-center pa-4 mud-theme-secondary" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Favorite" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h3">@_stats.SystemHealth</MudText>
+                    <MudText Typo="Typo.subtitle1">Santé du système</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                 <MudPaper Class="d-flex flex-column align-center justify-center pa-4" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Large" Class="mb-2 text-warning" />
+                    <MudText Typo="Typo.h3">0</MudText>
+                    <MudText Typo="Typo.subtitle1">Alertes</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <!-- TODO: Add charts or more stats here -->
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private EstablishmentStatsDto? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _stats = await Http.GetFromJsonAsync<EstablishmentStatsDto>("api/establishment/stats");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Impossible de charger les statistiques.", Severity.Error);
+        }
+    }
+}

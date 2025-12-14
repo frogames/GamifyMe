@@ -131,7 +131,7 @@
                              <!-- Price -->
                              <div class="d-flex align-center">
                                  <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="@(UserCurrencyBalance >= Item.Price ? Color.Info : Color.Error)" Size="Size.Small" Style="font-weight:bold;">
-                                     @Item.Price Crédits
+                                     @Item.Price @CurrencyName
                                  </MudChip>
                              </div>
                              <!-- Stock -->
@@ -178,6 +178,7 @@
     [Parameter] public bool UserHasActiveBoost { get; set; }
     [Parameter] public EventCallback<string> OnPlaySound { get; set; }
     [Parameter] public bool ShowPurchaseButton { get; set; } = true;
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
 
     private bool _showFullImage = false;
 
@@ -187,7 +188,7 @@
     {
         if (UserCurrencyBalance < Item.Price)
         {
-            Snackbar.Add("Vous n'avez pas assez de crédits pour acheter cet objet !", Severity.Error);
+            Snackbar.Add($"Vous n'avez pas assez de {CurrencyName.ToLower()} pour acheter cet objet !", Severity.Error);
             return;
         }
         MudDialog.Close(DialogResult.Ok(true));

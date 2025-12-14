@@ -75,7 +75,7 @@
             }
         </MudTabPanel>
 
-        <MudTabPanel Text="Joueurs (Crédits)" Icon="@Icons.Material.Filled.AttachMoney">
+        <MudTabPanel Text="@($"Joueurs ({currentUser?.CurrencyName ?? "Crédits"})")" Icon="@Icons.Material.Filled.AttachMoney">
             @if (isLoadingUsersCurrency)
             {
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -85,7 +85,7 @@
                 @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
                 {
                      var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
-                     <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency Crédits)</MudAlert>
+                     <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency @(currentUser?.CurrencyName ?? "Crédits"))</MudAlert>
                 }
 
                 <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
@@ -94,7 +94,7 @@
                         <MudTh>Rang</MudTh>
                         <MudTh>Joueur</MudTh>
 
-                        <MudTh>Crédits</MudTh>
+                        <MudTh>@(currentUser?.CurrencyName ?? "Crédits")</MudTh>
                     </HeaderContent>
                     <RowTemplate Context="user">
                         <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
@@ -117,7 +117,7 @@
                             </div>
                         </MudTd>
 
-                        <MudTd DataLabel="Crédits">@user.TotalCurrency</MudTd>
+                        <MudTd DataLabel="@(currentUser?.CurrencyName ?? "Crédits")">@user.TotalCurrency</MudTd>
                     </RowTemplate>
                     <PagerContent>
                         <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />

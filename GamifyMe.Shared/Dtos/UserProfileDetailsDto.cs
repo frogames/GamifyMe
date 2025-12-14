@@ -21,6 +21,8 @@
         // Monnaie
         public int CurrencyBalance { get; set; }
         public string CurrencyName { get; set; } = "Crédits"; // "DOC", "Gold", etc.
+        public bool IsShopEnabled { get; set; } = true;
+        public bool IsGroupsEnabled { get; set; } = true;
         public Guid? GroupId { get; set; }
         public string? GroupName { get; set; }
         public string? GroupIcon { get; set; }

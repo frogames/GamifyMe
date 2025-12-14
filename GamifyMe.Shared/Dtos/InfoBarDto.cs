@@ -16,5 +16,9 @@ namespace GamifyMe.Shared.Dtos
         // --- Section "Autres Monnaies" (Générique) ---
         // C'est une liste, pour être flexible et déclinable
         public List<WalletBalanceDto> OtherWallets { get; set; } = new List<WalletBalanceDto>();
+        
+        public string CurrencyName { get; set; } = "Crédits";
+        public bool IsShopEnabled { get; set; } = true;
+        public bool IsGroupsEnabled { get; set; } = true;
     }
 }

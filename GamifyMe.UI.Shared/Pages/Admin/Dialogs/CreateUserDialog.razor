@@ -1,0 +1,34 @@
+@using GamifyMe.Shared.Dtos
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string" Label="Prénom" Required="true" RequiredError="Le prénom est requis" @bind-Value="model.FirstName"/>
+            <MudTextField T="string" Label="Nom d'utilisateur" Required="true" RequiredError="Le nom d'utilisateur est requis" @bind-Value="model.Username"/>
+            <MudTextField T="string" Label="Email" Required="true" RequiredError="L'email est requis" @bind-Value="model.Email" />
+            <MudTextField T="string" Label="Mot de passe" Required="true" RequiredError="Le mot de passe est requis" InputType="InputType.Password" @bind-Value="model.Password"/>
+            <MudSelect T="string" Label="Rôle" @bind-Value="model.Role" AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Value="@("User")">Utilisateur</MudSelectItem>
+                <MudSelectItem Value="@("Gestionnaire")">Gestionnaire</MudSelectItem>
+                 <MudSelectItem Value="@("Editeur")">Editeur</MudSelectItem>
+                <MudSelectItem Value="@("Admin")">Admin</MudSelectItem>
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!success)">Créer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private CreateUserDto model = new CreateUserDto();
+    private bool success;
+    private MudForm form;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(model));
+    void Cancel() => MudDialog.Cancel();
+}

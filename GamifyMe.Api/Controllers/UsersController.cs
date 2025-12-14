@@ -1,4 +1,4 @@
-﻿using GamifyMe.Api.Constants;
+﻿using GamifyMe.Shared.Constants;
 using GamifyMe.Api.Data;
 using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
@@ -48,6 +48,16 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest("Établissement invalide.");
             }
 
+
+            if (establishment.MaxUsers > 0)
+            {
+                var currentCount = await _context.Users.CountAsync(u => u.EstablishmentId == establishment.Id);
+                if (currentCount >= establishment.MaxUsers)
+                {
+                    return BadRequest("Le nombre maximum d'utilisateurs pour cet établissement a été atteint. Veuillez contacter l'administrateur pour augmenter votre forfait.");
+                }
+            }
+
             if (await _context.Users.AnyAsync(u => u.Email == request.Email.ToLower()))
             {
                 return BadRequest("Cet email est déjà utilisé.");
@@ -66,6 +76,7 @@ namespace GamifyMe.Api.Controllers
                 EstablishmentId = request.EstablishmentId,
                 QrCode = Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.UtcNow,
+                LastActivityAt = DateTime.UtcNow,
                 IsEmailConfirmed = false,
                 EmailConfirmationToken = Guid.NewGuid().ToString()
             };
@@ -149,7 +160,8 @@ namespace GamifyMe.Api.Controllers
             user.IsEmailConfirmed = true;
             user.EmailConfirmationToken = null;
             await _context.SaveChangesAsync();
-            return Ok("Email confirmé.");
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Email confirmé.", Email = user.Email });
         }
 
         [HttpGet("establishment-name/{establishmentId}")]
@@ -175,14 +187,39 @@ namespace GamifyMe.Api.Controllers
             int currentXp = (int)(xpWallet?.Balance ?? 0);
             var levelDetails = LevelHelpers.GetLevelDetails(currentXp);
             
+            // Fetch fresh Establishment Name and Currency Name
+            // We could rely on Claims for Name, but for CurrencyName we want it real-time if possible, 
+            // or we accept it updates on login. 
+            // Let's fetch it to be reactive to Admin changes immediately without re-login.
+            string establishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A";
+            string currencyName = "Crédits";
+            bool isShopEnabled = true;
+            bool isGroupsEnabled = true;
+
+            var establishmentIdClaim = User.FindFirst("EstablishmentId");
+            if (establishmentIdClaim != null && Guid.TryParse(establishmentIdClaim.Value, out var establishmentId))
+            {
+                var est = await _context.Establishments.FindAsync(establishmentId);
+                if (est != null)
+                {
+                    establishmentName = est.Name; // Update with fresh name too
+                    currencyName = est.CurrencyName;
+                    isShopEnabled = est.IsShopEnabled;
+                    isGroupsEnabled = est.IsGroupsEnabled;
+                }
+            }
+            
             return Ok(new InfoBarDto
             {
                 Level = levelDetails.currentLevel,
                 CurrentXp = currentXp,
                 XpToNextLevel = levelDetails.xpForNextLevel,
                 OtherWallets = otherWallets,
-                EstablishmentName = User.FindFirstValue("EstablishmentName") ?? "N/A",
-                FirstName = User.FindFirstValue("FirstName") ?? ""
+                EstablishmentName = establishmentName,
+                FirstName = User.FindFirstValue("FirstName") ?? "",
+                CurrencyName = currencyName,
+                IsShopEnabled = isShopEnabled,
+                IsGroupsEnabled = isGroupsEnabled
             });
         }
 
@@ -328,7 +365,9 @@ namespace GamifyMe.Api.Controllers
                 ProgressPercentage = levelDetails.progressPercent,
                 Rank = rank,
                 CurrencyBalance = currentCurrency,
-                CurrencyName = currencyWallet?.CurrencyCode ?? "DOC",
+                CurrencyName = user.Establishment?.CurrencyName ?? "Crédits",
+                IsShopEnabled = user.Establishment?.IsShopEnabled ?? true,
+                IsGroupsEnabled = user.Establishment?.IsGroupsEnabled ?? true,
                 GroupId = user.GroupId,
                 GroupName = user.Group?.Name,
                 GroupIcon = user.Group?.IconName,
@@ -740,6 +779,7 @@ namespace GamifyMe.Api.Controllers
                 LastName = user.Username,
                 TotalXp = (int)(xpWallet?.Balance ?? 0),
                 TotalCurrency = (int)(currencyWallet?.Balance ?? 0),
+                CurrencyName = user.Establishment?.CurrencyName ?? "Crédits",
                 RegistrationDate = user.CreatedAt,
                 GroupId = user.GroupId,
                 GroupName = user.Group?.Name,
@@ -749,6 +789,175 @@ namespace GamifyMe.Api.Controllers
                 PrincipalStreaks = streaks,
                 Badges = await _badgesService.GetAllBadgesAsync(userId, user.EstablishmentId)
             });
+        }
+
+
+        [HttpGet("establishment/users")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        public async Task<ActionResult<List<UserSummaryDto>>> GetEstablishmentUsers()
+        {
+            var currentUserId = GetCurrentUserId();
+            var establishmentIdClaim = User.FindFirst("EstablishmentId");
+            if (establishmentIdClaim == null || !Guid.TryParse(establishmentIdClaim.Value, out var establishmentId))
+            {
+                return Unauthorized();
+            }
+
+            // Using projection for performance
+            var users = await _context.Users
+                .Where(u => u.EstablishmentId == establishmentId && u.Id != currentUserId) // Optionally exclude self? Or keep self. Let's keep self but maybe highlight it in UI.
+                .Select(u => new UserSummaryDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.Username, // Mapping logic from profile endpoint seems to use Username as LastName? Or just use Username.
+                    Role = u.Role,
+                    CreatedAt = u.CreatedAt,
+                    LastActivityAt = u.LastActivityAt,
+                    Status = u.Status,
+                    XpBalance = (int)(u.Wallets.Where(w => w.CurrencyCode == "XP").Select(w => w.Balance).FirstOrDefault()),
+                    CurrencyBalance = (int)(u.Wallets.Where(w => w.CurrencyCode != "XP").Select(w => w.Balance).FirstOrDefault())
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        [HttpPost("establishment/create-user")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        public async Task<ActionResult> CreateUser(CreateUserDto request)
+        {
+            var establishmentIdClaim = User.FindFirst("EstablishmentId");
+            if (establishmentIdClaim == null || !Guid.TryParse(establishmentIdClaim.Value, out var establishmentId))
+            {
+                return Unauthorized();
+            }
+
+            
+            var establishment = await _context.Establishments.FindAsync(establishmentId);
+            if (establishment != null && establishment.MaxUsers > 0)
+            {
+                var currentCount = await _context.Users.CountAsync(u => u.EstablishmentId == establishmentId);
+                if (currentCount >= establishment.MaxUsers)
+                {
+                     return BadRequest("Le nombre maximum d'utilisateurs a été atteint.");
+                }
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+            {
+                return BadRequest("Ce nom d'utilisateur est déjà utilisé.");
+            }
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = request.Username,
+                FirstName = request.FirstName,
+                Email = request.Email.ToLower(),
+                PasswordHash = passwordHash,
+                Role = request.Role,
+                EstablishmentId = establishmentId,
+                QrCode = Guid.NewGuid().ToString(),
+                CreatedAt = DateTime.UtcNow,
+                LastActivityAt = DateTime.UtcNow,
+                IsEmailConfirmed = true, // Admin created users are auto-confirmed
+                EmailConfirmationToken = null
+            };
+
+            var xpWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishmentId, UserId = user.Id, CurrencyCode = "XP", Balance = 0 };
+            var currencyWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishmentId, UserId = user.Id, CurrencyCode = "DOC", Balance = 0 };
+
+            _context.Users.Add(user);
+            _context.Wallets.Add(xpWallet);
+            _context.Wallets.Add(currencyWallet);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Utilisateur créé avec succès.");
+        }
+
+        [HttpPut("establishment/users/{userId}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin}")]
+        public async Task<IActionResult> UpdateUserAsAdmin(Guid userId, UpdateUserAdminDto request)
+        {
+            var establishmentIdClaim = User.FindFirst("EstablishmentId");
+            if (establishmentIdClaim == null || !Guid.TryParse(establishmentIdClaim.Value, out var establishmentId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.EstablishmentId == establishmentId);
+            if (user == null)
+            {
+                return NotFound("Utilisateur introuvable.");
+            }
+
+            // Uniqueness check for username/email excluding current user
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Username == request.Username))
+            {
+                return BadRequest("Ce nom d'utilisateur est déjà pris.");
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Id != userId && u.Email == request.Email.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
+            user.FirstName = request.FirstName;
+            user.Username = request.Username;
+            user.Email = request.Email.ToLower();
+            user.Role = request.Role;
+
+            user.Role = request.Role;
+
+            // Update Wallets
+            var wallets = await _context.Wallets.Where(w => w.UserId == userId).ToListAsync();
+            var xpWallet = wallets.FirstOrDefault(w => w.CurrencyCode == "XP");
+            var currencyWallet = wallets.FirstOrDefault(w => w.CurrencyCode != "XP");
+
+            if (xpWallet != null) xpWallet.Balance = request.XpBalance;
+            if (currencyWallet != null) currencyWallet.Balance = request.CurrencyBalance;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Utilisateur mis à jour avec succès." });
+        }
+
+        [HttpDelete("establishment/users/{userId}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin}")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
+        {
+            var establishmentIdClaim = User.FindFirst("EstablishmentId");
+            if (establishmentIdClaim == null || !Guid.TryParse(establishmentIdClaim.Value, out var establishmentId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.EstablishmentId == establishmentId);
+            if (user == null)
+            {
+                return NotFound("Utilisateur introuvable ou n'appartient pas à cet établissement.");
+            }
+
+            // Optional: Check if trying to delete self?
+            var currentUserId = GetCurrentUserId();
+            if (user.Id == currentUserId)
+            {
+                 return BadRequest("Vous ne pouvez pas supprimer votre propre compte ici.");
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

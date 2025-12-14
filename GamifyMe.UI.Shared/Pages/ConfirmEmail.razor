@@ -6,6 +6,7 @@
 
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <PageTitle>Validation de l'email</PageTitle>
 
@@ -64,6 +65,15 @@
             if (response.IsSuccessStatusCode)
             {
                 isSuccess = true;
+                var responseContent = await response.Content.ReadFromJsonAsync<ConfirmEmailResponseDto>();
+                
+                // Track NEW_ACCOUNT event
+                if (responseContent != null && !string.IsNullOrEmpty(responseContent.Email))
+                {
+                    await JS.InvokeVoidAsync("brevoInterop.identify", responseContent.Email, new { });
+                    await JS.InvokeVoidAsync("brevoInterop.trackEvent", "NEW_ACCOUNT", new { });
+                }
+
                 headerMessage = "Compte validé !";
                 message = $"Votre email a été confirmé avec succès. Redirection vers la connexion dans {countdown} secondes...";
                 
@@ -108,5 +118,11 @@
     public void Dispose()
     {
         redirectTimer?.Dispose();
+    }
+
+    private class ConfirmEmailResponseDto
+    {
+        public string Message { get; set; }
+        public string Email { get; set; }
     }
 }

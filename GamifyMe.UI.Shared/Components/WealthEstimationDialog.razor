@@ -15,7 +15,7 @@
                     <MudDivider Class="my-2"/>
                     <div class="d-flex flex-column align-center">
                         <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)WeeklyXp) XP</MudChip>
-                        <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)WeeklyCurrency) Crédits</MudChip>
+                        <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)WeeklyCurrency) @CurrencyName</MudChip>
                     </div>
                 </MudCard>
             </MudItem>
@@ -25,7 +25,7 @@
                     <MudDivider Class="my-2"/>
                     <div class="d-flex flex-column align-center">
                          <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)MonthlyXp) XP</MudChip>
-                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)MonthlyCurrency) Crédits</MudChip>
+                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)MonthlyCurrency) @CurrencyName</MudChip>
                     </div>
                 </MudCard>
             </MudItem>
@@ -35,7 +35,7 @@
                     <MudDivider Class="my-2"/>
                     <div class="d-flex flex-column align-center">
                          <MudChip T="string" Color="Color.Secondary" Icon="@Icons.Material.Filled.Bolt">@((int)YearlyXp) XP</MudChip>
-                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)YearlyCurrency) Crédits</MudChip>
+                         <MudChip T="string" Color="Color.Info" Icon="@Icons.Material.Filled.MonetizationOn">@((int)YearlyCurrency) @CurrencyName</MudChip>
                     </div>
                 </MudCard>
             </MudItem>
@@ -51,6 +51,7 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     [Parameter] public List<ObjectiveDto> Objectives { get; set; } = new();
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
 
     private double WeeklyXp;
     private double WeeklyCurrency;

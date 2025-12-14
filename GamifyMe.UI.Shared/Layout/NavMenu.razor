@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.Localization
 @using GamifyMe.UI.Shared.Services
+@using GamifyMe.Shared.Dtos
 @implements IDisposable
 @inject NotificationService NotificationService
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
@@ -23,33 +24,41 @@
         }
     </div>
 
-    <div class="d-flex align-center justify-space-between">
-        <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store" Class="flex-grow-1">
-            @Loc["Store"]
-        </MudNavLink>
-        @if (NotificationService.NewStoreItemsCount > 0)
-        {
-            <div class="notification-badge mr-3">@NotificationService.NewStoreItemsCount</div>
-        }
-    </div>
+    @if (UserStats?.IsShopEnabled ?? true)
+    {
+        <div class="d-flex align-center justify-space-between">
+            <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store" Class="flex-grow-1">
+                @Loc["Store"]
+            </MudNavLink>
+            @if (NotificationService.NewStoreItemsCount > 0)
+            {
+                <div class="notification-badge mr-3">@NotificationService.NewStoreItemsCount</div>
+            }
+        </div>
 
-    <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">
-        @Loc["Inventory"]
-    </MudNavLink>
+        <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">
+            @Loc["Inventory"]
+        </MudNavLink>
+    }
+
+
     
-    <div class="d-flex align-center justify-space-between">
-        <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups" Class="flex-grow-1">
-            @Loc["Groups"]
-        </MudNavLink>
-        @if (NotificationService.NewGroupsCount > 0)
-        {
-            <div class="notification-badge mr-3">@NotificationService.NewGroupsCount</div>
-        }
-    </div>
+    @if (UserStats?.IsGroupsEnabled ?? true)
+    {
+        <div class="d-flex align-center justify-space-between">
+            <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups" Class="flex-grow-1">
+                @Loc["Groups"]
+            </MudNavLink>
+            @if (NotificationService.NewGroupsCount > 0)
+            {
+                <div class="notification-badge mr-3">@NotificationService.NewGroupsCount</div>
+            }
+        </div>
 
-    <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">
-        @Loc["Leaderboard"]
-    </MudNavLink>
+        <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">
+            @Loc["Leaderboard"]
+        </MudNavLink>
+    }
 
     <MudNavLink Href="badges" Icon="@Icons.Material.Filled.MilitaryTech">
         Badges
@@ -69,17 +78,43 @@
         <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">
             @Loc["Objectives"]
         </MudNavLink>
-        <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">
-            @Loc["Store"]
-        </MudNavLink>
-        <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">
-            @Loc["Groups"]
-        </MudNavLink>
+        @if (UserStats?.IsShopEnabled ?? true)
+        {
+            <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">
+                @Loc["Store"]
+            </MudNavLink>
+        }
+        @if (UserStats?.IsGroupsEnabled ?? true)
+        {
+            <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">
+                @Loc["Groups"]
+            </MudNavLink>
+        }
         <MudNavLink Href="admin/badges" Icon="@Icons.Material.Filled.MilitaryTech">
             Badges
         </MudNavLink>
         <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">
             @Loc["Bonus"]
+        </MudNavLink>
+
+        <MudDivider Class="my-2" />
+        <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">
+            Administration
+        </MudText>
+        <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.DashboardCustomize">
+            Dashboard
+        </MudNavLink>
+        <MudNavLink Href="admin/establishment" Icon="@Icons.Material.Filled.Business">
+            Établissement
+        </MudNavLink>
+        <MudNavLink Href="admin/users" Icon="@Icons.Material.Filled.People">
+            Utilisateurs
+        </MudNavLink>
+        <MudNavLink Href="admin/stats" Icon="@Icons.Material.Filled.PieChart">
+            Statistiques
+        </MudNavLink>
+        <MudNavLink Href="admin/subscription" Icon="@Icons.Material.Filled.CreditCard">
+            Forfait
         </MudNavLink>
     </AuthorizeView>
 </MudNavMenu>
@@ -100,14 +135,12 @@
 </style>
 
 @code {
+    [CascadingParameter]
+    public UserProfileDetailsDto? UserStats { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         NotificationService.OnChange += StateHasChanged;
-        // On server side, we might not want to fetch immediately but let MainLayout do it, 
-        // however simpler here.
-        // Wait, OnInitializedAsync runs twice (server/client).
-        // NotificationService handles fetch but needs Auth token (which might not be available on server pre-render).
-        // Let's defer to OnAfterRenderAsync for fetch if needed, but OnInitializedAsync is okay if we handle errors (NotificationService does catch).
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

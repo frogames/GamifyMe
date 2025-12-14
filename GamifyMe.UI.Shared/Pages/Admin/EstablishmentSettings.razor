@@ -1,0 +1,166 @@
+@page "/admin/establishment"
+@using GamifyMe.Shared.Dtos
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Paramètres de l'établissement</MudText>
+
+    @if (_settings == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <!-- Card 1: Paramètres Généraux -->
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Paramètres Généraux</MudText>
+                    
+                    <MudTextField @bind-Value="_settings.Name" Label="Nom de l'établissement" Variant="Variant.Outlined" Class="mb-4" />
+                    
+                    <MudTextField @bind-Value="_settings.CurrencyName" Label="Nom de la monnaie" HelperText="Ex: Crédits, Points..." Variant="Variant.Outlined" Class="mb-4" />
+                    
+                    <MudNumericField @bind-Value="_settings.ArchiveUsersAfterInactiveDays" Label="Suppression comptes inactifs (jours)" Variant="Variant.Outlined" Min="0" Class="mb-4" />
+
+                    <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" Class="mt-2">
+                        @(_saving ? "Enregistrement..." : "Enregistrer")
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Modules</MudText>
+                    <MudSwitch @bind-Value="_settings.IsShopEnabled" Color="Color.Success" Label="Boutique & Inventaire" />
+                    <MudSwitch @bind-Value="_settings.IsGroupsEnabled" Color="Color.Success" Label="Groupes & Classements" />
+                    <MudSwitch @bind-Value="_settings.IsChallengesEnabled" Color="Color.Success" Label="Défis (Bientôt)" Disabled="true" />
+                    <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" Class="mt-4">
+                        @(_saving ? "Enregistrement..." : "Enregistrer")
+                    </MudButton>
+                    
+                    <MudDivider Class="my-4"/>
+                     <MudText Typo="Typo.h6" Class="mb-4">Zone de Danger</MudText>
+                     <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="ResetCredits">Remise à zéro</MudButton>
+                     <MudText Typo="Typo.caption" Class="d-block mt-1">Réinitialise les crédits de TOUS les utilisateurs et l'XP des Groupes à 0. Irréversible.</MudText>
+                </MudPaper>
+            </MudItem>
+            
+             <MudItem xs="12">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Kits de contenu</MudText>
+                    <MudText Class="mb-4">Ajoutez rapidement du contenu thématique à votre établissement.</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard>
+                                <MudCardMedia Image="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1470" Height="140" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">Kit Salle de Sport</MudText>
+                                    <MudText Typo="Typo.body2">Objectifs, badges et récompenses pour motiver les sportifs.</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                         <MudItem xs="12" sm="6" md="4">
+                            <MudCard>
+                                <MudCardMedia Image="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=1470" Height="140" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">Kit Éducation</MudText>
+                                    <MudText Typo="Typo.body2">Pour les écoles et centres de formation.</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                         <MudItem xs="12" sm="6" md="4">
+                            <MudCard>
+                                <MudCardMedia Image="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=1470" Height="140" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">Kit Entreprise</MudText>
+                                    <MudText Typo="Typo.body2">Favorisez la cohésion et la productivité.</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private EstablishmentSettingsDto? _settings;
+    private bool _saving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try 
+        {
+            _settings = await Http.GetFromJsonAsync<EstablishmentSettingsDto>("api/establishment/settings");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Erreur lors du chargement des paramètres: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        _saving = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync("api/establishment/settings", _settings);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Paramètres enregistrés.", Severity.Success);
+            }
+            else 
+            {
+                Snackbar.Add("Erreur lors de l'enregistrement.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Erreur: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task ResetCredits()
+    {
+         var confirmed = await DialogService.ShowMessageBox(
+            "Attention", 
+            "Êtes-vous sûr de vouloir réinitialiser les crédits de TOUS les utilisateurs à 0 ? Cette action est irréversible.", 
+            yesText:"Réinitialiser", cancelText:"Annuler");
+
+        if (confirmed == true)
+        {
+             var response = await Http.PostAsync("api/establishment/reset-credits", null);
+             if (response.IsSuccessStatusCode)
+             {
+                 Snackbar.Add("Crédits réinitialisés.", Severity.Success);
+             }
+             else 
+             {
+                 Snackbar.Add("Erreur lors de la réinitialisation.", Severity.Error);
+             }
+        }
+    }
+
+    [Inject] IDialogService DialogService { get; set; }
+}

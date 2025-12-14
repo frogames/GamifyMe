@@ -23,12 +23,26 @@
 
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    
+    <!-- Brevo Marketing -->
+    <script src="https://cdn.brevo.com/js/sdk-loader.js" async></script>
+    <script>
+        window.Brevo = window.Brevo || [];
+        Brevo.push([
+            "init",
+            {
+                client_key: "lq0t01633u4p49jzfwyjzh1q"
+            }
+        ]);
+    </script>
 
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrScanner.js"></script>
     <script src="js/qrcode-share.js"></script>
     <script src="js/downloadFile.js"></script>
-    <script src="js/cookieHelper.js"></script>
+    <script src="js/qrcode-share.js"></script>
+    <script src="js/brevo.js"></script>
+    <script src="js/site.js"></script>
 </body>
 
 </html>

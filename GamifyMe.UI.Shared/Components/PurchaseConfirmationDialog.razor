@@ -10,7 +10,7 @@
             <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Confirmer l'achat ?</MudText>
             
             <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">
-                Voulez-vous acheter <b>@Item.Name</b> pour <b>@Item.Price Crédits</b> ?
+                Voulez-vous acheter <b>@Item.Name</b> pour <b>@Item.Price @CurrencyName</b> ?
             </MudText>
 
             @if (Item.DigitalActionCode != null && Item.DigitalActionCode.Contains("BOOST", StringComparison.OrdinalIgnoreCase))
@@ -47,6 +47,7 @@
 
     [Parameter] public StoreItemDto Item { get; set; }
     [Parameter] public int UserBalance { get; set; }
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
 
     private void Cancel() => MudDialog.Cancel();
     private void Confirm() => MudDialog.Close(DialogResult.Ok(true));

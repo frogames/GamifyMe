@@ -18,7 +18,7 @@
     <div class="d-flex justify-space-between align-center mb-4">
         <div>
             <MudText Typo="Typo.h5">Gestion de la Boutique</MudText>
-            <MudText Typo="Typo.caption" Class="text-muted">Valeur totale : @allStoreItemsList.Sum(x => x.Price) Crédits</MudText>
+            <MudText Typo="Typo.caption" Class="text-muted">Valeur totale : @allStoreItemsList.Sum(x => x.Price) @currencyName</MudText>
         </div>
         @if (!showForm)
         {
@@ -49,7 +49,7 @@
                     </MudSelect>
 
                     <div class="d-flex gap-4 mb-3">
-                        <MudNumericField T="int" Label="Prix (Crédits)" @bind-Value="newStoreItem.Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                        <MudNumericField T="int" Label="@($"Prix ({currencyName})")" @bind-Value="newStoreItem.Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
                         @if (newStoreItem.ItemType != StoreItemType.Digital)
                         {
                             <MudNumericField T="int" Label="Stock" @bind-Value="newStoreItem.Stock" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
@@ -174,7 +174,7 @@
                                          </div>
                                      </MudItem>
                                      <MudItem xs="2">
-                                         <MudText Typo="Typo.body2">@context.Price Crédits</MudText>
+                                         <MudText Typo="Typo.body2">@context.Price @currencyName</MudText>
                                          @if (context.ItemType != StoreItemType.Digital && context.Stock > 0)
                                          {
                                              <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @context.Stock</MudChip>
@@ -279,9 +279,20 @@
     private string? errorMessageStore;
     private bool isBusyStore = false;
     private bool showForm = false;
+    private string currencyName = "Crédits";
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+             var infoBar = await Http.GetFromJsonAsync<InfoBarDto>("api/users/info-bar");
+             if (infoBar != null) currencyName = infoBar.CurrencyName;
+        }
+        catch (Exception ex) 
+        { 
+            Console.WriteLine($"Erreur fetch InfoBar: {ex.Message}"); 
+        }
+
         await LoadData();
     }
 

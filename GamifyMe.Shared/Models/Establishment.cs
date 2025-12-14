@@ -9,7 +9,17 @@ namespace GamifyMe.Shared.Models
         public List<User> Users { get; set; } = new();
         public Guid? AdminUserId { get; set; } // L'admin de cet établissement (peut être null)
         public Guid? PlanId { get; set; } // Le forfait associé (peut être null)
-        public int ArchiveUsersAfterInactiveDays { get; set; } = 365; // Valeur par défaut
+        
+        // Paramètres de l'établissement
+        public string CurrencyName { get; set; } = "Crédits"; // Nom de la monnaie
+        public int ArchiveUsersAfterInactiveDays { get; set; } = 365; // Délai suppression compte inactif (jours)
+        public int MaxUsers { get; set; } = 100; // Limite d'utilisateurs
+
+        // Modules activés
+        public bool IsShopEnabled { get; set; } = true;
+        public bool IsGroupsEnabled { get; set; } = true;
+        public bool IsChallengesEnabled { get; set; } = false; // "Défis"
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Optionnel : Ajouter des relations si nécessaire plus tard

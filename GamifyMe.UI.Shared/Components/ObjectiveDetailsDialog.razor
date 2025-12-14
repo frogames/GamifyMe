@@ -150,7 +150,7 @@
                     +@(Objective.XpReward * Objective.ActiveMultiplier) XP
                 </MudChip>
                 <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
-                    +@Objective.DocPointsReward Crédits
+                    +@Objective.DocPointsReward @CurrencyName
                 </MudChip>
              </div>
         </div>
@@ -162,7 +162,10 @@
 
     [Parameter] public ObjectiveDto Objective { get; set; }
 
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
+
     private void Cancel() => MudDialog.Cancel();
+
 
     private string FormatFrequency(int hours)
     {

@@ -43,7 +43,11 @@ builder.Services.AddSingleton<CurrencyService>();
 // Business Logic Services
 builder.Services.AddScoped<ObjectiveService>();
 builder.Services.AddScoped<StoreService>();
+builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<BadgesService>();
+
+// Hosted Services
+builder.Services.AddHostedService<InactiveAccountCleanupService>();
 
 // JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

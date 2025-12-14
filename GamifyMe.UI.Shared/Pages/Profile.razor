@@ -82,7 +82,7 @@
                 <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
                     <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h5">@profile.CurrencyBalance</MudText>
-                    <MudText Typo="Typo.caption">@Loc["Credits"]</MudText>
+                    <MudText Typo="Typo.caption">@(profile.CurrencyName ?? Loc["Credits"])</MudText>
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -109,7 +109,7 @@
                                 @if (activity.CurrencyChange != 0)
                                 {
                                     <MudText Typo="Typo.caption" Color="@(activity.CurrencyChange > 0 ? Color.Success : Color.Error)">
-                                        @(activity.CurrencyChange > 0 ? "+" : "")@activity.CurrencyChange Cr
+                                        @(activity.CurrencyChange > 0 ? "+" : "")@activity.CurrencyChange @(profile.CurrencyName ?? "Cr")
                                     </MudText>
                                 }
                             </div>
@@ -142,6 +142,8 @@
 
             @* Zone de danger (Suppression) *@
             <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick="DeleteAccount">@Loc["DeleteAccount"]</MudButton>
+
+
         </div>
     }
 

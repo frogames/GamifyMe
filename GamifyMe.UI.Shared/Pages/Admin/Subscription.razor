@@ -1,0 +1,11 @@
+@page "/admin/subscription"
+@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Mon Forfait</MudText>
+    <MudAlert Severity="Severity.Info">La gestion des forfaits n'est pas encore disponible.</MudAlert>
+    <MudText Class="mt-4">Vous pourrez bientôt changer de forfait et gérer votre abonnement ici.</MudText>
+</MudContainer>
+
+@code {
+}

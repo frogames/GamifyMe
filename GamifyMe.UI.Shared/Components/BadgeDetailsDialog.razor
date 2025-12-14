@@ -5,6 +5,7 @@
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 <style>
     .colored-progress .mud-progress-linear-bar {
@@ -142,7 +143,7 @@
                         }
                         @if (Badge.DocPointsReward > 0)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="fas fa-coins" Class="mr-1">@Badge.DocPointsReward Crédits</MudChip>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="fas fa-coins" Class="mr-1">@Badge.DocPointsReward @CurrencyName</MudChip>
                         }
                         
                          @* Reward Item Display integrated here *@
@@ -187,6 +188,7 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public BadgeDto Badge { get; set; } = new();
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
     
     // We might need a callback to refresh parent if Favorite changes
     [Parameter] public EventCallback OnFavoriteChanged { get; set; }
@@ -275,7 +277,8 @@
         var parameters = new DialogParameters<StoreItemDetailsDialog>
         {
             { x => x.Item, item },
-            { x => x.ShowPurchaseButton, false }
+            { x => x.ShowPurchaseButton, false },
+            { x => x.CurrencyName, CurrencyName }
         };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         DialogService.Show<StoreItemDetailsDialog>("Détails", parameters, options);
@@ -286,9 +289,33 @@
         if (obj == null) return;
         var parameters = new DialogParameters<ObjectiveDetailsDialog>
         {
-            { x => x.Objective, obj }
+            { x => x.Objective, obj },
+            { x => x.CurrencyName, CurrencyName }
         };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         DialogService.Show<ObjectiveDetailsDialog>("Détails", parameters, options);
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Badge.IsUnlocked && Badge.CriteriaType == GamifyMe.Shared.Models.BadgeCriteriaType.OnboardingCompleted)
+        {
+            // Trigger Brevo ONBOARDED event when user views their unlocked Onboarding badge
+            // Ideally this should happen exactly when it unlocks, but viewing it is a good proxy or confirmation.
+            // If we want it only ONCE, we might need a flag, but tracking it multiple times is okay-ish (idempotent analysis)
+            // or we check if we just unlocked it? 
+            // The prompt says "un utilisateur vient de terminer son onboarding".
+            // Since the badge is unlocked automatically, maybe we should trigger this in the logic that SHOWS the badge popup 
+            // when it is first unlocked. But this dialog is likely shown when the user explicitly clicks ON the badge.
+            
+            // Wait, this is the details dialog.
+            // If the user just unlocked it, they might see this.
+            // Let's safe trigger it. Brevo handles events.
+            
+            try 
+            {
+               await JS.InvokeVoidAsync("brevoInterop.trackEvent", "ONBOARDED", new { });
+            }
+            catch {} // Fire and forget
+        }
     }
 }

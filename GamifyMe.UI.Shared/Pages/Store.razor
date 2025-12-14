@@ -188,6 +188,7 @@
             {
                 userCurrencyBalance = profile.CurrencyBalance;
                 userHasActiveBoost = profile.ActiveBoostMultiplier > 1;
+                currencyName = profile.CurrencyName ?? "Crédits";
             }
 
             // Load Inventory (to determine ownership)
@@ -225,6 +226,7 @@
     }
 
     private bool userHasActiveBoost = false;
+    private string currencyName = "Crédits";
 
     private async Task OpenItemDetails(StoreItemDto item)
     {
@@ -232,7 +234,8 @@
         { 
             { x => x.Item, item },
             { x => x.UserCurrencyBalance, userCurrencyBalance },
-            { x => x.UserHasActiveBoost, userHasActiveBoost }
+            { x => x.UserHasActiveBoost, userHasActiveBoost },
+            { x => x.CurrencyName, currencyName }
         };
         var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true };
         
@@ -254,13 +257,14 @@
             return;
         }
 
-        var parameters = new DialogParameters<ConfirmPurchaseDialog>
+        var parameters = new DialogParameters<PurchaseConfirmationDialog>
         {
             { x => x.Item, item },
-            { x => x.UserCurrencyBalance, userCurrencyBalance }
+            { x => x.UserBalance, userCurrencyBalance },
+            { x => x.CurrencyName, currencyName }
         };
         var dialogOptions = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
-        var dialog = DialogService.Show<ConfirmPurchaseDialog>("Confirmation", parameters, dialogOptions);
+        var dialog = DialogService.Show<PurchaseConfirmationDialog>("Confirmation", parameters, dialogOptions);
         var result = await dialog.Result;
 
         if (result.Canceled) return;

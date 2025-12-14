@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using GamifyMe.Api.Constants;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using GamifyMe.Shared.Constants;
 using GamifyMe.Api.Services;
 
 namespace GamifyMe.Api.Controllers

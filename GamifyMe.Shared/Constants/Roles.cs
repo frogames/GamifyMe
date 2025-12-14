@@ -1,4 +1,4 @@
-﻿namespace GamifyMe.Api.Constants
+namespace GamifyMe.Shared.Constants
 {
     public static class Roles
     {

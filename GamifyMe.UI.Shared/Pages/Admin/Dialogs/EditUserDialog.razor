@@ -1,0 +1,44 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using GamifyMe.Shared.Constants
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string" Label="Prénom" Required="true" RequiredError="Le prénom est requis" @bind-Value="model.FirstName"/>
+            <MudTextField T="string" Label="Nom d'utilisateur" Required="true" RequiredError="Le nom d'utilisateur est requis" @bind-Value="model.Username"/>
+            <MudTextField T="string" Label="Email" Required="true" RequiredError="L'email est requis" InputType="InputType.Email" @bind-Value="model.Email"/>
+            
+            <MudSelect T="string" Label="Rôle" @bind-Value="model.Role" AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Value="@(Roles.User)">Utilisateur</MudSelectItem>
+                <MudSelectItem Value="@(Roles.Gestionnaire)">Gestionnaire</MudSelectItem>
+                 <MudSelectItem Value="@(Roles.Editeur)">Editeur</MudSelectItem>
+                <MudSelectItem Value="@(Roles.Admin)">Admin</MudSelectItem>
+            </MudSelect>
+            
+            <div class="d-flex gap-4 mt-3">
+                <MudNumericField T="int" Label="Solde XP" @bind-Value="model.XpBalance" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudNumericField T="int" Label="Solde Monnaie" @bind-Value="model.CurrencyBalance" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </div>
+            
+            <MudAlert Severity="Severity.Info" Class="mt-2">Modifier l'email ne déclenche pas automatiquement une nouvelle confirmation pour l'instant.</MudAlert>
+
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!success)">Enregistrer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public UpdateUserAdminDto model { get; set; } = new UpdateUserAdminDto();
+
+    private bool success;
+    private MudForm form;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(model));
+    void Cancel() => MudDialog.Cancel();
+}

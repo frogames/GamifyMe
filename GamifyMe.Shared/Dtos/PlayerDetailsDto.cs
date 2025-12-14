@@ -7,6 +7,7 @@ namespace GamifyMe.Shared.Dtos
         public string LastName { get; set; } = string.Empty;
         public int TotalXp { get; set; }
         public int TotalCurrency { get; set; }
+        public string CurrencyName { get; set; } = "Crédits";
         public int ActiveBoostMultiplier { get; set; } = 1;
         public DateTime? BoostEndsAt { get; set; }
         public DateTime? RegistrationDate { get; set; }
