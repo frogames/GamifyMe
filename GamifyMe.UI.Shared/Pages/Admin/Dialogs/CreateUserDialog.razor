@@ -10,8 +10,8 @@
             <MudTextField T="string" Label="Mot de passe" Required="true" RequiredError="Le mot de passe est requis" InputType="InputType.Password" @bind-Value="model.Password"/>
             <MudSelect T="string" Label="Rôle" @bind-Value="model.Role" AnchorOrigin="Origin.BottomCenter">
                 <MudSelectItem Value="@("User")">Utilisateur</MudSelectItem>
-                <MudSelectItem Value="@("Gestionnaire")">Gestionnaire</MudSelectItem>
-                 <MudSelectItem Value="@("Editeur")">Editeur</MudSelectItem>
+                <MudSelectItem Value="@("Staff")">Staff</MudSelectItem>
+                 <MudSelectItem Value="@("Coach")">Coach</MudSelectItem>
                 <MudSelectItem Value="@("Admin")">Admin</MudSelectItem>
             </MudSelect>
         </MudForm>

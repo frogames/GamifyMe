@@ -13,7 +13,7 @@ namespace GamifyMe.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach},{Roles.Staff}")]
     public class StatsController : ControllerBase
     {
         private readonly DataContext _context;
@@ -123,6 +123,37 @@ namespace GamifyMe.Api.Controllers
                 });
             }
 
+            // 4. Top Sold Items (if Shop Enabled)
+            // Query establishment settings first to respect "si le module est actif"
+            var isShopEnabled = await _context.Establishments
+                .Where(e => e.Id == establishmentId)
+                .Select(e => e.IsShopEnabled)
+                .FirstOrDefaultAsync();
+
+            List<StatsTopItemDto>? topItems = null;
+
+            if (isShopEnabled)
+            {
+                topItems = await _context.Orders
+                    .Where(o => o.EstablishmentId == establishmentId)
+                    .GroupBy(o => o.StoreItemId)
+                    .Select(g => new
+                    {
+                        ItemName = g.First().StoreItem.Name,
+                        Count = g.Count(), // Quantity is usually 1 per order row in this model unless Quantity field exists (it doesn't in Order)
+                        Revenue = g.Sum(o => o.PricePaid)
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .Take(3)
+                    .Select(x => new StatsTopItemDto
+                    {
+                        ItemName = x.ItemName,
+                        QuantitySold = x.Count,
+                        TotalRevenue = x.Revenue
+                    })
+                    .ToListAsync();
+            }
+
             return Ok(new AdminDetailedStatsDto
             {
                 KeyFigures = new StatsKeyFiguresDto
@@ -134,7 +165,8 @@ namespace GamifyMe.Api.Controllers
                     TotalValidations = totalValidations
                 },
                 UserGrowth = growthData,
-                ObjectiveKpis = kpis.OrderByDescending(k => k.CompletionRate).ToList()
+                ObjectiveKpis = kpis.OrderByDescending(k => k.CompletionRate).ToList(),
+                TopSoldItems = topItems
             });
         }
 

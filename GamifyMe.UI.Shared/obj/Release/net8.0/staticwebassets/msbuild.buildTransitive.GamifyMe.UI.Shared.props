@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\GamifyMe.UI.Shared.props" />
-</Project>

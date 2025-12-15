@@ -12,6 +12,9 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject GamifyMe.UI.Shared.Services.NotificationService NotificationService
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
+@inject IDialogService DialogService
+@using GamifyMe.Shared.Constants
+@using GamifyMe.UI.Shared.Components
 
 <PageTitle>@Loc["Home"]</PageTitle>
 
@@ -240,6 +243,20 @@
                 firstName = user.FindFirst("FirstName")?.Value 
                             ?? user.Identity?.Name 
                             ?? "Invité";
+            }
+        }
+
+        // Check for Onboarding Tutorial (Only for regular Users)
+        if (UserStats != null && UserStats.Role == Roles.User && !UserStats.HasCompletedOnboarding)
+        {
+            var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false, MaxWidth = MaxWidth.Small, FullWidth = true };
+            var dialog = await DialogService.ShowAsync<WelcomeDialog>("Bienvenue", options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                await Http.PostAsync("api/users/complete-onboarding", null);
+                UserStats.HasCompletedOnboarding = true; // Update local state
             }
         }
     }

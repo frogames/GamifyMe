@@ -25,11 +25,26 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<GroupDto>>> GetGroups()
+        public async Task<ActionResult<List<GroupDto>>> GetGroups([FromQuery] bool includeInactive = false)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
-            var groups = await _context.Groups
-                .Where(g => g.EstablishmentId == establishmentId && g.IsActive)
+            var query = _context.Groups.Where(g => g.EstablishmentId == establishmentId);
+
+            // Filter out inactive groups unless requested AND allowed
+            if (!includeInactive)
+            {
+                query = query.Where(g => g.IsActive);
+            }
+            else
+            {
+                // If requesting inactive, strictly enforce Admin/Editeur role
+                if (!User.IsInRole(Roles.Admin) && !User.IsInRole(Roles.SuperAdmin) && !User.IsInRole(Roles.Coach))
+                {
+                    query = query.Where(g => g.IsActive);
+                }
+            }
+
+            var groups = await query
                 .Include(g => g.Members)
                 .Select(g => new GroupDto
                 {
@@ -77,7 +92,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<GroupDto>> CreateGroup(CreateGroupDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -122,7 +137,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<GroupDto>> UpdateGroup(Guid id, UpdateGroupDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -201,7 +216,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult> DeleteGroup(Guid id)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);

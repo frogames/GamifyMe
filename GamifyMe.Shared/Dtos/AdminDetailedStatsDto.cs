@@ -9,6 +9,7 @@ namespace GamifyMe.Shared.Dtos
         public required StatsKeyFiguresDto KeyFigures { get; set; }
         public required List<StatsUserGrowthDto> UserGrowth { get; set; }
         public required List<StatsObjectiveKpiDto> ObjectiveKpis { get; set; }
+        public List<StatsTopItemDto>? TopSoldItems { get; set; }
     }
 
     public class StatsKeyFiguresDto
@@ -33,5 +34,12 @@ namespace GamifyMe.Shared.Dtos
         public int ValidationCount { get; set; }
         public int UniqueUsers { get; set; }
         public double CompletionRate { get; set; } // Percentage of Total Users
+    }
+
+    public class StatsTopItemDto
+    {
+        public required string ItemName { get; set; }
+        public int QuantitySold { get; set; }
+        public int TotalRevenue { get; set; }
     }
 }

@@ -46,5 +46,7 @@
         public double BadgeCompletionPercentage { get; set; }
 
         public List<BadgeDto> Badges { get; set; } = new();
+
+        public bool HasCompletedOnboarding { get; set; }
     }
 }

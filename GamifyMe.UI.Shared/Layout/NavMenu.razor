@@ -12,22 +12,22 @@
 <MudNavMenu>
     @if (_isPrivileged)
     {
-        <MudNavGroup Title="@Loc["Main Menu"]" @bind-Expanded="_expandMain" Icon="@Icons.Material.Filled.Menu">
+        <MudNavGroup Title="@Loc["Main Menu"]" @bind-Expanded="_expandMain" Icon="@Icons.Material.Filled.Menu" Class="mp-menu-main">
             @CommonLinks
         </MudNavGroup>
 
-        <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
-            <MudNavGroup Title="@Loc["Management"]" @bind-Expanded="_expandManagement" Icon="@Icons.Material.Filled.Dashboard">
+        <AuthorizeView Roles="SuperAdmin,Admin,Coach,Staff">
+            <MudNavGroup Title="@Loc["Management"]" @bind-Expanded="_expandManagement" Icon="@Icons.Material.Filled.Dashboard" Class="mp-menu-management">
                  @ManagementLinks
             </MudNavGroup>
             
-            <MudNavGroup Title="Administration" @bind-Expanded="_expandAdmin" Icon="@Icons.Material.Filled.Settings">
+            <MudNavGroup Title="Administration" @bind-Expanded="_expandAdmin" Icon="@Icons.Material.Filled.Settings" Class="mp-menu-admin">
                 @AdminLinks
             </MudNavGroup>
         </AuthorizeView>
 
         <AuthorizeView Roles="SuperAdmin">
-             <MudNavGroup Title="SuperAdmin" @bind-Expanded="_expandSuperAdmin" Icon="@Icons.Material.Filled.SupervisorAccount">
+             <MudNavGroup Title="SuperAdmin" @bind-Expanded="_expandSuperAdmin" Icon="@Icons.Material.Filled.SupervisorAccount" Class="mp-menu-superadmin">
                 <MudNavLink Href="superadmin/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard Global</MudNavLink>
                 <MudNavLink Href="superadmin/establishments" Icon="@Icons.Material.Filled.Business">Établissements</MudNavLink>
                 <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
@@ -84,11 +84,14 @@
     {
         <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
         <MudNavLink Href="scanner" Icon="@Icons.Material.Filled.QrCodeScanner">@Loc["Scanner"]</MudNavLink>
+        @if (UserStats?.IsShopEnabled ?? true)
+        {
+            <MudNavLink Href="admin/system-health" Icon="@Icons.Material.Filled.MonitorHeart">Santé Système</MudNavLink>
+        }
         <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">@Loc["Objectives"]</MudNavLink>
         @if (UserStats?.IsShopEnabled ?? true)
         {
             <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">@Loc["Store"]</MudNavLink>
-            <MudNavLink Href="admin/system-health" Icon="@Icons.Material.Filled.MonitorHeart">Santé Système</MudNavLink>
         }
         @if (UserStats?.IsGroupsEnabled ?? true)
         {
@@ -121,6 +124,11 @@
         align-items: center;
         justify-content: center;
     }
+
+    .mp-menu-main { background-color: rgba(26, 43, 76, 0.05); margin-bottom: 4px; }
+    .mp-menu-management { background-color: rgba(203, 247, 237, 0.3); margin-bottom: 4px; }
+    .mp-menu-admin { background-color: rgba(255, 164, 0, 0.1); margin-bottom: 4px; }
+    .mp-menu-superadmin { background-color: rgba(177, 94, 108, 0.1); margin-bottom: 4px; }
 </style>
 
 @code {
@@ -145,7 +153,7 @@
         if (user.Identity?.IsAuthenticated == true)
         {
             var isAdmin = user.IsInRole(Roles.Admin) || user.IsInRole(Roles.SuperAdmin);
-            var isEditorOrManager = user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire);
+            var isEditorOrManager = user.IsInRole(Roles.Coach) || user.IsInRole(Roles.Staff);
             
             _isPrivileged = isAdmin || isEditorOrManager;
 

@@ -16,7 +16,7 @@ namespace GamifyMe.Api.Controllers
 {
     [Route("api/dashboard")]
     [ApiController]
-    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach},{Roles.Staff}")]
     public class DashboardController : ControllerBase
     {
         private readonly DataContext _context;

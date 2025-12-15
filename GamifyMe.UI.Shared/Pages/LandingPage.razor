@@ -135,66 +135,111 @@
 
     @* PRICING - Fond Bleu Nuit (Sérieux/Dark Mode) *@
     <section id="pricing" class="py-16 px-4 mp-section-dark mt-16">
-        <div class="text-center mb-16">
-            <MudText Typo="Typo.h3" Style="font-weight: 700; color: white;">Tarifs simples et transparents</MudText>
-            <MudText Typo="Typo.subtitle1" Style="color: rgba(255,255,255,0.7);">Commencez gratuitement, évoluez selon vos besoins.</MudText>
+        <div class="text-center mb-8">
+            <MudText Typo="Typo.h3" Style="font-weight: 700; color: white;">De la simple découverte au réseau complet</MudText>
+            <MudText Typo="Typo.subtitle1" Style="color: rgba(255,255,255,0.7);" Class="mb-6">Toutes les fonctionnalités sont incluses dans chaque offre.<br/>La différence ? Le nombre d'utilisateurs.</MudText>
+            
+            @* Billing Toggle *@
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; max-width: 500px; margin: 0 auto;">
+                <MudText Align="Align.End" Style="@($"color: {(!_isAnnual ? "white" : "rgba(255,255,255,0.5)")}; font-weight: bold;")">Mensuel</MudText>
+                <div class="d-flex justify-center">
+                    <MudSwitch T="bool" @bind-Value="_isAnnual" Color="Color.Secondary" Style="transform: scale(1.2); margin: 0;" />
+                </div>
+                <MudText Align="Align.Start" Style="@($"color: {(_isAnnual ? "white" : "rgba(255,255,255,0.5)")}; font-weight: bold;")">Annuel <span style="background: var(--mp-orange-vif); color: var(--mp-bleu-nuit); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 4px;">-16%</span></MudText>
+            </div>
+             <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.6);" Class="mt-4 d-block">
+                @(_isAnnual 
+                    ? "Facturé annuellement à la date anniversaire. Sans engagement. Paiement en début de période." 
+                    : "Facturé mensuellement à la date anniversaire. Sans engagement. Paiement en début de période.")
+            </MudText>
         </div>
 
-        <MudGrid Class="justify-center">
-            @* Free Plan *@
+        <MudGrid Class="justify-center" Spacing="4">
+            @* Evaluation Plan *@
             <MudItem xs="12" sm="6" md="4">
                 <MudPaper Elevation="3" Class="pa-8 d-flex flex-column h-100" Style="border-radius: 16px; background: white;">
-                    <MudText Typo="Typo.h5" Class="mp-title mb-2">Découverte</MudText>
-                    <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">0€<span style="font-size: 1rem; font-weight: normal; opacity: 0.6;">/mois</span></MudText>
-                    <MudText Typo="Typo.body2" Class="mp-text mb-6" Style="opacity: 0.7;">Pour tester le concept.</MudText>
+                    <MudText Typo="Typo.h5" Class="mp-title mb-2">Evaluation</MudText>
+                    <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">0€<span style="font-size: 1rem; font-weight: normal; opacity: 0.6;"> HT</span></MudText>
+                    <MudText Typo="Typo.caption" Class="mp-text" Style="opacity: 0.6;">&nbsp;</MudText>
+                    <MudText Typo="Typo.body2" Class="mp-text mb-6 mt-2" Style="opacity: 0.7;">Idéal pour tester l'engagement.</MudText>
                     
+                    <MudDivider Class="mb-4" />
+
+                    @* Feature List *@
                     <MudList T="string" Dense="true" Class="mb-auto">
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Jusqu'à 50 utilisateurs</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">3 Objectifs actifs</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Boutique basique</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Person" Style="color: var(--mp-orange-vif); font-weight: bold; background-color: rgba(255, 164, 0, 0.1); border-radius: 8px;">15 utilisateurs max</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.QrCodeScanner" Style="color: var(--mp-bleu-nuit);">Validation par Scan</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.EmojiEvents" Style="color: var(--mp-bleu-nuit);">Système d'Objectifs</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Store" Style="color: var(--mp-bleu-nuit);">Boutique & Inventaire</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Group" Style="color: var(--mp-bleu-nuit);">Groupes & Classements</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Shield" Style="color: var(--mp-bleu-nuit);">Système de Badges</MudListItem>
                     </MudList>
                     
-                    <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mt-8 py-2" Style="border-color: var(--mp-bleu-nuit); color: var(--mp-bleu-nuit); border-radius: 8px;">Choisir</MudButton>
+                    <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mt-8 py-2" Style="border-color: var(--mp-bleu-nuit); color: var(--mp-bleu-nuit); border-radius: 8px;" Href="/register-tenant?plan=evaluation">Commencer</MudButton>
                 </MudPaper>
             </MudItem>
             
-            @* Pro Plan (Recommandé) *@
+            @* Standard Plan *@
             <MudItem xs="12" sm="6" md="4">
                 <MudPaper Elevation="12" Class="pa-8 d-flex flex-column h-100 position-relative" Style="border-radius: 16px; border: 3px solid var(--mp-orange-vif); background: white;">
-                    <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--mp-orange-vif); color: var(--mp-bleu-nuit); padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">RECOMMANDÉ</div>
-                    <MudText Typo="Typo.h5" Class="mp-title mb-2" Style="margin-top: 10px;">Pro</MudText>
-                    <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">49€<span style="font-size: 1rem; font-weight: normal; opacity: 0.6;">/mois</span></MudText>
-                    <MudText Typo="Typo.body2" Class="mp-text mb-6" Style="opacity: 0.7;">Pour les établissements actifs.</MudText>
+                    <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--mp-orange-vif); color: var(--mp-bleu-nuit); padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">POPULAIRE</div>
+                    <MudText Typo="Typo.h5" Class="mp-title mb-2" Style="margin-top: 10px;">Standard</MudText>
+                    <div class="d-flex align-baseline">
+                         <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">@(_isAnnual ? "390€" : "39€")<span style="font-size: 1rem; font-weight: normal; opacity: 0.6;"> HT /@(_isAnnual ? "an" : "mois")</span></MudText>
+                    </div>
+                     <MudText Typo="Typo.caption" Class="mp-text" Style="opacity: 0.6; color: var(--mp-orange-vif);">
+                        @(_isAnnual ? "Soit 32,50€/mois (2 mois offerts)" : "Facturation mensuelle")
+                    </MudText>
                     
+                    <MudText Typo="Typo.body2" Class="mp-text mb-6 mt-2" Style="opacity: 0.7;">Pour les établissements en croissance.</MudText>
+                    
+                    <MudDivider Class="mb-4" />
+
                     <MudList T="string" Dense="true" Class="mb-auto">
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Utilisateurs illimités</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Objectifs illimités</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Badges personnalisés</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Support prioritaire</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Person" Style="color: var(--mp-orange-vif); font-weight: bold; background-color: rgba(255, 164, 0, 0.1); border-radius: 8px;">300 utilisateurs max</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.QrCodeScanner" Style="color: var(--mp-bleu-nuit);">Validation par Scan</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.EmojiEvents" Style="color: var(--mp-bleu-nuit);">Système d'Objectifs</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Store" Style="color: var(--mp-bleu-nuit);">Boutique & Inventaire</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Group" Style="color: var(--mp-bleu-nuit);">Groupes & Classements</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Shield" Style="color: var(--mp-bleu-nuit);">Système de Badges</MudListItem>
                     </MudList>
                     
-                    <MudButton Variant="Variant.Filled" FullWidth="true" Class="mp-cta mt-8 py-2">Choisir</MudButton>
+                    <MudButton Variant="Variant.Filled" FullWidth="true" Class="mp-cta mt-8 py-2" Href="@($"/register-tenant?plan=standard&billing={(_isAnnual ? "yearly" : "monthly")}")">Choisir</MudButton>
                 </MudPaper>
             </MudItem>
             
-            @* Enterprise Plan *@
+            @* Corporate Plan *@
             <MudItem xs="12" sm="6" md="4">
                 <MudPaper Elevation="3" Class="pa-8 d-flex flex-column h-100" Style="border-radius: 16px; background: white;">
-                    <MudText Typo="Typo.h5" Class="mp-title mb-2">Réseau</MudText>
-                    <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">Sur Devis</MudText>
-                    <MudText Typo="Typo.body2" Class="mp-text mb-6" Style="opacity: 0.7;">Pour les franchises et grands comptes.</MudText>
+                    <MudText Typo="Typo.h5" Class="mp-title mb-2">Corporate</MudText>
+                     <div class="d-flex align-baseline">
+                         <MudText Typo="Typo.h3" Class="mp-title" Style="font-weight: 800;">@(_isAnnual ? "1980€" : "198€")<span style="font-size: 1rem; font-weight: normal; opacity: 0.6;"> HT /@(_isAnnual ? "an" : "mois")</span></MudText>
+                    </div>
+                     <MudText Typo="Typo.caption" Class="mp-text" Style="opacity: 0.6; color: var(--mp-orange-vif);">
+                        @(_isAnnual ? "Soit 165€/mois (2 mois offerts)" : "Facturation mensuelle")
+                    </MudText>
                     
+                    <MudText Typo="Typo.body2" Class="mp-text mb-6 mt-2" Style="opacity: 0.7;">Pour les grandes structures.</MudText>
+                    
+                    <MudDivider Class="mb-4" />
+
                     <MudList T="string" Dense="true" Class="mb-auto">
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Multi-établissements</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">API dédiée</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Marque blanche</MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Check" Style="color: var(--mp-orange-vif);">Account Manager dédié</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Person" Style="color: var(--mp-orange-vif); font-weight: bold; background-color: rgba(255, 164, 0, 0.1); border-radius: 8px;">3000 utilisateurs max</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.QrCodeScanner" Style="color: var(--mp-bleu-nuit);">Validation par Scan</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.EmojiEvents" Style="color: var(--mp-bleu-nuit);">Système d'Objectifs</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Store" Style="color: var(--mp-bleu-nuit);">Boutique & Inventaire</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Group" Style="color: var(--mp-bleu-nuit);">Groupes & Classements</MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Shield" Style="color: var(--mp-bleu-nuit);">Système de Badges</MudListItem>
                     </MudList>
                     
-                    <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mt-8 py-2" Style="border-color: var(--mp-bleu-nuit); color: var(--mp-bleu-nuit); border-radius: 8px;">Contacter</MudButton>
+                    <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mt-8 py-2" Style="border-color: var(--mp-bleu-nuit); color: var(--mp-bleu-nuit); border-radius: 8px;" Href="@($"/register-tenant?plan=corporate&billing={(_isAnnual ? "yearly" : "monthly")}")">Choisir</MudButton>
                 </MudPaper>
             </MudItem>
         </MudGrid>
     </section>
 
 </MudContainer>
+
+@code {
+    private bool _isAnnual = false;
+}

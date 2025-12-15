@@ -1,0 +1,25 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Bienvenue !</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+             <MudIcon Icon="@Icons.Material.Filled.EmojiEmotions" Color="Color.Primary" Size="Size.Large" Class="mb-4" Style="font-size: 3rem;" />
+             <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-2">
+                 Nous sommes ravis de vous compter parmi nous.
+             </MudText>
+             <MudText Typo="Typo.body1" Align="Align.Center">
+                 Pour commencer l'aventure, allez voir vos <b>Objectifs</b>, ouvrez votre premier challenge et lancez-vous !
+             </MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" FullWidth="true" Class="mx-4 mb-4">C'est parti !</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+}

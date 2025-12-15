@@ -120,6 +120,102 @@ namespace GamifyMe.Api.Controllers
             return Ok("Compte créé avec succès. Vous pouvez vous connecter.");
         }
 
+        [HttpPost("register-tenant")]
+        [AllowAnonymous]
+        public async Task<ActionResult<object>> RegisterTenant(CreateTenantDto request)
+        {
+            Response.Headers.Append("Access-Control-Allow-Origin", "*");
+
+            if (await _context.Users.AnyAsync(u => u.Email == request.AdminEmail.ToLower()))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
+            var planId = request.PlanId.ToLower();
+            var requirePayment = planId == "standard" || planId == "corporate";
+
+            int maxUsers = planId switch
+            {
+                "standard" => 300,
+                "corporate" => 3000,
+                _ => 15 // Default / Evaluation
+            };
+
+            var establishment = new Establishment
+            {
+                Id = Guid.NewGuid(),
+                Name = request.EstablishmentName,
+                CreatedAt = DateTime.UtcNow,
+                MaxUsers = maxUsers, 
+                IsTemplate = false,
+                CurrencyName = "Crédits",
+                SubscriptionStatus = requirePayment ? SubscriptionStatus.Incomplete : SubscriptionStatus.Active, 
+                PlanId = null // We don't have PlanId guid logic yet, using defaults
+            };
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.AdminPassword);
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = request.AdminFirstName,
+                FirstName = request.AdminFirstName,
+                Email = request.AdminEmail.ToLower(),
+                PasswordHash = passwordHash,
+                Role = Roles.Admin,
+                EstablishmentId = establishment.Id,
+                QrCode = Guid.NewGuid().ToString(), // Admin QR
+                CreatedAt = DateTime.UtcNow,
+                LastActivityAt = DateTime.UtcNow,
+                IsEmailConfirmed = false, 
+                EmailConfirmationToken = Guid.NewGuid().ToString()
+            };
+
+            establishment.AdminUserId = user.Id;
+
+            // Wallets for Admin
+            var xpWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "XP", Balance = 0 };
+            var currencyWallet = new Wallet { Id = Guid.NewGuid(), EstablishmentId = establishment.Id, UserId = user.Id, CurrencyCode = "DOC", Balance = 0 };
+
+            _context.Establishments.Add(establishment);
+            _context.Users.Add(user);
+            _context.Wallets.Add(xpWallet);
+            _context.Wallets.Add(currencyWallet);
+
+            await _context.SaveChangesAsync();
+
+            // Send Confirmation Email (Background / Non-blocking)
+            try 
+            {
+                var appUrl = _configuration["AppUrl"];
+                var confirmationLink = $"{appUrl}/confirm-email?token={user.EmailConfirmationToken}";
+                var subject = "Bienvenue sur MeritoPass - Confirmez votre adresse";
+                var body = $@"
+                    <h1>Bienvenue sur MeritoPass !</h1>
+                    <p>Votre espace administrateur est prêt. Pour sécuriser votre compte et recevoir vos factures, merci de confirmer votre email.</p>
+                    <p><a href='{confirmationLink}' style='background-color:#FFA400; color:#1A2B4C; padding:10px 20px; text-decoration:none; border-radius:5px; font-weight:bold;'>Confirmer mon email</a></p>
+                    <p style='font-size:12px; color:gray;'>Si vous ne pouvez pas cliquer, copiez ce lien : {confirmationLink}</p>";
+
+                // Fire and forget (or await but catch exception to ensure login proceeds)
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RegisterTenant] Error sending email: {ex.Message}");
+                // We do NOT block the process. The user can still log in.
+            }
+
+            // Generate Token for auto-login
+            var token = _tokenService.CreateToken(user);
+            
+            return Ok(new 
+            { 
+                Token = token, 
+                EstablishmentId = establishment.Id,
+                UserId = user.Id,
+                RequirePayment = requirePayment
+            });
+        }
+
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<string>> Login(LoginRequest request)
@@ -399,7 +495,8 @@ namespace GamifyMe.Api.Controllers
                 ReloadedObjectiveCount = reloadedObjectiveCount,
                 UnlockedBadgeCount = unlockedBadgeCount,
                 BadgeCompletionPercentage = badgeProgress,
-                Badges = allBadges
+                Badges = allBadges,
+                HasCompletedOnboarding = user.HasCompletedOnboarding
             });
         }
 
@@ -498,7 +595,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpGet("profile-scan/{qrCode}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach},{Roles.Staff}")]
         public async Task<ActionResult<ProfileScanDto>> GetProfileForScan(string qrCode)
         {
             Console.WriteLine($"[GetProfileForScan] Scanning QR: {qrCode}");
@@ -683,6 +780,22 @@ namespace GamifyMe.Api.Controllers
 
             return Ok("Mot de passe modifié avec succès.");
         }
+        [HttpPost("complete-onboarding")]
+        [Authorize]
+        public async Task<IActionResult> CompleteOnboarding()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            user.HasCompletedOnboarding = true;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
         [HttpGet("updates")]
         [Authorize]
         public async Task<ActionResult<List<UserUpdateDto>>> GetRecentUpdates([FromQuery] DateTime? since)
@@ -794,7 +907,7 @@ namespace GamifyMe.Api.Controllers
 
 
         [HttpGet("establishment/users")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<List<UserSummaryDto>>> GetEstablishmentUsers()
         {
             var currentUserId = GetCurrentUserId();
@@ -827,7 +940,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPost("establishment/create-user")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult> CreateUser(CreateUserDto request)
         {
             var establishmentIdClaim = User.FindFirst("EstablishmentId");

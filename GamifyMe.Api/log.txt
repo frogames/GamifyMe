@@ -1,0 +1,71 @@
+﻿  Identification des projets ├á restaurer...
+  Restauration effectu├®e de D:\GamifyMe\GamifyMe.Shared\GamifyMe.Shared.csproj (en 90 ms).
+  Restauration effectu├®e de D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj (en 255 ms).
+  GamifyMe.Shared -> D:\GamifyMe\GamifyMe.Shared\bin\Debug\net8.0\GamifyMe.Shared.dll
+D:\GamifyMe\GamifyMe.Api\Controllers\BadgesController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BonusPeriodsController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BonusPeriodsController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\DashboardController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\DashboardController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(11,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\LeaderboardController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\LeaderboardController.cs(9,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\ObjectivesController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\ObjectivesController.cs(10,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\OrdersController.cs(7,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\OrdersController.cs(8,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\SettingsController.cs(3,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\StoreController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\StoreController.cs(9,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UserBadgesController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UserBadgesController.cs(9,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(44,33): warning CS8600: Conversion de litt├®ral ayant une valeur null ou d'une ├®ventuelle valeur null en type non-nullable. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(183,48): error CS1061: 'Subscription' ne contient pas de d├®finition pour 'CurrentPeriodEnd' et aucune m├®thode d'extension accessible 'CurrentPeriodEnd' acceptant un premier argument de type 'Subscription' n'a ├®t├® trouv├®e (une directive using ou une r├®f├®rence d'assembly est-elle manquante┬á?) [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(405,20): warning CS8603: Existence possible d'un retour de r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(446,25): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(556,31): warning CS8600: Conversion de litt├®ral ayant une valeur null ou d'une ├®ventuelle valeur null en type non-nullable. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(563,80): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(571,80): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\EstablishmentController.cs(285,56): warning CS8629: Le type valeur Nullable peut avoir une valeur null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(842,24): warning CS8629: Le type valeur Nullable peut avoir une valeur null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(876,38): warning CS8601: Existence possible d'une assignation de r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+
+├ëCHEC de la build.
+
+D:\GamifyMe\GamifyMe.Api\Controllers\BadgesController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BonusPeriodsController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BonusPeriodsController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\DashboardController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\DashboardController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(10,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\GroupsController.cs(11,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\LeaderboardController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\LeaderboardController.cs(9,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\ObjectivesController.cs(9,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\ObjectivesController.cs(10,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\OrdersController.cs(7,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\OrdersController.cs(8,7): warning CS0105: La directive using de 'Microsoft.EntityFrameworkCore' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\SettingsController.cs(3,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\StoreController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\StoreController.cs(9,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UserBadgesController.cs(8,7): warning CS0105: La directive using de 'Microsoft.AspNetCore.Mvc' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UserBadgesController.cs(9,7): warning CS0105: La directive using de 'System.Security.Claims' est apparue pr├®c├®demment dans cet espace de noms [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(44,33): warning CS8600: Conversion de litt├®ral ayant une valeur null ou d'une ├®ventuelle valeur null en type non-nullable. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(405,20): warning CS8603: Existence possible d'un retour de r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(446,25): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(556,31): warning CS8600: Conversion de litt├®ral ayant une valeur null ou d'une ├®ventuelle valeur null en type non-nullable. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(563,80): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(571,80): warning CS8602: D├®r├®f├®rencement d'une ├®ventuelle r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\EstablishmentController.cs(285,56): warning CS8629: Le type valeur Nullable peut avoir une valeur null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(842,24): warning CS8629: Le type valeur Nullable peut avoir une valeur null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\UsersController.cs(876,38): warning CS8601: Existence possible d'une assignation de r├®f├®rence null. [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+D:\GamifyMe\GamifyMe.Api\Controllers\BillingController.cs(183,48): error CS1061: 'Subscription' ne contient pas de d├®finition pour 'CurrentPeriodEnd' et aucune m├®thode d'extension accessible 'CurrentPeriodEnd' acceptant un premier argument de type 'Subscription' n'a ├®t├® trouv├®e (une directive using ou une r├®f├®rence d'assembly est-elle manquante┬á?) [D:\GamifyMe\GamifyMe.Api\GamifyMe.Api.csproj]
+    28 Avertissement(s)
+    1 Erreur(s)
+
+Temps ├®coul├® 00:00:02.20
+
+Des mises ├á jour de la charge de travail sont disponibles. Ex├®cutez `dotnet workload list` pour plus dÔÇÖinformations.

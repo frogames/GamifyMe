@@ -1,6 +1,6 @@
 @page "/admin/dashboard"
 @using GamifyMe.Shared.Dtos
-@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Coach, Staff")]
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -22,13 +22,16 @@
                 </MudPaper>
             </MudItem>
             
-            <MudItem xs="12" sm="6" md="4">
-                <MudPaper Class="@($"d-flex flex-column align-center justify-center pa-4 {(_stats.HealthScore >= 80 ? "mud-theme-success" : _stats.HealthScore >= 50 ? "mud-theme-warning" : "mud-theme-error")}")" Elevation="4" Style="height:150px;">
-                    <MudIcon Icon="@Icons.Material.Filled.Favorite" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h3">@_stats.HealthScore %</MudText>
-                    <MudText Typo="Typo.subtitle1">Santé théorique</MudText>
-                </MudPaper>
-            </MudItem>
+            @if (UserStats?.IsShopEnabled ?? true)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="@($"d-flex flex-column align-center justify-center pa-4 {(_stats.HealthScore >= 80 ? "mud-theme-success" : _stats.HealthScore >= 50 ? "mud-theme-warning" : "mud-theme-error")}")" Elevation="4" Style="height:150px; cursor: pointer;" @onclick="@(() => Navigation.NavigateTo("admin/system-health"))">
+                        <MudIcon Icon="@Icons.Material.Filled.MonitorHeart" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h3">@_stats.HealthScore %</MudText>
+                        <MudText Typo="Typo.subtitle1">Santé Système</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
 
             <MudItem xs="12" sm="6" md="4">
                  <MudPaper Class="d-flex flex-column align-center justify-center pa-4" Elevation="4" Style="height:150px;">
@@ -44,7 +47,11 @@
 </MudContainer>
 
 @code {
+    [CascadingParameter]
+    public UserProfileDetailsDto? UserStats { get; set; }
+
     private EstablishmentStatsDto? _stats;
+    [Inject] NavigationManager Navigation { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {

@@ -37,7 +37,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> CreateStoreItem(StoreItemDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -46,7 +46,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach},{Roles.Staff}")]
         public async Task<ActionResult<StoreItemDto>> GetStoreItemById(Guid id)
         {
             var dto = await _storeService.GetStoreItemByIdAsync(id);
@@ -55,7 +55,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpGet("list-all")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur},{Roles.Gestionnaire}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach},{Roles.Staff}")]
         public async Task<ActionResult<List<StoreItemDto>>> GetAllStoreItemsSimpleList()
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -89,7 +89,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> UpdateStoreItem(Guid id, StoreItemDto request)
         {
             var success = await _storeService.UpdateStoreItemAsync(id, request);
@@ -98,7 +98,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> DeleteStoreItem(Guid id)
         {
             var success = await _storeService.DeleteStoreItemAsync(id);
@@ -107,7 +107,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPost("upload-image")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -137,7 +137,7 @@ namespace GamifyMe.Api.Controllers
             return Ok(new { Url = url });
         }
         [HttpPost("reorder")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> ReorderStoreItems(ReorderRequestDto request)
         {
             var success = await _storeService.ReorderStoreItemsAsync(request.OrderedIds);

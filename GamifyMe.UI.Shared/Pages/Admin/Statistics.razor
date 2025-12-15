@@ -100,7 +100,26 @@
                     </MudTable>
                 </MudPaper>
             </MudItem>
+
         </MudGrid>
+
+        @if (_stats.TopSoldItems != null && _stats.TopSoldItems.Any())
+        {
+             <MudText Typo="Typo.h5" Class="mt-8 mb-4">Boutique : Top 3 des ventes</MudText>
+             <MudGrid Class="mb-8">
+                 @foreach (var item in _stats.TopSoldItems)
+                 {
+                     <MudItem xs="12" sm="4">
+                         <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Elevation="3">
+                             <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Class="mb-2" Color="Color.Warning" />
+                             <MudText Typo="Typo.h6" Align="Align.Center">@item.ItemName</MudText>
+                             <MudText Typo="Typo.body1" Class="mt-2"><b>@item.QuantitySold</b> vendus</MudText>
+                             <MudText Typo="Typo.caption">Revenue: @item.TotalRevenue DOC</MudText>
+                         </MudPaper>
+                     </MudItem>
+                 }
+             </MudGrid>
+        }
     }
 </MudContainer>
 
@@ -111,6 +130,8 @@
     private string[] _xAxisLabels = { };
     private string _currentPeriod = "month";
     private bool _loadingGrowth = false;
+
+
 
     protected override async Task OnInitializedAsync()
     {

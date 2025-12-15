@@ -1,0 +1,66 @@
+@page "/billing/success"
+@layout GamifyMe.UI.Shared.Layout.LandingLayout
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full" Style="height: 100vh;">
+    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
+        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px;" />
+        
+        <MudText Typo="Typo.h4" GutterBottom="true">Paiement Réussi !</MudText>
+        <MudText Typo="Typo.body1" Class="mb-8">Merci pour votre confiance. Votre abonnement est actif et votre établissement est prêt.</MudText>
+        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/admin/dashboard">
+            Accéder à mon tableau de bord
+        </MudButton>
+    </MudPaper>
+</MudContainer>
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? session_id { get; set; }
+
+    private bool _isProcessing = true;
+    private bool _isSuccess = false;
+    private string _message = "Finalisation de votre abonnement...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(session_id))
+        {
+            _message = "Session invalide.";
+            _isProcessing = false;
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/billing/checkout-success", new { SessionId = session_id });
+            if (response.IsSuccessStatusCode)
+            {
+                _isSuccess = true;
+                _message = "Abonnement activé avec succès !";
+                // Optionally auto-redirect after delay
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                _message = "Erreur d'activation : " + error;
+                Snackbar.Add(_message, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = "Erreur de connexion.";
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

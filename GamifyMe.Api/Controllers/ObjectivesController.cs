@@ -44,7 +44,7 @@ namespace GamifyMe.Api.Controllers
 
         // POST api/objectives
         [HttpPost]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> CreateObjective(CreateObjectiveDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -60,7 +60,7 @@ namespace GamifyMe.Api.Controllers
 
         // GET api/objectives/list-all
         [HttpGet("list-all")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<List<ObjectiveSimpleDto>>> GetAllObjectivesSimpleList()
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -70,7 +70,7 @@ namespace GamifyMe.Api.Controllers
 
         // GET api/objectives/list-all-full
         [HttpGet("list-all-full")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<List<ObjectiveDto>>> GetAllObjectivesFullList()
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -80,7 +80,7 @@ namespace GamifyMe.Api.Controllers
 
         // PUT api/objectives/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> UpdateObjective(Guid id, CreateObjectiveDto request)
         {
             var success = await _objectiveService.UpdateObjectiveAsync(id, request);
@@ -90,7 +90,7 @@ namespace GamifyMe.Api.Controllers
 
         // DELETE api/objectives/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> DeleteObjective(Guid id)
         {
             var success = await _objectiveService.DeleteObjectiveAsync(id);
@@ -98,7 +98,7 @@ namespace GamifyMe.Api.Controllers
             return NoContent();
         }
         [HttpPost("reorder")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<IActionResult> ReorderObjectives(ReorderRequestDto request)
         {
             var success = await _objectiveService.ReorderObjectivesAsync(request.OrderedIds);

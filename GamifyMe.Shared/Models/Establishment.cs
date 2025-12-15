@@ -25,6 +25,12 @@ namespace GamifyMe.Shared.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // Stripe SaaS Fields
+        public string? StripeCustomerId { get; set; }
+        public string? StripeSubscriptionId { get; set; }
+        public string? StripePriceId { get; set; } // Example: price_12345
+        public SubscriptionStatus SubscriptionStatus { get; set; } = SubscriptionStatus.Active; // Default to Active (or Trialing if logic exists)
+
         // Optionnel : Ajouter des relations si nécessaire plus tard
         // public User AdminUser { get; set; }
         // public Plan Plan { get; set; }

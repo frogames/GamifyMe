@@ -1,7 +1,7 @@
 @page "/admin/users"
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.Shared.Models
-@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+@attribute [Authorize(Roles = "SuperAdmin,Admin,Coach")]
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService

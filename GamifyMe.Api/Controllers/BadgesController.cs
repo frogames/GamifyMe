@@ -12,7 +12,7 @@ namespace GamifyMe.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
     public class BadgesController : ControllerBase
     {
         private readonly BadgesService _badgesService;

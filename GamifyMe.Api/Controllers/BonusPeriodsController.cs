@@ -50,7 +50,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult<List<BonusPeriodDto>>> GetAll()
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -72,7 +72,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult> Create(CreateBonusPeriodDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -114,7 +114,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult> Update(Guid id, UpdateBonusPeriodDto request)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
@@ -154,7 +154,7 @@ namespace GamifyMe.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Editeur}")]
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin},{Roles.Coach}")]
         public async Task<ActionResult> Delete(Guid id)
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);

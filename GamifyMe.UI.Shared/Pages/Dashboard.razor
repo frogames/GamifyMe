@@ -1,5 +1,5 @@
 ﻿@page "/dashboard"
-@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur, Gestionnaire")]
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Coach, Staff")]
 @using QRCoder
 @using System.IO
 @using GamifyMe.Shared.Models
@@ -40,6 +40,18 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
+        @if (UserStats?.IsShopEnabled ?? true)
+        {
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/system-health"))">
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                         <MudIcon Icon="@Icons.Material.Filled.MonitorHeart" Size="Size.Large" Class="mb-4" Style="font-size: 4rem; color: #e91e63;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">@(_stats?.HealthScore ?? 0)% Santé Système</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Indicateur de santé de l'établissement</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
         @if (UserStats?.IsShopEnabled ?? true)
         {
             <MudItem xs="12" sm="4">
@@ -182,6 +194,7 @@
     public UserProfileDetailsDto? UserStats { get; set; }
 
     private List<DashboardLogDto> dashboardLogs = new();
+    private EstablishmentStatsDto? _stats;
     private bool isPageLoading = true;
     private bool showQr = false;
     private string qrCodeImage = string.Empty;
@@ -202,7 +215,13 @@
     {
         try
         {
-            dashboardLogs = await Http.GetFromJsonAsync<List<DashboardLogDto>>("api/dashboard/activity-logs") ?? new();
+            var logsTask = Http.GetFromJsonAsync<List<DashboardLogDto>>("api/dashboard/activity-logs");
+            var statsTask = Http.GetFromJsonAsync<EstablishmentStatsDto>("api/establishment/stats");
+
+            await Task.WhenAll(logsTask, statsTask);
+
+            dashboardLogs = logsTask.Result ?? new();
+            _stats = statsTask.Result;
         }
         catch (Exception ex)
         {

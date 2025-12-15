@@ -102,11 +102,34 @@ namespace GamifyMe.Api.Controllers
             var est = await _context.Establishments.FindAsync(id);
             if (est == null) return NotFound();
 
-            // Be careful with cascading deletes. For now we assume EF handles it or we should be careful.
-            // If many users, might be heavy.
-            _context.Establishments.Remove(est);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            if (est.IsTemplate)
+            {
+                return BadRequest("Impossible de supprimer un établissement marqué comme modèle (IsTemplate).");
+            }
+
+            // Protection des SuperAdmins
+            // Comme la suppression est en cascade (Users liés sont supprimés), on doit empêcher la suppression 
+            // si un SuperAdmin est lié à cet établissement, sinon il perdrait son compte.
+            var hasSuperAdmins = await _context.Users.AnyAsync(u => u.EstablishmentId == id && u.Role == Roles.SuperAdmin);
+            if (hasSuperAdmins)
+            {
+                return BadRequest("Impossible de supprimer cet établissement : il contient des comptes SuperAdmin. Veuillez les transférer vers un autre établissement avant de procéder.");
+            }
+
+            try
+            {
+                // Manually delete dependent data if needed, but EF Cascade should handle basic structure
+                // Ideally, perform a transaction or explicitly delete children if Cascade is not set on DB
+                _context.Establishments.Remove(est);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                // Unwind inner exception
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return BadRequest($"Erreur lors de la suppression : {inner}");
+            }
         }
 
         [HttpPut("establishments/{id}")]

@@ -1,5 +1,5 @@
 @page "/admin/groups"
-@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur")]
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Coach")]
 
 @using MudBlazor
 @using GamifyMe.Shared.Dtos
@@ -206,7 +206,7 @@
     {
         try
         {
-            groupsList = await Http.GetFromJsonAsync<List<GroupDto>>("api/groups") ?? new();
+            groupsList = await Http.GetFromJsonAsync<List<GroupDto>>("api/groups?includeInactive=true") ?? new();
         }
         catch (Exception ex)
         {

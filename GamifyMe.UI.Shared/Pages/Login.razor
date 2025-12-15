@@ -109,7 +109,7 @@
                     {
                          if (user.IsInRole(Roles.SuperAdmin)) target = "/superadmin/dashboard";
                          else if (user.IsInRole(Roles.Admin)) target = "/admin/dashboard";
-                         else if (user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire)) target = "/dashboard";
+                         else if (user.IsInRole(Roles.Coach) || user.IsInRole(Roles.Staff)) target = "/dashboard";
                          else target = "/"; // User
                     }
 
@@ -149,7 +149,7 @@
                  {
                       if (user.IsInRole(Roles.SuperAdmin)) target = "/superadmin/dashboard";
                       else if (user.IsInRole(Roles.Admin)) target = "/admin/dashboard";
-                      else if (user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire)) target = "/dashboard";
+                      else if (user.IsInRole(Roles.Coach) || user.IsInRole(Roles.Staff)) target = "/dashboard";
                       else target = "/"; // User
                  }
                  Navigation.NavigateTo(target);

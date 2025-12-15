@@ -30,3 +30,5 @@ GamifyMe.Tests/
 # Environment Files
 .env
 appsettings.json
+appsettings.Development.json
+appsettings.*.json
