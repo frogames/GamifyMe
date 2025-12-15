@@ -29,7 +29,7 @@ namespace GamifyMe.Api.Controllers
         {
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
             var groups = await _context.Groups
-                .Where(g => g.EstablishmentId == establishmentId)
+                .Where(g => g.EstablishmentId == establishmentId && g.IsActive)
                 .Include(g => g.Members)
                 .Select(g => new GroupDto
                 {
@@ -42,7 +42,8 @@ namespace GamifyMe.Api.Controllers
                     MemberCount = g.Members.Count,
                     RegistrationDurationHours = g.RegistrationDurationHours,
                     ImageUrl = g.ImageUrl,
-                    CreatedAt = g.CreatedAt
+                    CreatedAt = g.CreatedAt,
+                    IsActive = g.IsActive
                 })
                 .ToListAsync();
 
@@ -70,7 +71,8 @@ namespace GamifyMe.Api.Controllers
                 MemberCount = group.Members.Count,
                 RegistrationDurationHours = group.RegistrationDurationHours,
                 ImageUrl = group.ImageUrl,
-                CreatedAt = group.CreatedAt
+                CreatedAt = group.CreatedAt,
+                IsActive = group.IsActive
             });
         }
 
@@ -94,6 +96,7 @@ namespace GamifyMe.Api.Controllers
                 Description = request.Description,
                 IconName = request.IconName,
                 Color = request.Color,
+                IsActive = request.IsActive,
                 TotalXp = 0,
                 RegistrationDurationHours = request.RegistrationDurationHours,
                 ImageUrl = imageUrl,
@@ -130,7 +133,9 @@ namespace GamifyMe.Api.Controllers
             group.Name = request.Name;
             group.Description = request.Description;
             group.IconName = request.IconName;
+            group.IconName = request.IconName;
             group.Color = request.Color;
+            group.IsActive = request.IsActive;
             group.RegistrationDurationHours = request.RegistrationDurationHours;
 
             if (!string.IsNullOrEmpty(request.ImageBase64))

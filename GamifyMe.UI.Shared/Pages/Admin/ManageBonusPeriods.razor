@@ -47,7 +47,10 @@
 
                     <MudSelect T="BonusType" Label="Type de Bonus" @bind-Value="model.Type" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3">
                         <MudSelectItem Value="BonusType.Xp">XP</MudSelectItem>
-                        <MudSelectItem Value="BonusType.Currency">Crédits</MudSelectItem>
+                        @if (UserStats?.IsShopEnabled == true)
+                        {
+                            <MudSelectItem Value="BonusType.Currency">Crédits</MudSelectItem>
+                        }
                     </MudSelect>
 
                     <MudNumericField T="double" Label="Multiplicateur (ex: 2.0 pour x2)" @bind-Value="model.Multiplier" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Step="0.1" Min="1.0" />
@@ -116,6 +119,7 @@
 </MudContainer>
 
 @code {
+    [CascadingParameter] public UserProfileDetailsDto? UserStats { get; set; }
     private bool showForm = false;
     private Guid? editingId;
     private UpdateBonusPeriodDto model = new();

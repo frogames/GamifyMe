@@ -78,13 +78,16 @@
                     <MudText Typo="Typo.caption">@Loc["TotalXP"]</MudText>
                 </MudPaper>
             </MudItem>
-            <MudItem xs="6">
-                <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
-                    <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h5">@profile.CurrencyBalance</MudText>
-                    <MudText Typo="Typo.caption">@(profile.CurrencyName ?? Loc["Credits"])</MudText>
-                </MudPaper>
-            </MudItem>
+            @if (profile.IsShopEnabled)
+            {
+                <MudItem xs="6">
+                    <MudPaper Elevation="2" Class="pa-4 d-flex flex-column align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h5">@profile.CurrencyBalance</MudText>
+                        <MudText Typo="Typo.caption">@(profile.CurrencyName ?? Loc["Credits"])</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
         </MudGrid>
 
         @* 5. HISTORIQUE RÉCENT *@
@@ -106,7 +109,7 @@
                                         @(activity.XpChange > 0 ? "+" : "")@activity.XpChange XP
                                     </MudText>
                                 }
-                                @if (activity.CurrencyChange != 0)
+                                @if (profile.IsShopEnabled && activity.CurrencyChange != 0)
                                 {
                                     <MudText Typo="Typo.caption" Color="@(activity.CurrencyChange > 0 ? Color.Success : Color.Error)">
                                         @(activity.CurrencyChange > 0 ? "+" : "")@activity.CurrencyChange @(profile.CurrencyName ?? "Cr")

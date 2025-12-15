@@ -1,0 +1,59 @@
+@page "/superadmin/dashboard"
+@using GamifyMe.Shared.Dtos
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">SuperAdmin Dashboard</MudText>
+
+    @if (_stats == null)
+    {
+         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="d-flex flex-column align-center justify-center pa-4 mud-theme-primary" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h3">@_stats.TotalEstablishments</MudText>
+                    <MudText Typo="Typo.subtitle1">Établissements</MudText>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="d-flex flex-column align-center justify-center pa-4 mud-theme-secondary" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h3">@_stats.TotalUsers</MudText>
+                    <MudText Typo="Typo.subtitle1">Utilisateurs Total</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                 <MudPaper Class="d-flex flex-column align-center justify-center pa-4" Elevation="4" Style="height:150px;">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Class="mb-2 text-success" />
+                    <MudText Typo="Typo.h3">@_stats.TotalActiveUsersLast30Days</MudText>
+                    <MudText Typo="Typo.subtitle1">Actifs (30j)</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private SuperAdminGlobalStatsDto? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _stats = await Http.GetFromJsonAsync<SuperAdminGlobalStatsDto>("api/superadmin/stats");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur chargement stats: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -21,6 +21,7 @@ namespace GamifyMe.Shared.Dtos
         public string? ImageUrl { get; set; }
         public string? ImageBase64 { get; set; } // Uploaded image
         public string? Color { get; set; } = "#FFD700";
+        public bool IsActive { get; set; } = true;
 
         public BadgeCriteriaType CriteriaType { get; set; }
         public string? CriteriaValue { get; set; }

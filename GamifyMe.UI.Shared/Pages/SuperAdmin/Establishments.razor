@@ -1,0 +1,161 @@
+@page "/superadmin/establishments"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Pages.SuperAdmin.Dialogs
+@using GamifyMe.UI.Shared.Services
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject TokenStorageService TokenStorage
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Gestion des Établissements</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">Créer Établissement</MudButton>
+    </div>
+
+    @if (_establishments == null)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudTable Items="_establishments" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+            <HeaderContent>
+                <MudTh>Nom</MudTh>
+                <MudTh>Utilisateurs</MudTh>
+                <MudTh>Créé le</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nom">@context.Name</MudTd>
+                <MudTd DataLabel="Utilisateurs">@context.UserCount / @context.MaxUsers</MudTd>
+                <MudTd DataLabel="Créé le">@context.CreatedAt.ToShortDateString()</MudTd>
+                <MudTd DataLabel="Status">
+                    @if (context.IsTemplate)
+                    {
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Template</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudTooltip Text="Passer Admin de cet établissement">
+                        <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Success" OnClick="@(() => SwitchEstablishment(context.Id))" />
+                    </MudTooltip>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenEditDialog(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteEstablishment(context))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<SuperAdminEstablishmentDto>? _establishments;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            _establishments = await Http.GetFromJsonAsync<List<SuperAdminEstablishmentDto>>("api/superadmin/establishments");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur chargement: {ex.Message}", Severity.Error);
+        }
+        _loading = false;
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var dialog = DialogService.Show<CreateEstablishmentDialog>("Créer un établissement");
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Établissement créé", Severity.Success);
+            await LoadData();
+        }
+    }
+
+    private async Task OpenEditDialog(SuperAdminEstablishmentDto item)
+    {
+        var parameters = new DialogParameters { ["EstablishmentId"] = item.Id };
+        var dialog = DialogService.Show<EditEstablishmentDialog>("Modifier Établissement", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task DeleteEstablishment(SuperAdminEstablishmentDto item)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", $"Voulez-vous vraiment supprimer l'établissement '{item.Name}' ? Cette action est irréversible et supprimera TOUS les utilisateurs associés.");
+        parameters.Add("ButtonText", "Supprimer");
+        parameters.Add("Color", Color.Error);
+
+        var dialog = DialogService.Show<ConfirmDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var response = await Http.DeleteAsync($"api/superadmin/establishments/{item.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Établissement supprimé", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la suppression", Severity.Error);
+            }
+        }
+    }
+
+    private async Task SwitchEstablishment(Guid establishmentId)
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/superadmin/switch/{establishmentId}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var token = await response.Content.ReadAsStringAsync();
+                
+                // Save new token
+                await TokenStorage.SetTokenAsync(token); 
+                
+                // Update Auth State
+                if (AuthStateProvider is ApiAuthenticationStateProvider apiAuth)
+                {
+                    await apiAuth.MarkUserAsAuthenticated(token);
+                }
+
+                Snackbar.Add("Connexion à l'établissement réussie", Severity.Success);
+                NavigationManager.NavigateTo("/admin/dashboard", true); // Force reload to ensure all states are fresh
+            }
+            else
+            {
+                 Snackbar.Add("Erreur lors du changement d'établissement", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+    }
+}

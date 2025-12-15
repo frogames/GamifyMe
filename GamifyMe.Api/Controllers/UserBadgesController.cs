@@ -27,7 +27,7 @@ namespace GamifyMe.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
-            var badges = await _badgesService.GetAllBadgesAsync(userId, establishmentId);
+            var badges = await _badgesService.GetAllBadgesAsync(userId, establishmentId, includeInactive: false);
             return Ok(badges);
         }
 

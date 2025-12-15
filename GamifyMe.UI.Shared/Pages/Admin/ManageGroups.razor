@@ -46,6 +46,7 @@
                     <DataAnnotationsValidator />
 
                     <MudTextField T="string" Label="Nom" @bind-Value="groupModel.Name" For="@(() => groupModel.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
+                    <MudSwitch T="bool" @bind-Value="groupModel.IsActive" Label="Groupe Actif" Color="Color.Success" Class="mb-3" />
                     <MudTextField T="string" Label="Description" @bind-Value="groupModel.Description" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
                     
                     <MudNumericField T="int?" Label="Durée d'inscription (heures, 0 = illimité)" @bind-Value="groupModel.RegistrationDurationHours" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Min="0" />
@@ -127,9 +128,10 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer custom-hover-row">
+                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer custom-hover-row" RowStyleFunc="@((GroupDto item, int _) => item.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
+                        <MudTh>Statut</MudTh>
                         <MudTh>Description</MudTh>
                         <MudTh>Membres</MudTh>
                         <MudTh>XP Total</MudTh>
@@ -151,6 +153,16 @@
                                 }
                                 <MudText Typo="Typo.body2">@group.Name</MudText>
                             </div>
+                        </MudTd>
+                        <MudTd DataLabel="Statut">
+                             @if (!group.IsActive)
+                             {
+                                 <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined">Inactif</MudChip>
+                             }
+                             else
+                             {
+                                 <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Actif</MudChip>
+                             }
                         </MudTd>
                         <MudTd DataLabel="Description">@group.Description</MudTd>
                         <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
@@ -208,6 +220,7 @@
         groupModel = new UpdateGroupDto();
         groupModel.IconName = "fas fa-star"; // Default icon
         groupModel.Color = "#FFFFFF"; // Default color
+        groupModel.IsActive = true;
         _imageBase64 = null;
         showForm = true;
     }
@@ -270,7 +283,8 @@
             Description = group.Description,
             IconName = group.IconName,
             Color = !string.IsNullOrEmpty(group.Color) ? group.Color : "#FFFFFF",
-            RegistrationDurationHours = group.RegistrationDurationHours
+            RegistrationDurationHours = group.RegistrationDurationHours,
+            IsActive = group.IsActive
         };
         _imageBase64 = null; // Reset upload preview. Existing image is handled by display logic.
         showForm = true;

@@ -1,0 +1,43 @@
+@page "/superadmin/stats"
+@using GamifyMe.Shared.Dtos
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject HttpClient Http
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Statistiques Globales</MudText>
+    
+    @if (_stats == null)
+    {
+         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudGrid>
+             <MudItem xs="12">
+                 <MudPaper Class="pa-4">
+                     <MudText Typo="Typo.h6">Vue d'ensemble</MudText>
+                     <MudList T="string">
+                         <MudListItem>
+                            <MudText><b>Total Utilisateurs :</b> @_stats.TotalUsers</MudText>
+                         </MudListItem>
+                         <MudListItem>
+                            <MudText><b>Total Établissements :</b> @_stats.TotalEstablishments</MudText>
+                         </MudListItem>
+                         <MudListItem>
+                            <MudText><b>Utilisateurs Actifs (30j) :</b> @_stats.TotalActiveUsersLast30Days</MudText>
+                         </MudListItem>
+                     </MudList>
+                 </MudPaper>
+             </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private SuperAdminGlobalStatsDto? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await Http.GetFromJsonAsync<SuperAdminGlobalStatsDto>("api/superadmin/stats");
+    }
+}

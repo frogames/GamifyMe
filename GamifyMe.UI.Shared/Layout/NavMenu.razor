@@ -5,119 +5,108 @@
 @inject NotificationService NotificationService
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using GamifyMe.Shared.Constants
+
 <MudNavMenu>
-    <!-- Main navigation -->
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
-        @Loc["Home"]
-    </MudNavLink>
-    <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">
-        @Loc["MyPass"]
-    </MudNavLink>
-    
-    <div class="d-flex align-center justify-space-between">
-        <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment" Class="flex-grow-1">
-            @Loc["Objectives"]
-        </MudNavLink>
-        @if (NotificationService.NewObjectivesCount > 0)
-        {
-            <div class="notification-badge mr-3">@NotificationService.NewObjectivesCount</div>
-        }
-    </div>
-
-    @if (UserStats?.IsShopEnabled ?? true)
+    @if (_isPrivileged)
     {
+        <MudNavGroup Title="@Loc["Main Menu"]" @bind-Expanded="_expandMain" Icon="@Icons.Material.Filled.Menu">
+            @CommonLinks
+        </MudNavGroup>
+
+        <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
+            <MudNavGroup Title="@Loc["Management"]" @bind-Expanded="_expandManagement" Icon="@Icons.Material.Filled.Dashboard">
+                 @ManagementLinks
+            </MudNavGroup>
+            
+            <MudNavGroup Title="Administration" @bind-Expanded="_expandAdmin" Icon="@Icons.Material.Filled.Settings">
+                @AdminLinks
+            </MudNavGroup>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="SuperAdmin">
+             <MudNavGroup Title="SuperAdmin" @bind-Expanded="_expandSuperAdmin" Icon="@Icons.Material.Filled.SupervisorAccount">
+                <MudNavLink Href="superadmin/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard Global</MudNavLink>
+                <MudNavLink Href="superadmin/establishments" Icon="@Icons.Material.Filled.Business">Établissements</MudNavLink>
+                <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
+            </MudNavGroup>
+        </AuthorizeView>
+    }
+    else
+    {
+        @CommonLinks
+    }
+</MudNavMenu>
+
+@code {
+    RenderFragment CommonLinks => __builder =>
+    {
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Loc["Home"]</MudNavLink>
+        <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">@Loc["MyPass"]</MudNavLink>
+        
         <div class="d-flex align-center justify-space-between">
-            <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store" Class="flex-grow-1">
-                @Loc["Store"]
-            </MudNavLink>
-            @if (NotificationService.NewStoreItemsCount > 0)
+            <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment" Class="flex-grow-1">@Loc["Objectives"]</MudNavLink>
+            @if (NotificationService.NewObjectivesCount > 0)
             {
-                <div class="notification-badge mr-3">@NotificationService.NewStoreItemsCount</div>
+                <div class="notification-badge mr-3">@NotificationService.NewObjectivesCount</div>
             }
         </div>
 
-        <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">
-            @Loc["Inventory"]
-        </MudNavLink>
-    }
-
-
-    
-    @if (UserStats?.IsGroupsEnabled ?? true)
-    {
-        <div class="d-flex align-center justify-space-between">
-            <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups" Class="flex-grow-1">
-                @Loc["Groups"]
-            </MudNavLink>
-            @if (NotificationService.NewGroupsCount > 0)
-            {
-                <div class="notification-badge mr-3">@NotificationService.NewGroupsCount</div>
-            }
-        </div>
-
-        <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">
-            @Loc["Leaderboard"]
-        </MudNavLink>
-    }
-
-    <MudNavLink Href="badges" Icon="@Icons.Material.Filled.MilitaryTech">
-        Badges
-    </MudNavLink>
-
-    <AuthorizeView Roles="SuperAdmin,Admin,Editeur,Gestionnaire">
-        <MudDivider Class="my-2" />
-        <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">
-            @Loc["Management"]
-        </MudText>
-        <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard">
-            Dashboard
-        </MudNavLink>
-        <MudNavLink Href="scanner" Icon="@Icons.Material.Filled.QrCodeScanner">
-            @Loc["Scanner"]
-        </MudNavLink>
-        <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">
-            @Loc["Objectives"]
-        </MudNavLink>
         @if (UserStats?.IsShopEnabled ?? true)
         {
-            <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">
-                @Loc["Store"]
-            </MudNavLink>
+            <div class="d-flex align-center justify-space-between">
+                <MudNavLink Href="store" Icon="@Icons.Material.Filled.Store" Class="flex-grow-1">@Loc["Store"]</MudNavLink>
+                @if (NotificationService.NewStoreItemsCount > 0)
+                {
+                    <div class="notification-badge mr-3">@NotificationService.NewStoreItemsCount</div>
+                }
+            </div>
+            <MudNavLink Href="inventory" Icon="@Icons.Material.Filled.Inventory">@Loc["Inventory"]</MudNavLink>
+        }
+
+        @if (UserStats?.IsGroupsEnabled ?? true)
+        {
+            <div class="d-flex align-center justify-space-between">
+                <MudNavLink Href="groups" Icon="@Icons.Material.Filled.Groups" Class="flex-grow-1">@Loc["Groups"]</MudNavLink>
+                @if (NotificationService.NewGroupsCount > 0)
+                {
+                    <div class="notification-badge mr-3">@NotificationService.NewGroupsCount</div>
+                }
+            </div>
+            <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">@Loc["Leaderboard"]</MudNavLink>
+        }
+        <MudNavLink Href="badges" Icon="@Icons.Material.Filled.MilitaryTech">Badges</MudNavLink>
+    };
+
+    RenderFragment ManagementLinks => __builder =>
+    {
+        <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Href="scanner" Icon="@Icons.Material.Filled.QrCodeScanner">@Loc["Scanner"]</MudNavLink>
+        <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">@Loc["Objectives"]</MudNavLink>
+        @if (UserStats?.IsShopEnabled ?? true)
+        {
+            <MudNavLink Href="admin/store" Icon="@Icons.Material.Filled.Store">@Loc["Store"]</MudNavLink>
+            <MudNavLink Href="admin/system-health" Icon="@Icons.Material.Filled.MonitorHeart">Santé Système</MudNavLink>
         }
         @if (UserStats?.IsGroupsEnabled ?? true)
         {
-            <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">
-                @Loc["Groups"]
-            </MudNavLink>
+            <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups">@Loc["Groups"]</MudNavLink>
         }
-        <MudNavLink Href="admin/badges" Icon="@Icons.Material.Filled.MilitaryTech">
-            Badges
-        </MudNavLink>
-        <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">
-            @Loc["Bonus"]
-        </MudNavLink>
+        <MudNavLink Href="admin/badges" Icon="@Icons.Material.Filled.MilitaryTech">Badges</MudNavLink>
+        <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">@Loc["Bonus"]</MudNavLink>
+    };
 
-        <MudDivider Class="my-2" />
-        <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-1" Color="Color.Secondary">
-            Administration
-        </MudText>
-        <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.DashboardCustomize">
-            Dashboard
-        </MudNavLink>
-        <MudNavLink Href="admin/establishment" Icon="@Icons.Material.Filled.Business">
-            Établissement
-        </MudNavLink>
-        <MudNavLink Href="admin/users" Icon="@Icons.Material.Filled.People">
-            Utilisateurs
-        </MudNavLink>
-        <MudNavLink Href="admin/stats" Icon="@Icons.Material.Filled.PieChart">
-            Statistiques
-        </MudNavLink>
-        <MudNavLink Href="admin/subscription" Icon="@Icons.Material.Filled.CreditCard">
-            Forfait
-        </MudNavLink>
-    </AuthorizeView>
-</MudNavMenu>
+    RenderFragment AdminLinks => __builder =>
+    {
+        <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.DashboardCustomize">Dashboard</MudNavLink>
+        <MudNavLink Href="admin/establishment" Icon="@Icons.Material.Filled.Business">Établissement</MudNavLink>
+        <MudNavLink Href="admin/users" Icon="@Icons.Material.Filled.People">Utilisateurs</MudNavLink>
+        <MudNavLink Href="admin/stats" Icon="@Icons.Material.Filled.PieChart">Statistiques</MudNavLink>
+        <MudNavLink Href="admin/subscription" Icon="@Icons.Material.Filled.CreditCard">Forfait</MudNavLink>
+    };
+}
 
 <style>
     .notification-badge {
@@ -138,9 +127,55 @@
     [CascadingParameter]
     public UserProfileDetailsDto? UserStats { get; set; }
 
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
+    private bool _isPrivileged;
+    private bool _expandMain;
+    private bool _expandManagement;
+    private bool _expandAdmin;
+    private bool _expandSuperAdmin;
+
     protected override async Task OnInitializedAsync()
     {
         NotificationService.OnChange += StateHasChanged;
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var isAdmin = user.IsInRole(Roles.Admin) || user.IsInRole(Roles.SuperAdmin);
+            var isEditorOrManager = user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire);
+            
+            _isPrivileged = isAdmin || isEditorOrManager;
+
+            if (user.IsInRole(Roles.SuperAdmin))
+            {
+                _expandSuperAdmin = true;
+                _expandAdmin = false;
+                _expandMain = false; 
+                _expandManagement = false;
+            }
+            else if (isAdmin) // Admin but not SuperAdmin
+            {
+                _expandAdmin = true;
+                _expandMain = false; 
+                _expandManagement = false;
+                _expandSuperAdmin = false;
+            }
+            else if (isEditorOrManager)
+            {
+                _expandManagement = true;
+                _expandMain = false;
+                _expandAdmin = false;
+                _expandSuperAdmin = false;
+            }
+            else 
+            {
+                 // Default for standard users or fallback
+                 _expandMain = true;
+            }
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

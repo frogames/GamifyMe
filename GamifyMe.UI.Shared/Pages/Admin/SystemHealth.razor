@@ -1,0 +1,257 @@
+@page "/admin/system-health"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Editeur, Gestionnaire")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using GamifyMe.UI.Shared.Helpers
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Santé du Système</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" Class="mb-4">Santé du Système</MudText>
+    <MudText Typo="Typo.body1" Class="mb-8 text-secondary">Analysez l'équilibre économique de votre établissement.</MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (healthData == null)
+    {
+        <MudAlert Severity="Severity.Error">Impossible de charger les données de santé.</MudAlert>
+    }
+    else
+    {
+        <!-- Cycle Duration Config -->
+        <MudPaper Class="pa-4 mb-8" Elevation="2">
+            <MudGrid AlignItems="AlignItems.Center">
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.h6">Durée du Cycle Économique</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted">Définissez la durée (en mois) pendant laquelle les utilisateurs accumulent des richesses (ex: année scolaire = 10 mois).</MudText>
+                </MudItem>
+                <MudItem xs="12" md="4" Class="d-flex gap-4">
+                    <MudNumericField @bind-Value="cycleDuration" Label="Mois" Variant="Variant.Outlined" Min="1" Max="60" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateCycleDuration" Disabled="isUpdating">
+                        @if (isUpdating) { <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/> }
+                        else { <MudText>Mettre à jour</MudText> }
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Main Dashboard -->
+        <MudGrid>
+            <!-- Scores Section -->
+            <MudItem xs="12" md="6">
+                <MudGrid>
+                    <!-- Theoretical Score -->
+                     <MudItem xs="12" sm="6">
+                        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Potentiel (Théorique)</MudText>
+                            <div class="d-flex justify-center" style="position: relative; width: 140px; height: 140px;">
+                                <MudProgressCircular Size="Size.Large" StrokeWidth="10" Value="@healthData.HealthScore" Color="@GetScoreColor(healthData.HealthScore)" Style="width: 100%; height: 100%;" />
+                                <div class="d-flex align-center justify-center" style="position: absolute; top:0; left:0; width:100%; height:100%;">
+                                    <MudText Typo="Typo.h4" Color="@GetScoreColor(healthData.HealthScore)">@healthData.HealthScore%</MudText>
+                                </div>
+                            </div>
+                            <MudText Typo="Typo.caption" Class="mt-2 text-center text-muted">Équilibre basé sur la conception du jeu.</MudText>
+                        </MudPaper>
+                     </MudItem>
+                     <!-- Real Score -->
+                     <MudItem xs="12" sm="6">
+                        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Tendance (Réelle)</MudText>
+                             <div class="d-flex justify-center" style="position: relative; width: 140px; height: 140px;">
+                                <MudProgressCircular Size="Size.Large" StrokeWidth="10" Value="@healthData.RealHealthScore" Color="@GetScoreColor(healthData.RealHealthScore)" Style="width: 100%; height: 100%;" />
+                                <div class="d-flex align-center justify-center" style="position: absolute; top:0; left:0; width:100%; height:100%;">
+                                    <MudText Typo="Typo.h4" Color="@GetScoreColor(healthData.RealHealthScore)">@healthData.RealHealthScore%</MudText>
+                                </div>
+                            </div>
+                            <MudText Typo="Typo.caption" Class="mt-2 text-center text-muted">Projection basée sur l'activité réelle.</MudText>
+                        </MudPaper>
+                     </MudItem>
+                </MudGrid>
+            </MudItem>
+
+            <!-- Metrics -->
+            <MudItem xs="12" md="6">
+                <MudGrid>
+                    <!-- User Capacity -->
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-4" Elevation="2">
+                             <div class="d-flex align-center gap-4">
+                                <MudIcon Icon="@Icons.Material.Filled.People" Color="@GetUserCapacityColor()" Size="Size.Large"/>
+                                <div class="flex-grow-1">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Utilisateurs</MudText>
+                                    <div class="d-flex align-baseline gap-2">
+                                        <MudText Typo="Typo.h4">@healthData.UserCount</MudText>
+                                        <MudText Typo="Typo.body1" Class="text-muted">/ @(healthData.MaxUsers > 0 ? healthData.MaxUsers : "∞")</MudText>
+                                    </div>
+                                    @if(healthData.MaxUsers > 0)
+                                    {
+                                        <MudProgressLinear Value="@((double)healthData.UserCount / healthData.MaxUsers * 100)" Color="@GetUserCapacityColor()" Class="mt-2" />
+                                    }
+                                </div>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Wealth Creation Theoretical -->
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Class="pa-4" Elevation="2">
+                            <MudIcon Icon="@Icons.Material.Filled.DesignServices" Color="Color.Info" Size="Size.Medium" Class="mb-2"/>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Richesse Possible</MudText>
+                             <MudText Typo="Typo.h5">@healthData.TargetWealth.ToString("N0")</MudText>
+                             <MudText Typo="Typo.caption">Gains max. théoriques</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Wealth Creation Real -->
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Class="pa-4" Elevation="2">
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Medium" Class="mb-2"/>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Richesse Réelle Proj.</MudText>
+                             <MudText Typo="Typo.h5">@healthData.AverageRealProjectedWealth.ToString("N0")</MudText>
+                             <MudText Typo="Typo.caption">Extrapolation moyenne</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Store Value -->
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-4" Elevation="2">
+                            <div class="d-flex align-center gap-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Primary" Size="Size.Large"/>
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Coût Total Boutique</MudText>
+                                    <MudText Typo="Typo.h4">@healthData.TotalStoreValue.ToString("N0")</MudText>
+                                </div>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    <!-- Richest User -->
+                     <MudItem xs="12">
+                        <MudPaper Class="pa-4 d-flex align-center gap-4" Elevation="2" Style="background-color: var(--mud-palette-surface);">
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Size="Size.Large"/>
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Joueur le plus riche</MudText>
+                                <MudText Typo="Typo.h5">@healthData.RichestUserName</MudText>
+                                <MudText Typo="Typo.body2">Fortune : <b>@healthData.RichestUserWealth.ToString("N0")</b></MudText>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+
+            <!-- Advice Section -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-6" Elevation="3" Style="border-left: 6px solid var(--mud-palette-info);">
+                    <MudText Typo="Typo.h5" GutterBottom="true">Analyse & Conseils</MudText>
+                    @if (healthData.Advice.Any())
+                    {
+                        <MudList T="string" Dense="true">
+                            @foreach (var advice in healthData.Advice)
+                            {
+                                <MudListItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Info">
+                                    @advice
+                                </MudListItem>
+                            }
+                        </MudList>
+                    }
+                    else
+                    {
+                        <MudText>Tout semble en ordre !</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+
+@code {
+    private SystemHealthDto? healthData;
+    private bool isLoading = true;
+    private bool isUpdating = false;
+    private int cycleDuration = 12;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            var response = await Http.GetAsync("api/establishment/health");
+            if (response.IsSuccessStatusCode)
+            {
+                healthData = await response.Content.ReadFromJsonAsync<SystemHealthDto>();
+                if (healthData != null)
+                {
+                    cycleDuration = healthData.CycleDurationMonths;
+                }
+            }
+            else
+            {
+                // Likely shop disabled
+                Snackbar.Add("Impossible de charger les données (La boutique est peut-être désactivée).", Severity.Error);
+                healthData = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task UpdateCycleDuration()
+    {
+        isUpdating = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/establishment/cycle-duration", cycleDuration);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Durée du cycle mise à jour. Recalcul...", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la mise à jour.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private Color GetScoreColor(int score)
+    {
+        if (score >= 80) return Color.Success;
+        if (score >= 50) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetUserCapacityColor()
+    {
+        if (healthData == null || healthData.MaxUsers <= 0) return Color.Info;
+        double ratio = (double)healthData.UserCount / healthData.MaxUsers;
+        if (ratio >= 1.0) return Color.Error;
+        if (ratio >= 0.9) return Color.Warning;
+        return Color.Success;
+    }
+}

@@ -101,21 +101,26 @@
     private bool isLoading = true;
     private int unlockedCount => badges.Count(b => b.IsUnlocked);
 
+    private bool IsShopEnabled = true;
     private string CurrencyName = "Crédits";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCurrencyName();
+        await LoadProfileInfo();
         await LoadBadges();
         await CheckNewUnlocks();
     }
     
-    private async Task LoadCurrencyName()
+    private async Task LoadProfileInfo()
     {
         try
         {
              var profile = await Http.GetFromJsonAsync<UserProfileDetailsDto>("api/users/profile-details");
-             if (profile != null) CurrencyName = profile.CurrencyName;
+             if (profile != null) 
+             {
+                 CurrencyName = profile.CurrencyName;
+                 IsShopEnabled = profile.IsShopEnabled;
+             }
         }
         catch {}
     }
@@ -175,7 +180,12 @@
 
     private async Task OpenDetails(BadgeDto badge)
     {
-        var parameters = new DialogParameters { ["Badge"] = badge, ["CurrencyName"] = CurrencyName };
+        var parameters = new DialogParameters 
+        { 
+            ["Badge"] = badge, 
+            ["CurrencyName"] = CurrencyName,
+            ["IsShopEnabled"] = IsShopEnabled 
+        };
         
         // Pass callback to refresh list when favorite changes (to remove heart from old favorite)
         parameters.Add("OnFavoriteChanged", EventCallback.Factory.Create(this, async () => await LoadBadges()));

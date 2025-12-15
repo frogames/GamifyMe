@@ -44,7 +44,10 @@ builder.Services.AddSingleton<CurrencyService>();
 builder.Services.AddScoped<ObjectiveService>();
 builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<StoreService>();
+
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<BadgesService>();
+builder.Services.AddScoped<ContentImportService>();
 
 // Hosted Services
 builder.Services.AddHostedService<InactiveAccountCleanupService>();

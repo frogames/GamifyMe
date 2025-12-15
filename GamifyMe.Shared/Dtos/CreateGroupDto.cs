@@ -13,6 +13,7 @@ namespace GamifyMe.Shared.Dtos
         
         [Required(ErrorMessage = "La couleur est requise.")]
         public string? Color { get; set; } = "#FFFFFF";
+        public bool IsActive { get; set; } = true;
         public int? RegistrationDurationHours { get; set; }
         public string? ImageBase64 { get; set; }
     }

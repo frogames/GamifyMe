@@ -18,6 +18,9 @@ namespace GamifyMe.UI.Shared.Services
         public int NewGroupsCount { get; private set; }
         public int TotalGroupsCount { get; private set; }
 
+        public int NewBadgesCount { get; private set; }
+        public int TotalBadgesCount { get; private set; }
+
         public event Action? OnChange;
 
         public NotificationService(HttpClient http, IJSRuntime jsRuntime)
@@ -67,6 +70,18 @@ namespace GamifyMe.UI.Shared.Services
                 }
                 catch {}
 
+                try
+                {
+                    var badges = await _http.GetFromJsonAsync<List<BadgeDto>>("api/user-badges");
+                    var lastVisitBadges = await GetLastVisit("badges"); 
+                    if (badges != null)
+                    {
+                        TotalBadgesCount = badges.Count;
+                        NewBadgesCount = badges.Count(b => b.CreatedAt > lastVisitBadges); 
+                    }
+                }
+                catch {}
+
                 NotifyStateChanged();
             }
             catch (Exception ex)
@@ -80,7 +95,9 @@ namespace GamifyMe.UI.Shared.Services
              await SetLastVisit(type, DateTime.UtcNow);
              if (type == "objectives") NewObjectivesCount = 0;
              else if (type == "store") NewStoreItemsCount = 0;
+             else if (type == "store") NewStoreItemsCount = 0;
              else if (type == "groups") NewGroupsCount = 0;
+             else if (type == "badges") NewBadgesCount = 0;
 
              NotifyStateChanged();
         }

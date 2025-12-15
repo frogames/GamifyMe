@@ -149,9 +149,12 @@
                  <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
                     +@(Objective.XpReward * Objective.ActiveMultiplier) XP
                 </MudChip>
-                <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
-                    +@Objective.DocPointsReward @CurrencyName
-                </MudChip>
+                @if (IsShopEnabled)
+                {
+                    <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
+                        +@Objective.DocPointsReward @CurrencyName
+                    </MudChip>
+                }
              </div>
         </div>
     </DialogContent>
@@ -161,6 +164,7 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     [Parameter] public ObjectiveDto Objective { get; set; }
+    [Parameter] public bool IsShopEnabled { get; set; } = true;
 
     [Parameter] public string CurrencyName { get; set; } = "Crédits";
 

@@ -14,11 +14,14 @@ namespace GamifyMe.Shared.Models
         public string CurrencyName { get; set; } = "Crédits"; // Nom de la monnaie
         public int ArchiveUsersAfterInactiveDays { get; set; } = 365; // Délai suppression compte inactif (jours)
         public int MaxUsers { get; set; } = 100; // Limite d'utilisateurs
+        public int CycleDurationMonths { get; set; } = 12; // Durée du cycle économique
 
         // Modules activés
         public bool IsShopEnabled { get; set; } = true;
         public bool IsGroupsEnabled { get; set; } = true;
         public bool IsChallengesEnabled { get; set; } = false; // "Défis"
+
+        public bool IsTemplate { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

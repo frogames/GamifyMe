@@ -1,0 +1,181 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (_kitDetails == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudText Typo="Typo.h5" Class="mb-4">@_kitDetails.Name</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4">
+                Ce kit contient une collection complète d'éléments gamifiés prêts à l'emploi. 
+                Importez-le pour configurer instantanément votre établissement avec des objectifs, badges, groupes et objets boutique adaptés.
+            </MudText>
+            
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                <MudTabPanel Text="@($"Objectifs ({_kitDetails.ObjectivesCount})")">
+                    <MudTable Items="_kitDetails.Objectives" Dense="true" Hover="true" Striped="true">
+                        <HeaderContent>
+                            <MudTh></MudTh>
+                            <MudTh>Titre</MudTh>
+                            <MudTh>Description</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudAvatar Style="@($"background-color:{context.Color}; color: white;")" Size="Size.Small">
+                                    <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" />
+                                </MudAvatar>
+                            </MudTd>
+                            <MudTd>@context.Title</MudTd>
+                            <MudTd>@context.Description</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+                
+                <MudTabPanel Text="@($"Badges ({_kitDetails.BadgesCount})")">
+                     <MudTable Items="_kitDetails.Badges" Dense="true" Hover="true" Striped="true">
+                        <HeaderContent>
+                            <MudTh></MudTh>
+                            <MudTh>Nom</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>Description</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(context.ImageUrl))
+                                {
+                                    <MudImage Src="@context.ImageUrl" Height="32" Width="32" ObjectFit="ObjectFit.Contain" />
+                                }
+                                else
+                                {
+                                    <MudAvatar Style="@($"background-color:{context.Color}; color: white;")" Size="Size.Small">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" />
+                                    </MudAvatar>
+                                }
+                            </MudTd>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.CriteriaType</MudTd>
+                            <MudTd>@context.Description</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+                
+                <MudTabPanel Text="@($"Boutique ({_kitDetails.StoreItemsCount})")">
+                     <MudTable Items="_kitDetails.StoreItems" Dense="true" Hover="true" Striped="true">
+                        <HeaderContent>
+                            <MudTh></MudTh>
+                            <MudTh>Nom</MudTh>
+                             <MudTh>Type</MudTh>
+                            <MudTh>Description</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(context.ImageUrl))
+                                {
+                                    <MudImage Src="@context.ImageUrl" Height="32" Width="32" ObjectFit="ObjectFit.Contain" />
+                                }
+                                else
+                                {
+                                    <MudAvatar Style="@($"background-color:{context.Color}; color: white;")" Size="Size.Small">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" />
+                                    </MudAvatar>
+                                }
+                            </MudTd>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.ItemType</MudTd>
+                            <MudTd>@context.Description</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+                
+                <MudTabPanel Text="@($"Groupes ({_kitDetails.GroupsCount})")">
+                     <MudTable Items="_kitDetails.Groups" Dense="true" Hover="true" Striped="true">
+                        <HeaderContent>
+                            <MudTh></MudTh>
+                            <MudTh>Nom</MudTh>
+                            <MudTh>Description</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(context.ImageUrl))
+                                {
+                                    <MudAvatar Image="@context.ImageUrl" Size="Size.Small" />
+                                }
+                                else
+                                {
+                                    <MudAvatar Style="@($"background-color:{context.Color}; color: white;")" Size="Size.Small">
+                                        <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" />
+                                    </MudAvatar>
+                                }
+                            </MudTd>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Description</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+            </MudTabs>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ImportKit" Disabled="@(_kitDetails == null || _importing)">
+            @(_importing ? "Import en cours..." : "Importer ce kit")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Guid KitId { get; set; }
+
+    private ContentKitDetailsDto? _kitDetails;
+    private bool _importing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _kitDetails = await Http.GetFromJsonAsync<ContentKitDetailsDto>($"api/establishment/kit/{KitId}/details");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement: {ex.Message}", Severity.Error);
+            MudDialog.Cancel();
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task ImportKit()
+    {
+        _importing = true;
+        try
+        {
+            var response = await Http.PostAsync($"api/establishment/kit/{KitId}/import", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Kit importé avec succès !", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Erreur l'import: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+}

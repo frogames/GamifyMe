@@ -75,56 +75,59 @@
             }
         </MudTabPanel>
 
-        <MudTabPanel Text="@($"Joueurs ({currentUser?.CurrencyName ?? "Crédits"})")" Icon="@Icons.Material.Filled.AttachMoney">
-            @if (isLoadingUsersCurrency)
-            {
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            }
-            else
-            {
-                @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
+        @if (currentUser?.IsShopEnabled == true)
+        {
+            <MudTabPanel Text="@($"Joueurs ({currentUser?.CurrencyName ?? "Crédits"})")" Icon="@Icons.Material.Filled.AttachMoney">
+                @if (isLoadingUsersCurrency)
                 {
-                     var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
-                     <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency @(currentUser?.CurrencyName ?? "Crédits"))</MudAlert>
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
                 }
+                else
+                {
+                    @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
+                    {
+                         var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
+                         <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency @(currentUser?.CurrencyName ?? "Crédits"))</MudAlert>
+                    }
 
-                <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
-                <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
-                    <HeaderContent>
-                        <MudTh>Rang</MudTh>
-                        <MudTh>Joueur</MudTh>
+                    <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
+                    <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
+                        <HeaderContent>
+                            <MudTh>Rang</MudTh>
+                            <MudTh>Joueur</MudTh>
 
-                        <MudTh>@(currentUser?.CurrencyName ?? "Crédits")</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="user">
-                        <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                        <MudTd DataLabel="Joueur">
-                            <div class="d-flex align-center">
-                                @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                {
-                                     @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                     {
-                                         <MudAvatar Size="Size.Small" Class="mr-2">
-                                             <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
-                                         </MudAvatar>
-                                     }
-                                     else
-                                     {
-                                         <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
-                                     }
-                                }
-                                @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
-                            </div>
-                        </MudTd>
+                            <MudTh>@(currentUser?.CurrencyName ?? "Crédits")</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="user">
+                            <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
+                            <MudTd DataLabel="Joueur">
+                                <div class="d-flex align-center">
+                                    @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                    {
+                                         @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                         {
+                                             <MudAvatar Size="Size.Small" Class="mr-2">
+                                                 <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
+                                             </MudAvatar>
+                                         }
+                                         else
+                                         {
+                                             <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                         }
+                                    }
+                                    @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
+                                </div>
+                            </MudTd>
 
-                        <MudTd DataLabel="@(currentUser?.CurrencyName ?? "Crédits")">@user.TotalCurrency</MudTd>
-                    </RowTemplate>
-                    <PagerContent>
-                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
-                    </PagerContent>
-                </MudTable>
-            }
-        </MudTabPanel>
+                            <MudTd DataLabel="@(currentUser?.CurrencyName ?? "Crédits")">@user.TotalCurrency</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            </MudTabPanel>
+        }
 
         <MudTabPanel Text="Groupes (XP)" Icon="@Icons.Material.Filled.Groups">
             @if (isLoadingGroupsXp)

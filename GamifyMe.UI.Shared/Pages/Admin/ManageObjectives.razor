@@ -18,7 +18,6 @@
     <div class="d-flex justify-space-between align-center mb-4">
         <div>
             <MudText Typo="Typo.h5">Gestion des Objectifs</MudText>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ShowWealthEstimation" StartIcon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mt-2">Estimation Richesse</MudButton>
         </div>
         @if (!showForm)
         {
@@ -210,7 +209,7 @@
                         <MudDropZone T="ObjectiveDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
                     </ChildContent>
                     <ItemRenderer>
-                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
+                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
                             <div class="d-flex align-center mr-4 grab-cursor">
                                 <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
                             </div>
@@ -230,6 +229,10 @@
                                             @if (context.Category == ObjectiveCategory.Onboarding)
                                             {
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                            }
+                                            @if (!context.IsActive)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="ml-2">Inactif</MudChip>
                                             }
                                         </div>
                                     </MudItem>

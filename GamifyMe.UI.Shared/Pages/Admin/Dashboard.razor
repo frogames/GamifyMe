@@ -23,10 +23,10 @@
             </MudItem>
             
             <MudItem xs="12" sm="6" md="4">
-                <MudPaper Class="d-flex flex-column align-center justify-center pa-4 mud-theme-secondary" Elevation="4" Style="height:150px;">
+                <MudPaper Class="@($"d-flex flex-column align-center justify-center pa-4 {(_stats.HealthScore >= 80 ? "mud-theme-success" : _stats.HealthScore >= 50 ? "mud-theme-warning" : "mud-theme-error")}")" Elevation="4" Style="height:150px;">
                     <MudIcon Icon="@Icons.Material.Filled.Favorite" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h3">@_stats.SystemHealth</MudText>
-                    <MudText Typo="Typo.subtitle1">Santé du système</MudText>
+                    <MudText Typo="Typo.h3">@_stats.HealthScore %</MudText>
+                    <MudText Typo="Typo.subtitle1">Santé théorique</MudText>
                 </MudPaper>
             </MudItem>
 

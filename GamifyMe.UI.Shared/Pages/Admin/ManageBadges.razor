@@ -44,6 +44,7 @@
                                     <MudSelectItem Value="@cat">@cat</MudSelectItem>
                                 }
                             </MudSelect>
+                            <MudSwitch T="bool" @bind-Value="newBadge.IsActive" Label="Badge Actif" Color="Color.Success" Class="mb-3" />
                             <MudTextField T="string" Label="Description" @bind-Value="newBadge.Description" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
                             
                              @* VISUALS *@
@@ -216,10 +217,11 @@
         </MudCard>
     }
 
-    <MudTable Items="@badgesList" Dense="true" Hover="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BadgeDto> e) => StartEdit(e.Item))" T="BadgeDto" RowClass="cursor-pointer custom-hover-row">
+    <MudTable Items="@badgesList" Dense="true" Hover="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BadgeDto> e) => StartEdit(e.Item))" T="BadgeDto" RowClass="cursor-pointer custom-hover-row" RowStyleFunc="@((BadgeDto item, int _) => item.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")">
         <HeaderContent>
             <MudTh>Apparence</MudTh>
             <MudTh>Nom</MudTh>
+            <MudTh>Statut</MudTh>
             <MudTh>Catégorie</MudTh>
             <MudTh>Condition</MudTh>
             <MudTh>Récompenses</MudTh>
@@ -241,6 +243,16 @@
              <MudTd>
                  <MudText Typo="Typo.body2" Style="font-weight:bold;">@badge.Name</MudText>
                  <MudText Typo="Typo.caption">@badge.Description</MudText>
+             </MudTd>
+             <MudTd>
+                 @if (!badge.IsActive)
+                 {
+                     <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined">Inactif</MudChip>
+                 }
+                 else
+                 {
+                     <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Actif</MudChip>
+                 }
              </MudTd>
              <MudTd>
                  <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@badge.Category</MudChip>
@@ -346,7 +358,8 @@
             Color = "#FFD700", 
             IconName = "Star",
             CriteriaType = BadgeCriteriaType.LevelReached,
-            CriteriaThreshold = 1
+            CriteriaThreshold = 1,
+            IsActive = true
         };
         _imageBase64 = null;
         selectedObjectiveIds = new HashSet<Guid>();
@@ -370,7 +383,8 @@
             CriteriaThreshold = badge.CriteriaThreshold,
             XpReward = badge.XpReward,
             DocPointsReward = badge.DocPointsReward,
-            RewardStoreItemId = badge.RewardStoreItemId
+            RewardStoreItemId = badge.RewardStoreItemId,
+            IsActive = badge.IsActive
         };
         _imageBase64 = null;
         

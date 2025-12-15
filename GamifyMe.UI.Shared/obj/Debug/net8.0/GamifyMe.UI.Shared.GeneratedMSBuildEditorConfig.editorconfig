@@ -39,6 +39,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDb21wb25lbnQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[d:/GamifyMe/GamifyMe.UI.Shared/Components/ConfirmDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDb25maXJtRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [d:/GamifyMe/GamifyMe.UI.Shared/Components/ConfirmPurchaseDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDb25maXJtUHVyY2hhc2VEaWFsb2cucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -151,6 +155,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/Dialogs/ContentKitDetailsDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cRGlhbG9nc1xDb250ZW50S2l0RGV0YWlsc0RpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [d:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/Dialogs/CreateUserDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cRGlhbG9nc1xDcmVhdGVVc2VyRGlhbG9nLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -193,6 +201,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/Subscription.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU3Vic2NyaXB0aW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/SystemHealth.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU3lzdGVtSGVhbHRoLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Pages/Admin/UserList.razor]
@@ -269,6 +281,26 @@ build_metadata.AdditionalFiles.CssScope =
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Pages/Store.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/SuperAdmin/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VwZXJBZG1pblxEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/SuperAdmin/Dialogs/CreateEstablishmentDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VwZXJBZG1pblxEaWFsb2dzXENyZWF0ZUVzdGFibGlzaG1lbnREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/SuperAdmin/Dialogs/EditEstablishmentDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VwZXJBZG1pblxEaWFsb2dzXEVkaXRFc3RhYmxpc2htZW50RGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/SuperAdmin/Establishments.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VwZXJBZG1pblxFc3RhYmxpc2htZW50cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[d:/GamifyMe/GamifyMe.UI.Shared/Pages/SuperAdmin/Stats.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VwZXJBZG1pblxTdGF0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [d:/GamifyMe/GamifyMe.UI.Shared/Pages/User/Groups.razor]

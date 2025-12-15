@@ -29,6 +29,29 @@ namespace GamifyMe.Api.Data
         public DbSet<Badge> Badges { get; set; }
         public DbSet<UserBadge> UserBadges { get; set; }
 
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            CheckForTemplateDeletion();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            CheckForTemplateDeletion();
+            return base.SaveChanges();
+        }
+
+        private void CheckForTemplateDeletion()
+        {
+            var deletedEstablishments = ChangeTracker.Entries<Establishment>()
+                .Where(e => e.State == EntityState.Deleted && e.Entity.IsTemplate);
+
+            if (deletedEstablishments.Any())
+            {
+                throw new InvalidOperationException("Impossible de supprimer un établissement marqué comme 'Modèle' (IsTemplate).");
+            }
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

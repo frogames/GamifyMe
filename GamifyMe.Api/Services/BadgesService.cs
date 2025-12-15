@@ -18,17 +18,24 @@ namespace GamifyMe.Api.Services
             _objectiveService = objectiveService;
         }
 
-        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId, Guid establishmentId)
+        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId, Guid establishmentId, bool includeInactive = false)
         {
-            var badges = await _context.Badges
-                .Where(b => b.EstablishmentId == establishmentId)
-                .AsNoTracking()
-                .ToListAsync();
+            var query = _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId);
+            
+            if (!includeInactive)
+            {
+                query = query.Where(b => b.IsActive);
+            }
+
+            var badges = await query.AsNoTracking().ToListAsync();
 
             var unlockedBadges = await _context.UserBadges
                 .Where(ub => ub.UserId == userId)
                 .AsNoTracking()
                 .ToListAsync();
+
+
 
             // Fetch contextual data for progress calculation
             Wallet? xpWallet = null;
@@ -142,6 +149,7 @@ namespace GamifyMe.Api.Services
                 IconName = request.IconName,
                 ImageUrl = request.ImageUrl,
                 Color = request.Color,
+                IsActive = request.IsActive,
                 CriteriaType = request.CriteriaType,
                 CriteriaValue = request.CriteriaValue,
                 CriteriaThreshold = request.CriteriaThreshold,
@@ -168,6 +176,7 @@ namespace GamifyMe.Api.Services
             badge.IconName = request.IconName;
             badge.ImageUrl = request.ImageUrl;
             badge.Color = request.Color;
+            badge.IsActive = request.IsActive;
             badge.CriteriaType = request.CriteriaType;
             badge.CriteriaValue = request.CriteriaValue;
             badge.CriteriaThreshold = request.CriteriaThreshold;
@@ -618,6 +627,7 @@ namespace GamifyMe.Api.Services
                 IconName = b.IconName,
                 ImageUrl = b.ImageUrl,
                 Color = b.Color,
+                IsActive = b.IsActive,
                 CriteriaType = b.CriteriaType,
                 CriteriaValue = b.CriteriaValue,
                 CriteriaThreshold = b.CriteriaThreshold,
@@ -632,7 +642,8 @@ namespace GamifyMe.Api.Services
                 RewardStoreItem = rewardItem,
                 RequiredObjectives = requiredObjectives,
                 RequiredStoreItems = requiredStoreItems,
-                TargetObjectiveName = targetObjectiveName
+                TargetObjectiveName = targetObjectiveName,
+                CreatedAt = b.CreatedAt
             };
         }
 

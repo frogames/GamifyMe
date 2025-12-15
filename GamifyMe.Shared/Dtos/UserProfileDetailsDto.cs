@@ -38,6 +38,13 @@
         // Boost XP
         public int ActiveBoostMultiplier { get; set; } = 1;
         public DateTime? BoostEndsAt { get; set; }
+
+        // Home Page Stats
+        public int ActiveStreakCount { get; set; }
+        public int ReloadedObjectiveCount { get; set; }
+        public int UnlockedBadgeCount { get; set; }
+        public double BadgeCompletionPercentage { get; set; }
+
         public List<BadgeDto> Badges { get; set; } = new();
     }
 }

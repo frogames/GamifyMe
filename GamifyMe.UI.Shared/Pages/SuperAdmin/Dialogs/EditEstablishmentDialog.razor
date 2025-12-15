@@ -1,0 +1,63 @@
+@using GamifyMe.Shared.Dtos
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (Model == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudTextField Label="Nom (Modification)" @bind-Value="Model.Name" Required="true" />
+            <MudNumericField Label="Utilisateurs Max" @bind-Value="Model.MaxUsers" Min="1" />
+            <MudSwitch Label="Est un modèle (Template)" @bind-Value="Model.IsTemplate" Color="Color.Primary" />
+            <MudAlert Severity="Severity.Info" Class="mt-2">L'édition permet aussi de changer d'autres paramètres via le menu Admin standard une fois connecté à l'établissement.</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Sauvegarder</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Guid EstablishmentId { get; set; }
+    
+    // We reuse EstablishmentSettingsDto as it contains what we need (Name, MaxUsers, IsTemplate)
+    public EstablishmentSettingsDto? Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Model = await Http.GetFromJsonAsync<EstablishmentSettingsDto>($"api/superadmin/establishments/{EstablishmentId}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement: {ex.Message}", Severity.Error);
+            MudDialog.Cancel();
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (Model == null) return;
+        
+        var response = await Http.PutAsJsonAsync($"api/superadmin/establishments/{EstablishmentId}", Model);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Modifications enregistrées", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add("Erreur lors de la sauvegarde", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

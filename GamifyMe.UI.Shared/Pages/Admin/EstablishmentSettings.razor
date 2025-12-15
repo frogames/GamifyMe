@@ -15,7 +15,7 @@
     else
     {
         <MudGrid>
-            <MudItem xs="12" md="6">
+             <MudItem xs="12" md="6">
                 <!-- Card 1: Paramètres Généraux -->
                 <MudPaper Class="pa-4 mb-4">
                     <MudText Typo="Typo.h6" Class="mb-4">Paramètres Généraux</MudText>
@@ -24,16 +24,14 @@
                     
                     <MudTextField @bind-Value="_settings.CurrencyName" Label="Nom de la monnaie" HelperText="Ex: Crédits, Points..." Variant="Variant.Outlined" Class="mb-4" />
                     
-                    <MudNumericField @bind-Value="_settings.ArchiveUsersAfterInactiveDays" Label="Suppression comptes inactifs (jours)" Variant="Variant.Outlined" Min="0" Class="mb-4" />
-
                     <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" Class="mt-2">
                         @(_saving ? "Enregistrement..." : "Enregistrer")
                     </MudButton>
                 </MudPaper>
-            </MudItem>
+             </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4">
+             <MudItem xs="12" md="6">
+                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-4">Modules</MudText>
                     <MudSwitch @bind-Value="_settings.IsShopEnabled" Color="Color.Success" Label="Boutique & Inventaire" />
                     <MudSwitch @bind-Value="_settings.IsGroupsEnabled" Color="Color.Success" Label="Groupes & Classements" />
@@ -41,14 +39,29 @@
                     <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" Class="mt-4">
                         @(_saving ? "Enregistrement..." : "Enregistrer")
                     </MudButton>
-                    
-                    <MudDivider Class="my-4"/>
-                     <MudText Typo="Typo.h6" Class="mb-4">Zone de Danger</MudText>
-                     <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="ResetCredits">Remise à zéro</MudButton>
-                     <MudText Typo="Typo.caption" Class="d-block mt-1">Réinitialise les crédits de TOUS les utilisateurs et l'XP des Groupes à 0. Irréversible.</MudText>
-                </MudPaper>
-            </MudItem>
-            
+                 </MudPaper>
+             </MudItem>
+             
+              <!-- Zone de Danger + Cleanup -->
+              <MudItem xs="12">
+                 <MudPaper Class="pa-4 border-danger">
+                      <MudText Typo="Typo.h6" Class="mb-4 text-danger">Zone de Danger</MudText>
+                      
+                      <MudText Typo="Typo.subtitle1" Class="mb-2">Nettoyage des comptes inactifs</MudText>
+                      <div class="d-flex align-center gap-4 mb-4">
+                          <MudNumericField @bind-Value="_cleanupDays" Label="Inactif depuis (jours)" Variant="Variant.Outlined" Min="30" Class="flex-grow-0" Style="width: 200px;" />
+                          <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="CleanupInactiveUsers">Supprimer les comptes</MudButton>
+                      </div>
+                      <MudText Typo="Typo.caption" Class="d-block mb-4">Supprime définitivement les utilisateurs n'ayant eu aucune activité depuis le nombre de jours spécifié.</MudText>
+
+                      <MudDivider Class="my-4"/>
+
+                      <MudText Typo="Typo.subtitle1" Class="mb-2">Réinitialisation Globale</MudText>
+                      <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="ResetCredits">Remise à zéro des Crédits & XP</MudButton>
+                      <MudText Typo="Typo.caption" Class="d-block mt-1">Réinitialise les crédits de TOUS les utilisateurs et l'XP des Groupes à 0. Irréversible.</MudText>
+                 </MudPaper>
+              </MudItem>
+
              <MudItem xs="12">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-4">Kits de contenu</MudText>
@@ -59,40 +72,15 @@
                                 <MudCardMedia Image="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1470" Height="140" />
                                 <MudCardContent>
                                     <MudText Typo="Typo.h6">Kit Salle de Sport</MudText>
-                                    <MudText Typo="Typo.body2">Objectifs, badges et récompenses pour motiver les sportifs.</MudText>
+                                    <MudText Typo="Typo.body2">Objectifs, badges, groupes et récompenses pour motiver les sportifs.</MudText>
                                 </MudCardContent>
                                 <MudCardActions>
-                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenKitDetails(Guid.Parse("00000000-0000-0000-0000-000000000003")))">Voir le détail</MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto" OnClick="@(() => ImportKit(Guid.Parse("00000000-0000-0000-0000-000000000003")))">Ajouter</MudButton>
                                 </MudCardActions>
                             </MudCard>
                         </MudItem>
-                         <MudItem xs="12" sm="6" md="4">
-                            <MudCard>
-                                <MudCardMedia Image="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=1470" Height="140" />
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6">Kit Éducation</MudText>
-                                    <MudText Typo="Typo.body2">Pour les écoles et centres de formation.</MudText>
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
-                         <MudItem xs="12" sm="6" md="4">
-                            <MudCard>
-                                <MudCardMedia Image="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=1470" Height="140" />
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6">Kit Entreprise</MudText>
-                                    <MudText Typo="Typo.body2">Favorisez la cohésion et la productivité.</MudText>
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton Variant="Variant.Text" Color="Color.Primary">Voir le détail</MudButton>
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Ajouter</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
+                         <!-- Other kits removed as requested -->
                     </MudGrid>
                 </MudPaper>
             </MudItem>
@@ -163,4 +151,78 @@
     }
 
     [Inject] IDialogService DialogService { get; set; }
+
+    private int _cleanupDays = 365;
+    
+    private async Task CleanupInactiveUsers()
+    {
+         var confirmed = await DialogService.ShowMessageBox(
+            "Attention - Zone de Danger", 
+            $"Voulez-vous vraiment supprimer DÉFINITIVEMENT les utilisateurs inactifs depuis plus de {_cleanupDays} jours ? Cette action est irréversible.", 
+            yesText:"Supprimer", cancelText:"Annuler");
+
+        if (confirmed == true)
+        {
+             try
+             {
+                 var response = await Http.PostAsync($"api/establishment/cleanup-inactive-users?days={_cleanupDays}", null);
+                 if (response.IsSuccessStatusCode)
+                 {
+                     var msg = await response.Content.ReadAsStringAsync();
+                     Snackbar.Add(msg, Severity.Success); // API should return generic message or count
+                 }
+                 else 
+                 {
+                     var err = await response.Content.ReadAsStringAsync();
+                     Snackbar.Add($"Erreur: {err}", Severity.Error);
+                 }
+             }
+             catch (Exception ex)
+             {
+                 Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+             }
+        }
+    }
+
+    private async Task OpenKitDetails(Guid kitId)
+    {
+        var parameters = new DialogParameters { ["KitId"] = kitId };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        
+        var dialog = DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.ContentKitDetailsDialog>("Détails du Kit", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            // Import done inside dialog successfully
+        }
+    }
+
+    private async Task ImportKit(Guid kitId)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirmation", 
+            "Voulez-vous vraiment importer ce kit ? Les contenus seront ajoutés à votre établissement.", 
+            yesText:"Importer", cancelText:"Annuler");
+
+        if (confirmed == true)
+        {
+            try
+            {
+               var response = await Http.PostAsync($"api/establishment/kit/{kitId}/import", null);
+               if (response.IsSuccessStatusCode)
+               {
+                   Snackbar.Add("Kit importé avec succès !", Severity.Success);
+               }
+               else
+               {
+                    Snackbar.Add("Erreur lors de l'import.", Severity.Error);
+               }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+        }
+    }
 }

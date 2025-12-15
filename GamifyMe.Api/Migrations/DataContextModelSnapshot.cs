@@ -65,6 +65,9 @@ namespace GamifyMe.Api.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -135,6 +138,9 @@ namespace GamifyMe.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("CycleDurationMonths")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsChallengesEnabled")
                         .HasColumnType("boolean");
 
@@ -142,6 +148,9 @@ namespace GamifyMe.Api.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsShopEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsTemplate")
                         .HasColumnType("boolean");
 
                     b.Property<int>("MaxUsers")
@@ -184,6 +193,9 @@ namespace GamifyMe.Api.Migrations
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()

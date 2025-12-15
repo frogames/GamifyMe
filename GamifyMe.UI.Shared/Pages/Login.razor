@@ -91,8 +91,28 @@
                     // 3. Stockage du token
                     await TokenService.SetTokenAsync(token);
 
-                    // 4. Redirection forcée pour recharger l'état d'authentification
-                    var target = !string.IsNullOrEmpty(_returnUrl) ? _returnUrl : "/";
+                    // Force Auth State update immediately to get roles
+                    if (AuthStateProvider is ApiAuthenticationStateProvider apiAuth)
+                    {
+                        await apiAuth.MarkUserAsAuthenticated(token);
+                    }
+                    var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                    var user = authState.User;
+
+                    // 4. Déterminer la redirection
+                    string target = "/";
+                    if (!string.IsNullOrEmpty(_returnUrl) && _returnUrl != "/")
+                    {
+                        target = _returnUrl;
+                    }
+                    else
+                    {
+                         if (user.IsInRole(Roles.SuperAdmin)) target = "/superadmin/dashboard";
+                         else if (user.IsInRole(Roles.Admin)) target = "/admin/dashboard";
+                         else if (user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire)) target = "/dashboard";
+                         else target = "/"; // User
+                    }
+
                     Navigation.NavigateTo(target, forceLoad: true);
                 }
             }
@@ -119,8 +139,20 @@
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity?.IsAuthenticated == true)
             {
-                var target = !string.IsNullOrEmpty(_returnUrl) ? _returnUrl : "/";
-                Navigation.NavigateTo(target);
+                 var user = authState.User;
+                 string target = "/";
+                 if (!string.IsNullOrEmpty(_returnUrl) && _returnUrl != "/")
+                 {
+                     target = _returnUrl;
+                 }
+                 else
+                 {
+                      if (user.IsInRole(Roles.SuperAdmin)) target = "/superadmin/dashboard";
+                      else if (user.IsInRole(Roles.Admin)) target = "/admin/dashboard";
+                      else if (user.IsInRole(Roles.Editeur) || user.IsInRole(Roles.Gestionnaire)) target = "/dashboard";
+                      else target = "/"; // User
+                 }
+                 Navigation.NavigateTo(target);
             }
         }
     }

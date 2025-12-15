@@ -21,6 +21,7 @@ namespace GamifyMe.Shared.Models
         public string? IconName { get; set; } // MudBlazor Icon
         public string? ImageUrl { get; set; } // Uploaded image
         public string? Color { get; set; } = "#FFD700"; // Gold by default
+        public bool IsActive { get; set; } = true;
         
         [StringLength(50)]
         public string Category { get; set; } = "Général";

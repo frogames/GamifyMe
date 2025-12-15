@@ -27,7 +27,9 @@ namespace GamifyMe.Api.Controllers
         private readonly StoreService _storeService;
         private readonly BadgesService _badgesService;
 
-        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService, ObjectiveService objectiveService, StoreService storeService, BadgesService badgesService)
+        private readonly ITokenService _tokenService;
+
+        public UsersController(DataContext context, IConfiguration configuration, IEmailService emailService, ObjectiveService objectiveService, StoreService storeService, BadgesService badgesService, ITokenService tokenService)
         {
             _context = context;
             _configuration = configuration;
@@ -35,6 +37,7 @@ namespace GamifyMe.Api.Controllers
             _objectiveService = objectiveService;
             _storeService = storeService;
             _badgesService = badgesService;
+            _tokenService = tokenService;
         }
 
         [HttpPost("register")]
@@ -147,7 +150,7 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest("Veuillez confirmer votre email avant de vous connecter.");
             }
 
-            string token = CreateToken(user);
+            string token = _tokenService.CreateToken(user);
             return Ok(token);
         }
 
@@ -350,6 +353,21 @@ namespace GamifyMe.Api.Controllers
                 }
             }
 
+            // Stats: Active Streaks & Reloaded Objectives
+            var activeObjectives = await _objectiveService.GetActiveObjectivesAsync(userId, user.EstablishmentId);
+            
+            // "Active Streak" defined as streak > 1, as per user requirement to show details of "meilleures séries".
+            int activeStreakCount = activeObjectives.Count(o => o.IsStreakEnabled && o.CurrentStreak > 0); 
+
+            // "Reloaded Objectives": Objectives that reoccur ("FrequencyHours > 0") and are currently available.
+            // Or simpler interpretation: Objectives that are "recharged" right now.
+            // Let's assume recurring objectives that are available to be done.
+            int reloadedObjectiveCount = activeObjectives.Count(o => o.FrequencyHours.GetValueOrDefault() > 0 && !o.IsAlreadyCompleted);
+
+            var allBadges = await _badgesService.GetAllBadgesAsync(userId, user.EstablishmentId);
+            int unlockedBadgeCount = allBadges.Count(b => b.IsUnlocked);
+            double badgeProgress = allBadges.Count > 0 ? (double)unlockedBadgeCount / allBadges.Count * 100 : 0;
+
             return Ok(new UserProfileDetailsDto
             {
                 Username = user.Username,
@@ -377,7 +395,11 @@ namespace GamifyMe.Api.Controllers
                 ActiveQrCodeStyle = activeQrStyle,
                 ActiveBoostMultiplier = boostMultiplier,
                 BoostEndsAt = boostEndsAt,
-                Badges = await _badgesService.GetAllBadgesAsync(userId, user.EstablishmentId)
+                ActiveStreakCount = activeStreakCount,
+                ReloadedObjectiveCount = reloadedObjectiveCount,
+                UnlockedBadgeCount = unlockedBadgeCount,
+                BadgeCompletionPercentage = badgeProgress,
+                Badges = allBadges
             });
         }
 
@@ -570,28 +592,7 @@ namespace GamifyMe.Api.Controllers
             return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
         }
 
-        private string CreateToken(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim("FirstName", user.FirstName ?? ""),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("EstablishmentId", user.EstablishmentId.ToString()),
-                new Claim("EstablishmentName", user.Establishment.Name)
-            };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Key").Value!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(7),
-                signingCredentials: creds
-            );
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
         [HttpPut("profile/name")]
         [Authorize]
         public async Task<ActionResult<UserProfileDetailsDto>> UpdateName(UpdateUserNameDto request)

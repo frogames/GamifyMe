@@ -12,6 +12,7 @@ namespace GamifyMe.Shared.Dtos
         public string? ImageUrl { get; set; }
         public string? Color { get; set; }
         public string Category { get; set; } = "Général";
+        public bool IsActive { get; set; }
         public double CurrentValue { get; set; } // Current calculated progress
         
         public BadgeCriteriaType CriteriaType { get; set; }
@@ -32,5 +33,7 @@ namespace GamifyMe.Shared.Dtos
         public string? TargetObjectiveName { get; set; }
         public List<ObjectiveDto>? RequiredObjectives { get; set; }
         public List<StoreItemDto>? RequiredStoreItems { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }

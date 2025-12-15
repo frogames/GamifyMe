@@ -156,9 +156,12 @@
                                             @obj.XpReward XP
                                         </MudChip>
                                     }
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
-                                        @obj.DocPointsReward @CurrencyName
-                                    </MudChip>
+                                    @if (IsShopEnabled)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Style="@(textColor == "white" ? "border: 1px solid white;" : "")">
+                                            @obj.DocPointsReward @CurrencyName
+                                        </MudChip>
+                                    }
                                 </div>
                             </div>
 
@@ -319,6 +322,7 @@
     }
 
     private string CurrencyName = "Crédits";
+    private bool IsShopEnabled = true;
 
     private async Task LoadObjectives()
     {
@@ -336,7 +340,11 @@
             await Task.WhenAll(t1, t2);
             
             objectives = t1.Result ?? new List<ObjectiveDto>();
-            if (t2.Result != null) CurrencyName = t2.Result.CurrencyName;
+            if (t2.Result != null) 
+            {
+                CurrencyName = t2.Result.CurrencyName;
+                IsShopEnabled = t2.Result.IsShopEnabled;
+            }
 
             GroupObjectives();
             
@@ -475,7 +483,8 @@
         var parameters = new DialogParameters<ObjectiveDetailsDialog> 
         { 
             { x => x.Objective, obj },
-            { x => x.CurrencyName, CurrencyName }
+            { x => x.CurrencyName, CurrencyName },
+            { x => x.IsShopEnabled, IsShopEnabled }
         };
         // Clean dialog interface
         var options = new DialogOptions { 

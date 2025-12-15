@@ -11,5 +11,6 @@ namespace GamifyMe.Shared.Dtos
         public bool IsShopEnabled { get; set; }
         public bool IsGroupsEnabled { get; set; }
         public bool IsChallengesEnabled { get; set; }
+        public bool IsTemplate { get; set; }
     }
 }

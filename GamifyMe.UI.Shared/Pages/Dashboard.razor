@@ -40,21 +40,36 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
+        @if (UserStats?.IsShopEnabled ?? true)
+        {
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/store"))">
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Success" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Gérer Boutique</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Ajouter des objets et gérer le stock</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        @if (UserStats?.IsGroupsEnabled ?? true)
+        {
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/groups"))">
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Info" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Gérer Groupes</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Créer et gérer les groupes</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
         <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/store"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/badges"))">
                 <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Success" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Gérer Boutique</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Ajouter des objets et gérer le stock</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/groups"))">
-                <MudCardContent Class="d-flex flex-column align-center pa-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Info" Class="mb-4" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h6" Align="Align.Center">Gérer Groupes</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Créer et gérer les groupes</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Size="Size.Large" Color="Color.Warning" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Gérer Badges</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Créer et modifier les badges</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -163,6 +178,9 @@
 </style>
 
 @code {
+    [CascadingParameter]
+    public UserProfileDetailsDto? UserStats { get; set; }
+
     private List<DashboardLogDto> dashboardLogs = new();
     private bool isPageLoading = true;
     private bool showQr = false;

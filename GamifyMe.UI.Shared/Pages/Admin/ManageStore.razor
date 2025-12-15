@@ -18,7 +18,6 @@
     <div class="d-flex justify-space-between align-center mb-4">
         <div>
             <MudText Typo="Typo.h5">Gestion de la Boutique</MudText>
-            <MudText Typo="Typo.caption" Class="text-muted">Valeur totale : @allStoreItemsList.Sum(x => x.Price) @currencyName</MudText>
         </div>
         @if (!showForm)
         {
@@ -157,7 +156,7 @@
                         <MudDropZone T="StoreItemDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
                     </ChildContent>
                     <ItemRenderer>
-                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="border-bottom: 1px solid #eee;">
+                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid #eee; {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
                              <div class="d-flex align-center mr-4 grab-cursor">
                                 <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
                             </div>
@@ -171,6 +170,10 @@
                                              <div class="d-flex flex-column">
                                                  <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Name</MudText>
                                              </div>
+                                             @if (!context.IsActive)
+                                             {
+                                                 <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="ml-2">Inactif</MudChip>
+                                             }
                                          </div>
                                      </MudItem>
                                      <MudItem xs="2">

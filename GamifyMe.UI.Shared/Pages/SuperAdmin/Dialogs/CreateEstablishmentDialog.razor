@@ -1,0 +1,42 @@
+@using GamifyMe.Shared.Dtos
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField Label="Nom de l'établissement" @bind-Value="Model.Name" Required="true" />
+        <MudNumericField Label="Utilisateurs Max" @bind-Value="Model.MaxUsers" Min="1" />
+        <MudSwitch Label="Est un modèle (Template)" @bind-Value="Model.IsTemplate" Color="Color.Primary" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Créer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+
+    public CreateEstablishmentDto Model { get; set; } = new();
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Model.Name))
+        {
+            Snackbar.Add("Le nom est requis", Severity.Warning);
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/superadmin/establishments", Model);
+        if (response.IsSuccessStatusCode)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+             Snackbar.Add("Erreur lors de la création", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

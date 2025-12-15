@@ -115,7 +115,7 @@ namespace GamifyMe.Api.Controllers
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
 
             var groups = await _context.Groups
-                .Where(g => g.EstablishmentId == establishmentId)
+                .Where(g => g.EstablishmentId == establishmentId && g.IsActive)
                 .OrderByDescending(g => g.TotalXp)
                 .Include(g => g.Members)
                 .Take(20)
@@ -142,7 +142,7 @@ namespace GamifyMe.Api.Controllers
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
 
             var groups = await _context.Groups
-                .Where(g => g.EstablishmentId == establishmentId)
+                .Where(g => g.EstablishmentId == establishmentId && g.IsActive)
                 .Include(g => g.Members)
                 .OrderByDescending(g => g.Members.Count)
                 .Take(20)
