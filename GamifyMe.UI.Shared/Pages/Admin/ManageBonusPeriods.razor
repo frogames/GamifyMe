@@ -72,50 +72,55 @@
             </MudCardContent>
         </MudCard>
     }
-    else
+    @if (list.Any())
     {
-        <MudCard Elevation="3">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Historique des bonus</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudTable Items="@list" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BonusPeriodDto> e) => StartEdit(e.Item))" T="BonusPeriodDto" RowClass="cursor-pointer custom-hover-row">
-                    <HeaderContent>
-                        <MudTh>Nom</MudTh>
-                        <MudTh>Dates</MudTh>
-                        <MudTh>Type</MudTh>
-                        <MudTh>Multiplicateur</MudTh>
-                        <MudTh>Actif</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="item">
-                        <MudTd DataLabel="Nom">@item.Name</MudTd>
-                        <MudTd DataLabel="Dates">
-                            <div>Du @item.StartDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                            <div>Au @item.EndDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
-                        </MudTd>
-                        <MudTd DataLabel="Type">@item.Type</MudTd>
-                        <MudTd DataLabel="Multiplicateur">x @item.Multiplier</MudTd>
-                        <MudTd DataLabel="Actif">
-                            @if (item.IsActive)
-                            {
-                                <MudChip T="string" Color="Color.Success" Size="Size.Small">Oui</MudChip>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Color="Color.Default" Size="Size.Small">Non</MudChip>
-                            }
-                        </MudTd>
-                        <MudTd DataLabel="Actions">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Delete(item))" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudCardContent>
-        </MudCard>
+        <div class="d-flex align-center gap-4 mb-4 pa-2 rounded mud-background-gray border-all border-solid border-1">
+            <MudSpacer />
+            @if (selectedItems.Any())
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedItems.Count)</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedItems.Count)</MudButton>
+            }
+        </div>
     }
+
+    <MudCard Elevation="3">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Historique des bonus</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudTable Items="@list" MultiSelection="true" @bind-SelectedItems="selectedItems" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BonusPeriodDto> e) => StartEdit(e.Item))" T="BonusPeriodDto" RowClass="cursor-pointer custom-hover-row">
+                <HeaderContent>
+                    <MudTh>Nom</MudTh>
+                    <MudTh>Dates</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Multiplicateur</MudTh>
+                    <MudTh>Actif</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="item">
+                    <MudTd DataLabel="Nom">@item.Name</MudTd>
+                    <MudTd DataLabel="Dates">
+                        <div>Du @item.StartDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                        <div>Au @item.EndDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                    </MudTd>
+                    <MudTd DataLabel="Type">@item.Type</MudTd>
+                    <MudTd DataLabel="Multiplicateur">x @item.Multiplier</MudTd>
+                    <MudTd DataLabel="Actif">
+                        @if (item.IsActive)
+                        {
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small">Oui</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Non</MudChip>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudCardContent>
+    </MudCard>
 </MudContainer>
 
 @code {
@@ -237,6 +242,63 @@
         }
         catch (Exception ex) { errorMessage = ex.Message; }
         finally { isBusy = false; }
+    }
+
+    private HashSet<BonusPeriodDto> selectedItems = new();
+
+    private async Task DeleteSelected()
+    {
+        bool confirmed = await DialogService.ShowMessageBox("Supprimer ?", $"Voulez-vous supprimer les {selectedItems.Count} périodes sélectionnées ?", yesText: "Oui", cancelText: "Non") ?? false;
+        if (!confirmed) return;
+        
+        isBusy = true;
+        try 
+        {
+            foreach (var item in selectedItems.ToList())
+            {
+                var response = await Http.DeleteAsync($"api/bonus-periods/{item.Id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add($"Erreur lors de la suppression de {item.Name}", Severity.Error);
+                }
+            }
+            selectedItems.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
+        finally { isBusy = false; }
+    }
+
+    private async Task DuplicateSelected()
+    {
+        isBusy = true;
+        try 
+        {
+            foreach (var item in selectedItems.ToList())
+            {
+                await DuplicateInternal(item);
+            }
+            selectedItems.Clear();
+            await LoadData();
+            Snackbar.Add("Périodes dupliquées !", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
+        finally { isBusy = false; }
+    }
+
+    private async Task DuplicateInternal(BonusPeriodDto item)
+    {
+        var duplicate = new UpdateBonusPeriodDto
+        {
+            Name = $"Copie de {item.Name}",
+            Type = item.Type,
+            Multiplier = item.Multiplier,
+            StartDate = item.StartDate,
+            EndDate = item.EndDate,
+            IsActive = false
+        };
+
+        await Http.PostAsJsonAsync("api/bonus-periods", duplicate);
     }
 
     private async Task Delete(BonusPeriodDto item)

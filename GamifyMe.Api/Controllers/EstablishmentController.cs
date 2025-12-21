@@ -152,7 +152,7 @@ namespace GamifyMe.Api.Controllers
 
             var userCount = await _context.Users.CountAsync(u => u.EstablishmentId == establishmentId);
 
-            // Health Score Logic (Simplified Theoretical)
+            // 1. Wealth Projection (Theoretical)
             var cycleHours = establishment.CycleDurationMonths * 30 * 24;
             var objectives = await _context.Objectives.Where(o => o.EstablishmentId == establishmentId && o.IsActive).ToListAsync();
             long totalCurrencyCreation = 0;
@@ -164,18 +164,50 @@ namespace GamifyMe.Api.Controllers
             }
             var storeItems = await _context.StoreItems.Where(s => s.EstablishmentId == establishmentId && s.IsActive).ToListAsync();
             long totalStoreValue = storeItems.Sum(s => (long)s.Price);
+            
+            // Theoretical Score
             double ratioTheo = totalStoreValue > 0 ? (double)totalCurrencyCreation / totalStoreValue : 0;
             int score = (int)(100 - (Math.Abs(1 - ratioTheo) * 50));
             score = Math.Clamp(score, 0, 100);
+
+            // 2. Real Wealth Projection (Measured)
+            var users = await _context.Users
+                .Where(u => u.EstablishmentId == establishmentId && u.Role == "User")
+                .Include(u => u.Wallets)
+                .Include(u => u.Inventory).ThenInclude(i => i.StoreItem)
+                .AsNoTracking()
+                .ToListAsync();
+
+            double totalRealProjected = 0;
+            var cycleDays = establishment.CycleDurationMonths * 30;
+
+            foreach (var u in users)
+            {
+                var currencyBalance = u.Wallets.Where(w => w.CurrencyCode != "XP").Sum(w => w.Balance);
+                var inventoryValue = u.Inventory.Where(ui => ui.IsActive).Sum(ui => ui.StoreItem?.Price ?? 0);
+                var timeActive = (DateTime.UtcNow - u.CreatedAt).TotalDays < 1 ? 1 : (DateTime.UtcNow - u.CreatedAt).TotalDays;
+                
+                var currentTotal = currencyBalance + inventoryValue;
+                var dailyRate = currentTotal / timeActive;
+                totalRealProjected += dailyRate * cycleDays;
+            }
+
+            long averageRealProjectedWealth = users.Count > 0 ? (long)(totalRealProjected / users.Count) : 0;
+
+            // Real Score
+            double ratioReal = totalStoreValue > 0 ? (double)averageRealProjectedWealth / totalStoreValue : 0;
+            int realScore = (int)(100 - (Math.Abs(1 - ratioReal) * 50));
+            realScore = Math.Clamp(realScore, 0, 100);
             
-            string healthStatus = score >= 80 ? "Excellente" : score >= 50 ? "Moyenne" : "Critique";
+            string healthStatus = realScore >= 80 ? "Excellente" : realScore >= 50 ? "Moyenne" : "Critique";
 
             return Ok(new EstablishmentStatsDto
             {
                 UserCount = userCount,
                 MaxUsers = establishment.MaxUsers,
                 SystemHealth = healthStatus,
-                HealthScore = score
+                HealthScore = score,
+                RealHealthScore = realScore
             });
         }
         

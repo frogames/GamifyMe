@@ -3,11 +3,15 @@ using GamifyMe.Shared.Dtos;
 using GamifyMe.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
+using GamifyMe.Shared.Helpers;
+using GamifyMe.Shared.Models;
+
 namespace GamifyMe.Api.Services
 {
     public class ObjectiveService
     {
         private readonly DataContext _context;
+
 
         public ObjectiveService(DataContext context)
         {
@@ -206,7 +210,15 @@ namespace GamifyMe.Api.Services
             if (currentOnboardingObjective != null)
             {
                 // Onboarding Mode: Return ONLY this objective
-                var dto = MapToDto(currentOnboardingObjective, false);
+                // Load dependencies for this single objective if any
+                var singleBadgeList = new List<BadgeSimpleDto>();
+                 var depBadges = await _context.Badges
+                    .Where(b => b.EstablishmentId == establishmentId && b.PrerequisiteObjectiveId == currentOnboardingObjective.Id)
+                    .Select(b => new BadgeSimpleDto { Id = b.Id, Name = b.Name, IconName = b.IconName, ImageUrl = b.ImageUrl, Color = b.Color })
+                    .ToListAsync();
+                singleBadgeList.AddRange(depBadges);
+
+                var dto = MapToDto(currentOnboardingObjective, false, singleBadgeList);
                 dto.ActiveMultiplier = totalMultiplier;
                 dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
                 return new List<ObjectiveDto> { dto };
@@ -451,6 +463,25 @@ namespace GamifyMe.Api.Services
                 objectiveDtos.Add(dto);
             }
 
+            // Preload Unlocked Badges for these objectives
+            var objectiveIds = objectiveDtos.Select(o => o.Id).ToList();
+            var badgesDependingOnObjectives = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId && b.PrerequisiteObjectiveId.HasValue && objectiveIds.Contains(b.PrerequisiteObjectiveId.Value))
+                .Select(b => new { b.PrerequisiteObjectiveId, Badge = new BadgeSimpleDto { Id = b.Id, Name = b.Name, IconName = b.IconName, ImageUrl = b.ImageUrl, Color = b.Color } })
+                .ToListAsync();
+
+            var badgesLookup = badgesDependingOnObjectives
+                .GroupBy(x => x.PrerequisiteObjectiveId)
+                .ToDictionary(g => g.Key!.Value, g => g.Select(x => x.Badge).ToList());
+
+            foreach (var dto in objectiveDtos)
+            {
+                if (badgesLookup.ContainsKey(dto.Id))
+                {
+                    dto.UnlockedBadges = badgesLookup[dto.Id];
+                }
+            }
+
             return objectiveDtos.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
         }
 
@@ -490,7 +521,22 @@ namespace GamifyMe.Api.Services
                 .ThenBy(o => o.SortOrder)
                 .ToListAsync();
 
-            return objectives.Select(o => MapToDto(o, false)).ToList();
+            // Preload Unlocked Badges
+            var objectiveIds = objectives.Select(o => o.Id).ToList();
+            var badgesDependingOnObjectives = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId && b.PrerequisiteObjectiveId.HasValue && objectiveIds.Contains(b.PrerequisiteObjectiveId.Value))
+                .Select(b => new { b.PrerequisiteObjectiveId, Badge = new BadgeSimpleDto { Id = b.Id, Name = b.Name, IconName = b.IconName, ImageUrl = b.ImageUrl, Color = b.Color } })
+                .ToListAsync();
+
+            var badgesLookup = badgesDependingOnObjectives
+                .GroupBy(x => x.PrerequisiteObjectiveId)
+                .ToDictionary(g => g.Key!.Value, g => g.Select(x => x.Badge).ToList());
+
+            return objectives.Select(o => 
+            {
+                var unlockedBadges = badgesLookup.ContainsKey(o.Id) ? badgesLookup[o.Id] : new List<BadgeSimpleDto>();
+                return MapToDto(o, false, unlockedBadges);
+            }).ToList();
         }
 
         public async Task<List<ObjectiveSimpleDto>> GetAllObjectivesSimpleListAsync(Guid establishmentId)
@@ -550,8 +596,10 @@ namespace GamifyMe.Api.Services
                 IsStreakEnabled = request.IsStreakEnabled,
                 StreakTerminalHours = request.StreakTerminalHours,
                 StreakFrequency = request.StreakFrequency,
+
                 StreakExcludedDays = request.StreakExcludedDays,
-                StreakExcludedMonths = request.StreakExcludedMonths
+                StreakExcludedMonths = request.StreakExcludedMonths,
+                AllowedValidationMethods = request.AllowedValidationMethods
             };
 
             _context.Objectives.Add(objective);
@@ -601,6 +649,7 @@ namespace GamifyMe.Api.Services
             objective.StreakFrequency = request.StreakFrequency;
             objective.StreakExcludedDays = request.StreakExcludedDays;
             objective.StreakExcludedMonths = request.StreakExcludedMonths;
+            objective.AllowedValidationMethods = request.AllowedValidationMethods;
 
             await _context.SaveChangesAsync();
             return true;
@@ -655,7 +704,7 @@ namespace GamifyMe.Api.Services
             return true;
         }
 
-        private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted)
+        private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted, List<BadgeSimpleDto>? unlockedBadges = null)
         {
             return new ObjectiveDto
             {
@@ -679,13 +728,188 @@ namespace GamifyMe.Api.Services
                 LifespanHours = obj.LifespanHours,
                 Category = obj.Category,
                 UnlockedObjectiveTitles = obj.IsPrerequisiteFor?.Select(x => x.Title).ToList() ?? new List<string>(),
+                UnlockedBadges = unlockedBadges ?? new List<BadgeSimpleDto>(),
                 SortOrder = obj.SortOrder,
                 CreatedAt = obj.CreatedAt,
                 IsStreakEnabled = obj.IsStreakEnabled,
                 StreakTerminalHours = obj.StreakTerminalHours,
                 StreakFrequency = obj.StreakFrequency,
                 StreakExcludedDays = obj.StreakExcludedDays,
-                StreakExcludedMonths = obj.StreakExcludedMonths
+                StreakExcludedMonths = obj.StreakExcludedMonths,
+                AllowedValidationMethods = obj.AllowedValidationMethods
+            };
+        }
+
+        public async Task<ValidationResponseDto> ValidateObjectiveAsync(Guid userId, Guid objectiveId, Guid? validatedById = null, bool force = false, ValidationMethod? methodUsed = null, string? qrContent = null, Guid establishmentId = default)
+        {
+            // 1. Fetch Entities
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return new ValidationResponseDto { Success = false, Message = "Joueur introuvable." };
+            if (establishmentId != default && user.EstablishmentId != establishmentId) return new ValidationResponseDto { Success = false, Message = "Joueur d'un autre établissement." };
+
+            var objective = await _context.Objectives.FindAsync(objectiveId);
+            if (objective == null) return new ValidationResponseDto { Success = false, Message = "Objectif introuvable." };
+
+            // 2. Validation Method Check
+            if (methodUsed.HasValue && !force)
+            {
+                if (!objective.AllowedValidationMethods.HasFlag(methodUsed.Value))
+                {
+                    return new ValidationResponseDto { Success = false, Message = "Cette méthode de validation n'est pas autorisée pour cet objectif." };
+                }
+
+                if (methodUsed.Value == ValidationMethod.QrCode)
+                {
+                    // Verify Payload - Implementation choice: Payload MUST BE objectiveId.ToString()
+                    if (qrContent != objectiveId.ToString())
+                    {
+                        return new ValidationResponseDto { Success = false, Message = "QR Code invalide pour cet objectif." };
+                    }
+                }
+            }
+
+            // 3. Accessibility & Rules Check
+            if (!force)
+            {
+                // Accessibility
+                var activeObjectives = await GetActiveObjectivesAsync(userId, user.EstablishmentId);
+                var isAccessible = activeObjectives.Any(o => o.Id == objectiveId);
+
+                if (!isAccessible)
+                {
+                     var alreadyValidated = await _context.Validations.AnyAsync(v => v.UserId == userId && v.ObjectiveId == objectiveId);
+                     if (!alreadyValidated || !objective.IsUnique)
+                     {
+                         return new ValidationResponseDto { Success = false, RequiresConfirmation = true, Message = "Objectif non accessible (prérequis ou dates)." };
+                     }
+                }
+
+                // Unique
+                var existingValidation = await _context.Validations.FirstOrDefaultAsync(v => v.UserId == userId && v.ObjectiveId == objectiveId);
+                if (objective.IsUnique && existingValidation != null)
+                {
+                    return new ValidationResponseDto { Success = false, Message = "Objectif unique déjà validé." };
+                }
+
+                // Frequency
+                if (!objective.IsUnique && objective.FrequencyHours.HasValue)
+                {
+                    var lastValidation = await _context.Validations
+                        .Where(v => v.UserId == userId && v.ObjectiveId == objectiveId)
+                        .OrderByDescending(v => v.Date)
+                        .FirstOrDefaultAsync();
+
+                    if (lastValidation != null)
+                    {
+                         var nextAvailableDate = lastValidation.Date.AddHours(objective.FrequencyHours.Value);
+                         if (DateTime.UtcNow < nextAvailableDate)
+                         {
+                             var timeRemaining = nextAvailableDate - DateTime.UtcNow;
+                             return new ValidationResponseDto { Success = false, Message = $"Cooldown actif. Attendez {timeRemaining.Minutes}min." };
+                         }
+                    }
+                }
+            }
+
+            // 4. Rewards Calculation
+            var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode == "XP");
+            var docWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId && w.CurrencyCode != "XP");
+
+            double xpMultiplier = 1.0;
+            double currencyMultiplier = 1.0;
+            List<string> bonusesApplied = new List<string>();
+            var now = DateTime.UtcNow;
+
+            // Global Bonuses
+            var activeBonus = await _context.BonusPeriods
+                .Where(b => b.EstablishmentId == user.EstablishmentId && b.IsActive && b.StartDate <= now && b.EndDate >= now)
+                .OrderByDescending(b => b.StartDate)
+                .FirstOrDefaultAsync();
+
+            if (activeBonus != null)
+            {
+                if (activeBonus.Type == BonusType.Xp) { xpMultiplier *= activeBonus.Multiplier; bonusesApplied.Add("Global Bonus XP"); }
+                else if (activeBonus.Type == BonusType.Currency) { currencyMultiplier *= activeBonus.Multiplier; bonusesApplied.Add("Global Bonus Crédits"); }
+            }
+
+            // User Boosts (Simplified Logic - reusing robust parsing from Controller if needed, but simplified here)
+             var userBoosts = await _context.UserInventories
+                .Include(ui => ui.StoreItem)
+                .Where(ui => ui.UserId == user.Id && ui.IsActive && (ui.ExpiresAt == null || ui.ExpiresAt > now) && ui.StoreItem.DigitalActionCode.Contains("BOOST"))
+                .ToListAsync();
+            
+            foreach(var boost in userBoosts)
+            {
+                // Simple parser
+                if (boost.StoreItem.DigitalActionCode.Contains("XP_2X")) { xpMultiplier *= 2.0; bonusesApplied.Add("Boost XP x2"); }
+                // Add more if needed
+            }
+
+            int finalXp = (int)(objective.XpReward * xpMultiplier);
+            int finalCurrency = (int)(objective.DocPointsReward * currencyMultiplier);
+
+            // 5. Update State
+            if (xpWallet != null)
+            {
+                xpWallet.Balance += finalXp;
+                user.CurrentXp = (int)xpWallet.Balance;
+                int newLevel = LevelHelpers.GetLevelFromXp((int)xpWallet.Balance);
+                if (newLevel > user.Level) user.Level = newLevel;
+            }
+            if (docWallet != null)
+            {
+                docWallet.Balance += finalCurrency;
+                user.CurrencyBalance = (int)docWallet.Balance;
+            }
+             if (user.GroupId.HasValue)
+            {
+                var group = await _context.Groups.FindAsync(user.GroupId.Value);
+                if (group != null) group.TotalXp += finalXp;
+            }
+            user.LastActivityAt = DateTime.UtcNow;
+
+            // 6. Save Validation
+            var validation = new Validation
+            {
+                Id = Guid.NewGuid(),
+                EstablishmentId = user.EstablishmentId,
+                UserId = user.Id,
+                ObjectiveId = objective.Id,
+                Date = DateTime.UtcNow,
+                ValidatedById = validatedById
+            };
+            _context.Validations.Add(validation);
+            await _context.SaveChangesAsync();
+
+            // 7. Onboarding Check
+             if (objective.Category == ObjectiveCategory.Onboarding && !user.HasCompletedOnboarding)
+            {
+                 var allOnboardingIds = await _context.Objectives
+                     .Where(o => o.EstablishmentId == user.EstablishmentId && o.Category == ObjectiveCategory.Onboarding && o.IsActive)
+                     .Select(o => o.Id)
+                     .ToListAsync();
+                 
+                  var validatedIds = await _context.Validations
+                         .Where(v => v.UserId == user.Id && allOnboardingIds.Contains(v.ObjectiveId))
+                         .Select(v => v.ObjectiveId)
+                         .Distinct()
+                         .ToListAsync();
+
+                   if (validatedIds.Count >= allOnboardingIds.Count)
+                   {
+                       user.HasCompletedOnboarding = true;
+                       await _context.SaveChangesAsync();
+                   }
+            }
+
+            return new ValidationResponseDto
+            {
+                Success = true,
+                Message = "Objectif validé !",
+                RewardXp = finalXp,
+                RewardCurrency = finalCurrency,
+                UserNewLevel = user.Level,
+                UserNewBalance = user.CurrencyBalance
             };
         }
     }

@@ -99,6 +99,25 @@
                         </MudItem>
                         
                         <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Prérequis (Optionnel)</MudText>
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-2" Dense="true">Le badge ne sera visible que si le prérequis est rempli.</MudAlert>
+                            
+                            <MudSelect T="Guid?" Label="Badge Prérequis" Value="newBadge.PrerequisiteBadgeId" ValueChanged="OnPrerequisiteBadgeChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-2">
+                                @foreach (var b in badgesList.Where(b => b.Id != editingBadgeId))
+                                {
+                                    <MudSelectItem Value="@((Guid?)b.Id)">@b.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudSelect T="Guid?" Label="Objectif Prérequis" Value="newBadge.PrerequisiteObjectiveId" ValueChanged="OnPrerequisiteObjectiveChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Class="mb-4">
+                                @foreach (var obj in allObjectives)
+                                {
+                                    <MudSelectItem Value="@((Guid?)obj.Id)">@obj.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudDivider Class="mb-4"/>
+
                             <MudText Typo="Typo.subtitle2" Class="mb-2">Conditions de Déblocage</MudText>
                             <MudSelect T="BadgeCriteriaType" Label="Type de Critère" @bind-Value="newBadge.CriteriaType" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3">
                                 @foreach (BadgeCriteriaType t in Enum.GetValues(typeof(BadgeCriteriaType)))
@@ -217,63 +236,73 @@
         </MudCard>
     }
 
-    <MudTable Items="@badgesList" Dense="true" Hover="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<BadgeDto> e) => StartEdit(e.Item))" T="BadgeDto" RowClass="cursor-pointer custom-hover-row" RowStyleFunc="@((BadgeDto item, int _) => item.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")">
-        <HeaderContent>
-            <MudTh>Apparence</MudTh>
-            <MudTh>Nom</MudTh>
-            <MudTh>Statut</MudTh>
-            <MudTh>Catégorie</MudTh>
-            <MudTh>Condition</MudTh>
-            <MudTh>Récompenses</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
-        <RowTemplate Context="badge">
-             <MudTd>
-                 @if (!string.IsNullOrEmpty(badge.ImageUrl))
-                {
-                    <MudAvatar Size="Size.Medium">
-                        <MudImage Src="@GetImageSrc(badge.ImageUrl)" ObjectFit="ObjectFit.Cover" />
-                    </MudAvatar>
-                }
-                else
-                {
-                    <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" Size="Size.Medium" Style="@($"color: {badge.Color}")" />
-                }
-             </MudTd>
-             <MudTd>
-                 <MudText Typo="Typo.body2" Style="font-weight:bold;">@badge.Name</MudText>
-                 <MudText Typo="Typo.caption">@badge.Description</MudText>
-             </MudTd>
-             <MudTd>
-                 @if (!badge.IsActive)
-                 {
-                     <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined">Inactif</MudChip>
-                 }
-                 else
-                 {
-                     <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Actif</MudChip>
-                 }
-             </MudTd>
-             <MudTd>
-                 <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@badge.Category</MudChip>
-             </MudTd>
-             <MudTd>
-                 <MudText Typo="Typo.body2">@badge.CriteriaType (@badge.CriteriaThreshold)</MudText>
-             </MudTd>
-             <MudTd>
-                 <div class="d-flex gap-1">
-                     @if(badge.XpReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@badge.XpReward XP</MudChip> }
-                     @if(badge.DocPointsReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">@badge.DocPointsReward @CurrencyName</MudChip> }
-                 </div>
-             </MudTd>
-             <MudTd>
-                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@((e) => DeleteBadge(badge))" Size="Size.Small" Color="Color.Error" />
-             </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+    @if (badgesList.Any())
+    {
+        <div class="d-flex align-center gap-4 mb-4 pa-2 rounded mud-background-gray border-all border-solid border-1">
+            <MudCheckBox T="bool" Label="Tout sélectionner" Value="@(selectedIds.Count > 0 && selectedIds.Count == badgesList.Count)" ValueChanged="ToggleSelectAll" Color="Color.Primary" />
+            <MudSpacer />
+            @if (selectedIds.Any())
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
+            }
+        </div>
+    }
+
+    <div class="d-flex flex-column mb-16">
+        @foreach (var badge in badgesList)
+        {
+            <MudPaper @key="badge.Id" Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(badge.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
+                <MudCheckBox T="bool" Value="@selectedIds.Contains(badge.Id)" ValueChanged="@((v) => ToggleSelect(badge.Id, v))" Color="Color.Primary" Class="mr-2" />
+                
+                <div class="d-flex flex-column mr-2">
+                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveUp(badge))" Disabled="@(badgesList.IndexOf(badge) == 0)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveDown(badge))" Disabled="@(badgesList.IndexOf(badge) == badgesList.Count - 1)" />
+                </div>
+
+                <div style="width: 100%;" @onclick="@(() => StartEdit(badge))" class="cursor-pointer">
+                    <MudGrid Spacing="0" Class="align-center w-100">
+                        <MudItem xs="4">
+                            <div class="d-flex align-center">
+                                <MudAvatar Size="Size.Medium" Class="mr-3" Style="@(string.IsNullOrEmpty(badge.ImageUrl) ? $"background-color: {badge.Color}; color: {ColorHelper.GetContrastColor(badge.Color ?? "#FFD700")};" : "")">
+                                    @if (!string.IsNullOrEmpty(badge.ImageUrl))
+                                    {
+                                        <MudImage Src="@GetImageSrc(badge.ImageUrl)" ObjectFit="ObjectFit.Cover" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" />
+                                    }
+                                </MudAvatar>
+                                <div class="d-flex flex-column">
+                                    <MudText Typo="Typo.body2" Style="font-weight:bold;">@badge.Name</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@badge.Category</MudText>
+                                </div>
+                                @if (!badge.IsActive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="ml-2">Inactif</MudChip>
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@badge.CriteriaType (@badge.CriteriaThreshold)</MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <div class="d-flex gap-1 justify-end">
+                                @if(badge.XpReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@badge.XpReward XP</MudChip> }
+                                @if(badge.DocPointsReward > 0) { <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">@badge.DocPointsReward @CurrencyName</MudChip> }
+                                @if(badge.RewardStoreItemId.HasValue) { <MudChip T="string" Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.CardGiftcard">Objet</MudChip> }
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            </MudPaper>
+        }
+        @if (!badgesList.Any())
+        {
+            <MudAlert Severity="Severity.Info">Aucun badge trouvé. Cliquez sur le bouton + pour en créer un.</MudAlert>
+        }
+    </div>
 
 </MudContainer>
 
@@ -359,7 +388,9 @@
             IconName = "Star",
             CriteriaType = BadgeCriteriaType.LevelReached,
             CriteriaThreshold = 1,
-            IsActive = true
+            IsActive = true,
+            PrerequisiteBadgeId = null,
+            PrerequisiteObjectiveId = null
         };
         _imageBase64 = null;
         selectedObjectiveIds = new HashSet<Guid>();
@@ -384,7 +415,10 @@
             XpReward = badge.XpReward,
             DocPointsReward = badge.DocPointsReward,
             RewardStoreItemId = badge.RewardStoreItemId,
-            IsActive = badge.IsActive
+            IsActive = badge.IsActive,
+            SortOrder = badge.SortOrder,
+            PrerequisiteBadgeId = badge.PrerequisiteBadgeId,
+            PrerequisiteObjectiveId = badge.PrerequisiteObjectiveId
         };
         _imageBase64 = null;
         
@@ -464,6 +498,128 @@
         finally { isBusy = false; }
     }
 
+    private HashSet<Guid> selectedIds = new();
+
+    private void ToggleSelect(Guid id, bool selected)
+    {
+        if (selected) selectedIds.Add(id);
+        else selectedIds.Remove(id);
+    }
+
+    private void ToggleSelectAll(bool selected)
+    {
+        if (selected) selectedIds = new HashSet<Guid>(badgesList.Select(i => i.Id));
+        else selectedIds.Clear();
+    }
+
+    private async Task MoveUp(BadgeDto item)
+    {
+        var index = badgesList.IndexOf(item);
+        if (index > 0)
+        {
+            badgesList.RemoveAt(index);
+            badgesList.Insert(index - 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task MoveDown(BadgeDto item)
+    {
+        var index = badgesList.IndexOf(item);
+        if (index < badgesList.Count - 1)
+        {
+            badgesList.RemoveAt(index);
+            badgesList.Insert(index + 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task SaveOrder()
+    {
+        var orderedIds = badgesList.Select(x => x.Id).ToList();
+        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
+        
+        try 
+        {
+            var response = await Http.PostAsJsonAsync("api/badges/reorder", reorderDto);
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Erreur lors de la réorganisation.";
+                await LoadData(); // Revert
+            }
+        }
+        catch (Exception ex)
+        {
+             errorMessage = ex.Message;
+        }
+    }
+
+    private async Task DeleteSelected()
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer les {selectedIds.Count} badges sélectionnés ?");
+        if (!confirmed) return;
+        
+        isBusy = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var response = await Http.DeleteAsync($"api/badges/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    errorMessage = $"Erreur lors de la suppression d'un badge";
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task DuplicateSelected()
+    {
+        isBusy = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var badge = badgesList.FirstOrDefault(b => b.Id == id);
+                if (badge != null)
+                {
+                    await DuplicateBadgeInternal(badge);
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task DuplicateBadgeInternal(BadgeDto badge)
+    {
+        var duplicate = new CreateBadgeDto
+        {
+            Name = $"Copie de {badge.Name}",
+            Category = badge.Category,
+            Description = badge.Description,
+            IconName = badge.IconName,
+            ImageUrl = badge.ImageUrl,
+            Color = badge.Color,
+            CriteriaType = badge.CriteriaType,
+            CriteriaValue = badge.CriteriaValue,
+            CriteriaThreshold = badge.CriteriaThreshold,
+            XpReward = badge.XpReward,
+            DocPointsReward = badge.DocPointsReward,
+            RewardStoreItemId = badge.RewardStoreItemId,
+            IsActive = false,
+            SortOrder = badge.SortOrder + 1 // Will be adjusted by backend if 0/duplicate but here we give a hint
+        };
+
+        await Http.PostAsJsonAsync("api/badges", duplicate);
+    }
+
     private async Task DeleteBadge(BadgeDto badge)
     {
         bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer le badge '{badge.Name}' ?");
@@ -513,6 +669,18 @@
         newBadge.ImageBase64 = null; // Ensure this is cleared if it exists on DTO
     }
 
+    private void OnPrerequisiteBadgeChanged(Guid? badgeId)
+    {
+        newBadge.PrerequisiteBadgeId = badgeId;
+        if (badgeId.HasValue) newBadge.PrerequisiteObjectiveId = null; 
+    }
+
+    private void OnPrerequisiteObjectiveChanged(Guid? objId)
+    {
+        newBadge.PrerequisiteObjectiveId = objId;
+        if (objId.HasValue) newBadge.PrerequisiteBadgeId = null;
+    }
+
     private async Task OpenIconPicker()
     {
         var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
@@ -554,3 +722,8 @@
         _ => "Pas de description disponible."
     };
 }
+<style>
+    .custom-hover-row:hover {
+        background-color: rgba(128, 128, 128, 0.1) !important;
+    }
+</style>

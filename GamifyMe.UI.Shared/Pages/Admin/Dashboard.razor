@@ -25,9 +25,9 @@
             @if (UserStats?.IsShopEnabled ?? true)
             {
                 <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Class="@($"d-flex flex-column align-center justify-center pa-4 {(_stats.HealthScore >= 80 ? "mud-theme-success" : _stats.HealthScore >= 50 ? "mud-theme-warning" : "mud-theme-error")}")" Elevation="4" Style="height:150px; cursor: pointer;" @onclick="@(() => Navigation.NavigateTo("admin/system-health"))">
+                    <MudPaper Class="@($"d-flex flex-column align-center justify-center pa-4 {(_stats.RealHealthScore >= 80 ? "mud-theme-success" : _stats.RealHealthScore >= 50 ? "mud-theme-warning" : "mud-theme-error")}")" Elevation="4" Style="height:150px; cursor: pointer;" @onclick="@(() => Navigation.NavigateTo("admin/system-health"))">
                         <MudIcon Icon="@Icons.Material.Filled.MonitorHeart" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.h3">@_stats.HealthScore %</MudText>
+                        <MudText Typo="Typo.h3">@_stats.RealHealthScore %</MudText>
                         <MudText Typo="Typo.subtitle1">Santé Système</MudText>
                     </MudPaper>
                 </MudItem>
@@ -43,8 +43,69 @@
 
             <!-- TODO: Add charts or more stats here -->
         </MudGrid>
+
+        <MudDivider Class="my-8" />
+
+        <MudText Typo="Typo.h5" Class="mb-6">Accès Rapides Administration</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("admin/establishment"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Établissement</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Configuration du site, logo et informations</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("admin/users"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Secondary" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Utilisateurs</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Gérer les membres, crédits et rôles</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("admin/stats"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Large" Color="Color.Info" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Statistiques</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Analyses détaillées de l'activité</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("admin/subscription"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" Color="Color.Warning" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Forfait</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Gérer le compte MeritoPass et facturation</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("help/admin"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Aide</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Documentation et guides</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     }
 </MudContainer>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--mud-elevation-6);
+    }
+</style>
 
 @code {
     [CascadingParameter]

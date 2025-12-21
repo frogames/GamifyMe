@@ -30,5 +30,9 @@ namespace GamifyMe.Shared.Dtos
         public int XpReward { get; set; }
         public int DocPointsReward { get; set; }
         public Guid? RewardStoreItemId { get; set; }
+        public int SortOrder { get; set; }
+        
+        public Guid? PrerequisiteBadgeId { get; set; }
+        public Guid? PrerequisiteObjectiveId { get; set; }
     }
 }

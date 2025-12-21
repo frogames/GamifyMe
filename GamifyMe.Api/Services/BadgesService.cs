@@ -18,7 +18,7 @@ namespace GamifyMe.Api.Services
             _objectiveService = objectiveService;
         }
 
-        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId, Guid establishmentId, bool includeInactive = false)
+        public async Task<List<BadgeDto>> GetAllBadgesAsync(Guid userId, Guid establishmentId, bool includeInactive = false, bool ignorePrerequisites = false)
         {
             var query = _context.Badges
                 .Where(b => b.EstablishmentId == establishmentId);
@@ -55,6 +55,28 @@ namespace GamifyMe.Api.Services
                     .GroupBy(v => v.ObjectiveId)
                     .Select(g => new { ObjectiveId = g.Key, Count = g.Count() })
                     .ToDictionaryAsync(x => x.ObjectiveId, x => x.Count);
+            }
+
+            // FILTERING: Remove badges where prerequisites are not met
+            if (!ignorePrerequisites)
+            {
+                var unlockedBadgeIds = unlockedBadges.Select(ub => ub.BadgeId).ToHashSet();
+                badges = badges.Where(b => 
+                {
+                    // 1. Badge Prerequisite
+                    if (b.PrerequisiteBadgeId.HasValue)
+                    {
+                        if (!unlockedBadgeIds.Contains(b.PrerequisiteBadgeId.Value)) return false;
+                    }
+
+                    // 2. Objective Prerequisite
+                    if (b.PrerequisiteObjectiveId.HasValue)
+                    {
+                        if (validationCounts == null || !validationCounts.ContainsKey(b.PrerequisiteObjectiveId.Value)) return false;
+                    }
+
+                    return true;
+                }).ToList();
             }
 
             // Fetch additional stats: Order Count & Active Objectives (for Streaks)
@@ -100,10 +122,23 @@ namespace GamifyMe.Api.Services
                 .ToListAsync();
             var storeItemsMap = allStoreItems.ToDictionary(i => i.Id, i => MapStoreItemToDto(i));
 
+            // Preload dependent badges (Badges that require THIS badge)
+            // We need to look for badges where PrerequisiteBadgeId IN (badges.Select(b => b.Id))
+            var allBadgeIds = badges.Select(b => b.Id).ToList();
+            var dependentBadges = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId && b.PrerequisiteBadgeId.HasValue && allBadgeIds.Contains(b.PrerequisiteBadgeId.Value))
+                .Select(b => new { b.PrerequisiteBadgeId, Badge = new BadgeSimpleDto { Id = b.Id, Name = b.Name, IconName = b.IconName, ImageUrl = b.ImageUrl, Color = b.Color } })
+                .ToListAsync();
+
+            var dependentBadgesLookup = dependentBadges
+                .GroupBy(x => x.PrerequisiteBadgeId)
+                .ToDictionary(g => g.Key!.Value, g => g.Select(x => x.Badge).ToList());
+
             return badges.Select(b => {
                 var ub = unlockedBadges.FirstOrDefault(x => x.BadgeId == b.Id);
-                return MapToDto(b, ub, xpWallet, currencyWallet, validationCounts, level, activeObjectives, storeItemsMap, objectivesMap, ownedItemIds, orderCount);
-            }).OrderByDescending(b => b.IsUnlocked).ThenBy(b => b.Category).ThenBy(b => b.Name).ToList();
+                var dependent = dependentBadgesLookup.ContainsKey(b.Id) ? dependentBadgesLookup[b.Id] : new List<BadgeSimpleDto>();
+                return MapToDto(b, ub, xpWallet, currencyWallet, validationCounts, level, activeObjectives, storeItemsMap, objectivesMap, ownedItemIds, orderCount, dependent, null);
+            }).OrderBy(b => b.SortOrder).ToList();
         }
 
         public async Task<List<BadgeDto>> GetUnlockedBadgesAsync(Guid userId)
@@ -132,7 +167,22 @@ namespace GamifyMe.Api.Services
                 .ToListAsync();
             var storeItemsMap = allStoreItems.ToDictionary(i => i.Id, i => MapStoreItemToDto(i));
 
-            return userBadges.Select(ub => MapToDto(ub.Badge, ub, null, null, null, 0, null, storeItemsMap, objectivesMap, null, 0)).ToList();
+            // Preload dependent badges
+            var badgeIds = userBadges.Select(ub => ub.BadgeId).ToList();
+            var dependentBadges = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId && b.PrerequisiteBadgeId.HasValue && badgeIds.Contains(b.PrerequisiteBadgeId.Value))
+                .Select(b => new { b.PrerequisiteBadgeId, Badge = new BadgeSimpleDto { Id = b.Id, Name = b.Name, IconName = b.IconName, ImageUrl = b.ImageUrl, Color = b.Color } })
+                .ToListAsync();
+
+            var dependentBadgesLookup = dependentBadges
+                .GroupBy(x => x.PrerequisiteBadgeId)
+                .ToDictionary(g => g.Key!.Value, g => g.Select(x => x.Badge).ToList());
+
+            return userBadges.Select(ub => 
+            {
+               var dependent = dependentBadgesLookup.ContainsKey(ub.BadgeId) ? dependentBadgesLookup[ub.BadgeId] : new List<BadgeSimpleDto>();
+               return MapToDto(ub.Badge, ub, null, null, null, 0, null, storeItemsMap, objectivesMap, null, 0, dependent, null);
+            }).ToList();
         }
 
         // --- CRUD ---
@@ -156,8 +206,19 @@ namespace GamifyMe.Api.Services
                 XpReward = request.XpReward,
                 DocPointsReward = request.DocPointsReward,
                 RewardStoreItemId = request.RewardStoreItemId,
+                SortOrder = request.SortOrder,
+                PrerequisiteBadgeId = request.PrerequisiteBadgeId,
+                PrerequisiteObjectiveId = request.PrerequisiteObjectiveId,
                 CreatedAt = DateTime.UtcNow
             };
+
+            if (badge.SortOrder == 0)
+            {
+                var maxSortOrder = await _context.Badges
+                    .Where(b => b.EstablishmentId == establishmentId)
+                    .MaxAsync(b => (int?)b.SortOrder) ?? 0;
+                badge.SortOrder = maxSortOrder + 1;
+            }
 
             _context.Badges.Add(badge);
             await _context.SaveChangesAsync();
@@ -183,6 +244,9 @@ namespace GamifyMe.Api.Services
             badge.XpReward = request.XpReward;
             badge.DocPointsReward = request.DocPointsReward;
             badge.RewardStoreItemId = request.RewardStoreItemId;
+            badge.SortOrder = request.SortOrder;
+            badge.PrerequisiteBadgeId = request.PrerequisiteBadgeId;
+            badge.PrerequisiteObjectiveId = request.PrerequisiteObjectiveId;
             // Creation date untouched
 
             await _context.SaveChangesAsync();
@@ -195,6 +259,26 @@ namespace GamifyMe.Api.Services
             if (badge == null) return false;
 
             _context.Badges.Remove(badge);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ReorderBadgesAsync(ReorderRequestDto request, Guid establishmentId)
+        {
+            var badges = await _context.Badges
+                .Where(b => b.EstablishmentId == establishmentId)
+                .ToListAsync();
+
+            for (int i = 0; i < request.OrderedIds.Count; i++)
+            {
+                var id = request.OrderedIds[i];
+                var badge = badges.FirstOrDefault(b => b.Id == id);
+                if (badge != null)
+                {
+                    badge.SortOrder = i;
+                }
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }
@@ -461,7 +545,9 @@ namespace GamifyMe.Api.Services
             Dictionary<Guid, StoreItemDto>? storeItemsMap,
             Dictionary<Guid, ObjectiveDto>? objectivesMap,
             HashSet<Guid>? ownedItemIds,
-            int orderCount)
+            int orderCount,
+            List<BadgeSimpleDto>? unlockedBadges = null,
+            List<ObjectiveSimpleDto>? unlockedObjectives = null)
         {
             double progress = 0;
             if (ub == null) // Only calculate progress if locked.
@@ -643,6 +729,11 @@ namespace GamifyMe.Api.Services
                 RequiredObjectives = requiredObjectives,
                 RequiredStoreItems = requiredStoreItems,
                 TargetObjectiveName = targetObjectiveName,
+                SortOrder = b.SortOrder,
+                PrerequisiteBadgeId = b.PrerequisiteBadgeId,
+                PrerequisiteObjectiveId = b.PrerequisiteObjectiveId,
+                UnlockedBadges = unlockedBadges ?? new List<BadgeSimpleDto>(),
+                UnlockedObjectives = unlockedObjectives ?? new List<ObjectiveSimpleDto>(),
                 CreatedAt = b.CreatedAt
             };
         }

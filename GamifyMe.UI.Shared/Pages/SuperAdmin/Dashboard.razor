@@ -39,11 +39,56 @@
                 </MudPaper>
             </MudItem>
         </MudGrid>
+
+        <MudDivider Class="my-8" />
+
+        <MudText Typo="Typo.h5" Class="mb-6">Accès Rapides SuperAdmin</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("superadmin/establishments"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Établissements</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Gérer tous les sites et abonnements</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("superadmin/stats"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Secondary" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Stats Globales</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Analyses et graphiques multi-sites</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("help/superadmin"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Large" Color="Color.Error" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Aide</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Documentation SuperAdmin</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     }
 </MudContainer>
 
+<style>
+    .hover-effect {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--mud-elevation-6);
+    }
+</style>
+
 @code {
     private SuperAdminGlobalStatsDto? _stats;
+    [Inject] NavigationManager Navigation { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {

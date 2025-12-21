@@ -1,0 +1,52 @@
+@page "/help/user"
+@using GamifyMe.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Aide Joueur - GamifyMe</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Info" Class="mb-6">Guide Joueur</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8">Tout ce que vous devez savoir pour progresser et gagner des récompenses.</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="3">
+                 <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Primary">Votre Progression</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Assignment" IconColor="Color.Primary">
+                        <MudText Typo="Typo.body1"><b>Objectifs :</b> Relevez des défis quotidiens, hebdomadaires ou uniques. Consultez la page "Objectifs" pour voir ceux disponibles.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.QrCode" IconColor="Color.Primary">
+                        <MudText Typo="Typo.body1"><b>Mon Pass :</b> C'est votre identité unique. Montrez votre QR Code à un coach pour faire valider vos objectifs ou récupérer vos récompenses.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.TrendingUp" IconColor="Color.Primary">
+                        <MudText Typo="Typo.body1"><b>Niveaux & XP :</b> Plus vous validez d'objectifs, plus vous gagnez d'XP. Montez de niveau pour débloquer de nouveaux avantages !</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="3">
+                <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Secondary">Récompenses & Social</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Store" IconColor="Color.Secondary">
+                        <MudText Typo="Typo.body1"><b>Boutique :</b> Vos efforts sont récompensés par des Crédits. Dépensez-les dans la boutique pour obtenir des objets exclusifs.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.MilitaryTech" IconColor="Color.Warning">
+                        <MudText Typo="Typo.body1"><b>Badges :</b> Collectionnez des badges rares en accomplissant des exploits spécifiques. Affichez-les fièrement sur votre profil.</MudText>
+                    </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Groups" IconColor="Color.Info">
+                        <MudText Typo="Typo.body1"><b>Groupes :</b> Rejoignez une équipe, participez aux classements collectifs et challengez vos amis.</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+    
+    <div class="mt-8 d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/"))">Retour à l'accueil</MudButton>
+    </div>
+</MudContainer>

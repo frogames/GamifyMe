@@ -33,7 +33,7 @@ namespace GamifyMe.Api.Controllers
             // We can pass Guid.Empty or current user.
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
-            var badges = await _badgesService.GetAllBadgesAsync(userId, establishmentId, includeInactive: true);
+            var badges = await _badgesService.GetAllBadgesAsync(userId, establishmentId, includeInactive: true, ignorePrerequisites: true);
             return Ok(badges);
         }
 
@@ -71,6 +71,14 @@ namespace GamifyMe.Api.Controllers
         {
             var success = await _badgesService.DeleteBadgeAsync(id);
             if (!success) return NotFound();
+            return NoContent();
+        }
+
+        [HttpPost("reorder")]
+        public async Task<IActionResult> ReorderBadges(ReorderRequestDto request)
+        {
+            var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+            await _badgesService.ReorderBadgesAsync(request, establishmentId);
             return NoContent();
         }
 

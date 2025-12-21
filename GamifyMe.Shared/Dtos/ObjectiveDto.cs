@@ -46,6 +46,7 @@ namespace GamifyMe.Shared.Dtos
         public string? BonusLabel { get; set; }
         public ObjectiveCategory Category { get; set; }
         public List<string> UnlockedObjectiveTitles { get; set; } = new();
+        public List<BadgeSimpleDto> UnlockedBadges { get; set; } = new(); // Badges unlocked/made visible by this objective
         public int SortOrder { get; set; }
         public DateTime CreatedAt { get; set; }
         public int ValidationCount { get; set; }
@@ -56,5 +57,7 @@ namespace GamifyMe.Shared.Dtos
         public StreakFrequency StreakFrequency { get; set; }
         public string? StreakExcludedDays { get; set; }
         public string? StreakExcludedMonths { get; set; }
+
+        public ValidationMethod AllowedValidationMethods { get; set; }
     }
 }

@@ -165,7 +165,36 @@
                     </div>
                 }
 
-            </div>
+                </div>
+
+                @* 8. Unlocks Section *@
+                @if ((Badge.UnlockedBadges != null && Badge.UnlockedBadges.Any()) || (Badge.UnlockedObjectives != null && Badge.UnlockedObjectives.Any()))
+                {
+                     <MudDivider Class="my-3 w-100" Style="@($"background-color: {textColor}; opacity: 0.2;")"/>
+                     <div class="mb-2 p-2 w-100" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+                         <MudText Typo="Typo.subtitle2" Class="mb-1" Align="Align.Center" Style="@($"color: {textColor}; font-weight: bold;")">Débloque :</MudText>
+                         @if (Badge.UnlockedBadges != null)
+                         {
+                             @foreach(var b in Badge.UnlockedBadges)
+                             {
+                                 <div class="d-flex align-center justify-center mb-1">
+                                     <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Size="Size.Small" Class="mr-2" Style="@($"color: {textColor};")" />
+                                     <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Badge : @b.Name</MudText>
+                                 </div>
+                             }
+                         }
+                         @if (Badge.UnlockedObjectives != null)
+                         {
+                             @foreach(var o in Badge.UnlockedObjectives)
+                             {
+                                 <div class="d-flex align-center justify-center mb-1">
+                                     <MudIcon Icon="@Icons.Material.Filled.LockOpen" Size="Size.Small" Class="mr-2" Style="@($"color: {textColor};")" />
+                                     <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Objectif : @o.Title</MudText>
+                                 </div>
+                             }
+                         }
+                    </div>
+                }
             
             @if (Badge.IsUnlocked)
             {

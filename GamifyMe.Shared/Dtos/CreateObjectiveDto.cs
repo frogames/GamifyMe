@@ -51,5 +51,7 @@ namespace GamifyMe.Shared.Dtos
         public StreakFrequency StreakFrequency { get; set; } = StreakFrequency.Hourly;
         public string? StreakExcludedDays { get; set; }
         public string? StreakExcludedMonths { get; set; }
+
+        public ValidationMethod AllowedValidationMethods { get; set; } = ValidationMethod.StaffScan;
     }
 }

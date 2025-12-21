@@ -42,6 +42,11 @@ namespace GamifyMe.Shared.Models
         public int DocPointsReward { get; set; }
         public Guid? RewardStoreItemId { get; set; } // Optional item reward
 
+        // Prerequisites
+        public Guid? PrerequisiteBadgeId { get; set; }
+        public Guid? PrerequisiteObjectiveId { get; set; }
+
+        public int SortOrder { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

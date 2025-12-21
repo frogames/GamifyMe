@@ -1,0 +1,75 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using MudBlazor
+
+<MudDialog Class="custom-dialog-content" Style="@($"background-color: {BackgroundColor}; color: {TextColor}; border-radius: 16px;")">
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-2">
+            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Warning" Style="font-size: 4rem; margin-bottom: 16px;" />
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Félicitations !</MudText>
+            
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">@Response.Message</MudText>
+
+            @if (Response.RewardXp > 0 || Response.RewardCurrency > 0)
+            {
+                <div class="d-flex justify-center flex-wrap gap-2 mb-4">
+                     @if (Response.RewardXp > 0)
+                     {
+                        <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Variant="Variant.Filled">
+                            +@Response.RewardXp XP
+                        </MudChip>
+                     }
+                     @if (Response.RewardCurrency > 0)
+                     {
+                        <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled">
+                            +@Response.RewardCurrency @CurrencyName
+                        </MudChip>
+                     }
+                </div>
+            }
+
+            @if (Response.NewAvailableBadges != null && Response.NewAvailableBadges.Any())
+            {
+                <MudDivider Class="mb-2 w-100" />
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Nouveaux Badges Débloqués !</MudText>
+                <div class="d-flex flex-column gap-2 w-100 mb-2">
+                    @foreach (var badge in Response.NewAvailableBadges)
+                    {
+                        <div class="d-flex align-center pa-2" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+                            <MudIcon Icon="@(!string.IsNullOrEmpty(badge.IconName) ? badge.IconName : Icons.Material.Filled.MilitaryTech)" Class="mr-2" Size="Size.Medium" Color="Color.Warning" />
+                            <MudText Typo="Typo.body2" Style="font-weight: bold;">@badge.Name</MudText>
+                        </div>
+                    }
+                </div>
+            }
+
+             @if (Response.NewAvailableObjectives != null && Response.NewAvailableObjectives.Any())
+            {
+                <MudDivider Class="mb-2 w-100" />
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Nouveaux Objectifs Disponibles !</MudText>
+                 <div class="d-flex flex-column gap-2 w-100 mb-2">
+                    @foreach (var obj in Response.NewAvailableObjectives)
+                    {
+                        <div class="d-flex align-center pa-2" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+                            <MudIcon Icon="@(!string.IsNullOrEmpty(obj.IconName) ? obj.IconName : Icons.Material.Filled.Star)" Class="mr-2" Size="Size.Medium" Color="Color.Info" />
+                            <MudText Typo="Typo.body2" Style="font-weight: bold;">@obj.Title</MudText>
+                        </div>
+                    }
+                </div>
+            }
+
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" FullWidth="true" OnClick="Close" Class="mt-4">Génial !</MudButton>
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public ValidationResponseDto Response { get; set; }
+    [Parameter] public string CurrencyName { get; set; } = "Crédits";
+
+    private string BackgroundColor => "#1e1e2d"; // Dark themed modal by default, or could be passed
+    private string TextColor => "#ffffff";
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

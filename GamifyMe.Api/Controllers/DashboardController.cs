@@ -147,230 +147,20 @@ namespace GamifyMe.Api.Controllers
             if (objective == null) return NotFound("Objectif introuvable.");
             if (objective.EstablishmentId != establishmentId) return NotFound("Objectif introuvable dans cet établissement.");
 
-            // 2. Récupérer le portefeuille XP et Monnaie (pour la mise à jour)
-            var xpWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "XP");
-            var docWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id && w.CurrencyCode == "DOC");
-
-            // --- CHECK ACCESSIBILITY (New Requirement) ---
-            if (!request.Force)
-            {
-                var activeObjectives = await _objectiveService.GetActiveObjectivesAsync(user.Id, establishmentId);
-                var isAccessible = activeObjectives.Any(o => o.Id == objectiveId);
-                
-                if (!isAccessible)
-                {
-                    // Check if it's already validated to distinguish between "Done" and "Not Accessible"
-                    var alreadyValidated = await _context.Validations.AnyAsync(v => v.UserId == user.Id && v.ObjectiveId == objectiveId);
-                    
-                    if (!alreadyValidated || !objective.IsUnique)
-                    {
-                         return Ok(new ValidationResponseDto
-                         {
-                             Success = false,
-                             RequiresConfirmation = true,
-                             Message = "Cet objectif n'est pas accessible au joueur (prérequis, dates, ou verrouillé). Voulez-vous forcer ?",
-                             ScanSoundUrl = "/sounds/scan-validation.mp3"
-                         });
-                    }
-                }
-            }
-
-            // --- 3. VÉRIFICATION DES DOUBLONS ET DE L'UNICITÉ ---
-
-            var existingValidation = await _context.Validations
-                .FirstOrDefaultAsync(v => v.UserId == user.Id && v.ObjectiveId == objectiveId);
-
-            // 1. OBJECTIF UNIQUE (rapporte UNE SEULE FOIS, peu importe la date)
-            if (objective.IsUnique && existingValidation != null)
-            {
-                return BadRequest(new ValidationResponseDto
-                {
-                    Success = false,
-                    Message = $"Erreur : Cet objectif unique a déjà été validé par {user.FirstName} {user.Username}.",
-                    RewardXp = 0,
-                    RewardCurrency = 0
-                });
-            }
-
-            // 2. OBJECTIF RÉCURRENT AVEC FRÉQUENCE (Cooldown)
-            if (!objective.IsUnique && objective.FrequencyHours.HasValue)
-            {
-                var lastValidation = await _context.Validations
-                    .Where(v => v.UserId == user.Id && v.ObjectiveId == objectiveId)
-                    .OrderByDescending(v => v.Date)
-                    .FirstOrDefaultAsync();
-
-                if (lastValidation != null)
-                {
-                    var nextAvailableDate = lastValidation.Date.AddHours(objective.FrequencyHours.Value);
-                    if (DateTime.UtcNow < nextAvailableDate)
-                    {
-                        var timeRemaining = nextAvailableDate - DateTime.UtcNow;
-                        string timeString = timeRemaining.TotalHours >= 1 
-                            ? $"{(int)timeRemaining.TotalHours}h et {timeRemaining.Minutes}min" 
-                            : $"{timeRemaining.Minutes}min";
-
-                        return BadRequest(new ValidationResponseDto
-                        {
-                            Success = false,
-                            Message = $"Erreur : Cet objectif ne peut être validé que toutes les {objective.FrequencyHours} heures. Réessayez dans {timeString}.",
-                            RewardXp = 0,
-                            RewardCurrency = 0
-                        });
-                    }
-                }
-            }
-
-            // --- 4. ATTRIBUTION DES RÉCOMPENSES (AVEC BONUS) ---
-
-            // --- 4. ATTRIBUTION DES RÉCOMPENSES (AVEC BONUS & BOOSTS) ---
-
-            double xpMultiplier = 1.0;
-            double currencyMultiplier = 1.0;
-            List<string> bonusesApplied = new List<string>();
-
-            // A. Périodes Bonus (Globales)
-            var now = DateTime.UtcNow;
-            var activeBonus = await _context.BonusPeriods
-                .Where(b => b.EstablishmentId == establishmentId && b.IsActive && b.StartDate <= now && b.EndDate >= now)
-                .OrderByDescending(b => b.StartDate)
-                .FirstOrDefaultAsync();
-
-            if (activeBonus != null)
-            {
-                if (activeBonus.Type == BonusType.Xp)
-                {
-                    xpMultiplier *= activeBonus.Multiplier;
-                    bonusesApplied.Add($"{activeBonus.Name} (XP x{activeBonus.Multiplier})");
-                }
-                else if (activeBonus.Type == BonusType.Currency)
-                {
-                    currencyMultiplier *= activeBonus.Multiplier;
-                    bonusesApplied.Add($"{activeBonus.Name} (Crédits x{activeBonus.Multiplier})");
-                }
-            }
-
-            // B. Boosts Joueur (Personnels)
-             var userBoosts = await _context.UserInventories
-                .Include(ui => ui.StoreItem)
-                .Where(ui => ui.UserId == user.Id
-                             && ui.IsActive
-                             && (ui.ExpiresAt == null || ui.ExpiresAt > now)
-                             && ui.StoreItem.ItemType == StoreItemType.Digital
-                             && ui.StoreItem.DigitalActionCode != null
-                             && (ui.StoreItem.DigitalActionCode.Contains("BOOST"))) 
-                .ToListAsync();
-
-            foreach (var boost in userBoosts)
-            {
-                var code = boost.StoreItem.DigitalActionCode!;
-                // Parsing simpliste mais robuste : on cherche le multiplicateur dans le code (ex: BOOST_XP_2X)
-                double boostMult = 2.0; // Par défaut
-                
-                // Tentative d'extraction
-                var parts = code.Split('_');
-                foreach (var part in parts)
-                {
-                    var cleanPart = part.Replace("X", "", StringComparison.OrdinalIgnoreCase);
-                    if (double.TryParse(cleanPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
-                    {
-                         if (val > 0 && val < 20) 
-                         {
-                             boostMult = val;
-                             break;
-                         }
-                    }
-                }
-
-                // Application du multiplicateur (Pour l'instant on assume que c'est du XP si le code contient XP ou par défaut)
-                if (code.Contains("XP", StringComparison.OrdinalIgnoreCase))
-                {
-                    xpMultiplier *= boostMult;
-                    bonusesApplied.Add($"Boost {boost.StoreItem.Name} (XP x{boostMult})");
-                }
-                // Si on avait des boosts de crédits, on ferait pareil
-            }
-
-            // C. Calcul Final
-            int finalXpReward = (int)(objective.XpReward * xpMultiplier);
-            int finalDocPointsReward = (int)(objective.DocPointsReward * currencyMultiplier);
-            
-            string bonusMessage = bonusesApplied.Any() ? " (" + string.Join(", ", bonusesApplied) + ")" : "";
-
-            if (xpWallet != null)
-            {
-                xpWallet.Balance += finalXpReward;
-                user.CurrentXp = (int)xpWallet.Balance;
-            }
-            if (docWallet != null)
-            {
-                docWallet.Balance += finalDocPointsReward;
-                user.CurrencyBalance = (int)docWallet.Balance;
-            }
-
-            // Mise à jour de l'XP du groupe
-            if (user.GroupId.HasValue)
-            {
-                var group = await _context.Groups.FindAsync(user.GroupId.Value);
-                if (group != null)
-                {
-                    group.TotalXp += finalXpReward;
-                }
-            }
-
-            // Mise à jour du niveau
-            if (xpWallet != null)
-            {
-                int newLevel = LevelHelpers.GetLevelFromXp((int)xpWallet.Balance);
-                if (newLevel > user.Level) user.Level = newLevel;
-            }
-            user.LastActivityAt = DateTime.UtcNow;
-
-            // --- 5. ENREGISTREMENT ET VALIDATION ---
             var scannerIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid? scannerId = Guid.TryParse(scannerIdClaim, out var sid) ? sid : null;
 
-            var validation = new Validation
+            // Call Service
+            var result = await _objectiveService.ValidateObjectiveAsync(user.Id, objective.Id, scannerId, request.Force, establishmentId: establishmentId);
+
+            if (!result.Success)
             {
-                Id = Guid.NewGuid(),
-                EstablishmentId = establishmentId,
-                UserId = user.Id,
-                ObjectiveId = objective.Id,
-                Date = DateTime.UtcNow,
-                ValidatedById = scannerId
-            };
-            _context.Validations.Add(validation);
-
-            // Sauvegarde de : Validation, User (Level, XP, LastActivity), Wallets (Balance)
-            await _context.SaveChangesAsync();
-
-            var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
-
-            // --- 7. CHECK ONBOARDING COMPLETION ---
-            if (objective.Category == ObjectiveCategory.Onboarding && !user.HasCompletedOnboarding)
-            {
-                 // Get all ACTIVE onboarding objectives IDs for this establishment
-                 var allOnboardingIds = await _context.Objectives
-                     .Where(o => o.EstablishmentId == establishmentId && o.Category == ObjectiveCategory.Onboarding && o.IsActive)
-                     .Select(o => o.Id)
-                     .ToListAsync();
-
-                 if (allOnboardingIds.Any())
-                 {
-                     // Get validated ones
-                     var validatedIds = await _context.Validations
-                         .Where(v => v.UserId == user.Id && allOnboardingIds.Contains(v.ObjectiveId))
-                         .Select(v => v.ObjectiveId)
-                         .Distinct()
-                         .ToListAsync();
-                     
-                     // If validated count >= all count, then done
-                     if (validatedIds.Count >= allOnboardingIds.Count)
-                     {
-                         user.HasCompletedOnboarding = true;
-                         await _context.SaveChangesAsync();
-                     }
-                 }
+                if (result.RequiresConfirmation)
+                {
+                    result.ScanSoundUrl = "/sounds/scan-validation.mp3";
+                     return Ok(result);
+                }
+                return BadRequest(result);
             }
 
             // --- 8. CHECK BADGES UNLOCK ---
@@ -381,20 +171,13 @@ namespace GamifyMe.Api.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"[DashboardController] Error checking badges: {ex.Message}");
-                // Non-blocking error
             }
 
-            // --- 6. RETOUR AU CLIENT (Pour l'affichage des gains) ---
-            return Ok(new ValidationResponseDto
-            {
-                Success = true,
-                Message = $"Validé pour {user.FirstName} {user.Username} !{bonusMessage}",
-                RewardXp = finalXpReward,
-                RewardCurrency = finalDocPointsReward,
-                UserNewLevel = user.Level,
-                UserNewBalance = user.CurrencyBalance,
-                ScanSoundUrl = soundUrl
-            });
+            // Get Sound
+            var soundUrl = await GetUserActiveScanSoundUrl(user.Id);
+            result.ScanSoundUrl = soundUrl;
+
+            return Ok(result);
         }
 
 

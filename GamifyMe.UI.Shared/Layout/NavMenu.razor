@@ -30,7 +30,8 @@
              <MudNavGroup Title="SuperAdmin" @bind-Expanded="_expandSuperAdmin" Icon="@Icons.Material.Filled.SupervisorAccount" Class="mp-menu-superadmin">
                 <MudNavLink Href="superadmin/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard Global</MudNavLink>
                 <MudNavLink Href="superadmin/establishments" Icon="@Icons.Material.Filled.Business">Établissements</MudNavLink>
-                <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
+        <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
+                <MudNavLink Href="help/superadmin" Icon="@Icons.Material.Filled.Help">Aide</MudNavLink>
             </MudNavGroup>
         </AuthorizeView>
     }
@@ -78,6 +79,7 @@
             <MudNavLink Href="leaderboard" Icon="@Icons.Material.Filled.EmojiEvents">@Loc["Leaderboard"]</MudNavLink>
         }
         <MudNavLink Href="badges" Icon="@Icons.Material.Filled.MilitaryTech">Badges</MudNavLink>
+        <MudNavLink Href="help/user" Icon="@Icons.Material.Filled.Help">Aide</MudNavLink>
     };
 
     RenderFragment ManagementLinks => __builder =>
@@ -99,6 +101,7 @@
         }
         <MudNavLink Href="admin/badges" Icon="@Icons.Material.Filled.MilitaryTech">Badges</MudNavLink>
         <MudNavLink Href="admin/bonus-periods" Icon="@Icons.Material.Filled.Stars">@Loc["Bonus"]</MudNavLink>
+        <MudNavLink Href="help/coach" Icon="@Icons.Material.Filled.Help">Aide</MudNavLink>
     };
 
     RenderFragment AdminLinks => __builder =>
@@ -108,6 +111,7 @@
         <MudNavLink Href="admin/users" Icon="@Icons.Material.Filled.People">Utilisateurs</MudNavLink>
         <MudNavLink Href="admin/stats" Icon="@Icons.Material.Filled.PieChart">Statistiques</MudNavLink>
         <MudNavLink Href="admin/subscription" Icon="@Icons.Material.Filled.CreditCard">Forfait</MudNavLink>
+        <MudNavLink Href="help/admin" Icon="@Icons.Material.Filled.Help">Aide</MudNavLink>
     };
 }
 

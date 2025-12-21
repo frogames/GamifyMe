@@ -46,7 +46,7 @@
                 <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick="@(() => Navigation.NavigateTo("/admin/system-health"))">
                     <MudCardContent Class="d-flex flex-column align-center pa-8">
                          <MudIcon Icon="@Icons.Material.Filled.MonitorHeart" Size="Size.Large" Class="mb-4" Style="font-size: 4rem; color: #e91e63;" />
-                        <MudText Typo="Typo.h6" Align="Align.Center">@(_stats?.HealthScore ?? 0)% Santé Système</MudText>
+                        <MudText Typo="Typo.h6" Align="Align.Center">@(_stats?.RealHealthScore ?? 0)% Santé Système</MudText>
                         <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Indicateur de santé de l'établissement</MudText>
                     </MudCardContent>
                 </MudCard>
@@ -100,6 +100,15 @@
                     <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
                     <MudText Typo="Typo.h6" Align="Align.Center">Télécharger QR code d'inscription</MudText>
                     <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Générer le QR code pour l'URL d'inscription à l'établissement</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="cursor-pointer hover-effect" @onclick='(() => Navigation.NavigateTo("help/coach"))'>
+                <MudCardContent Class="d-flex flex-column align-center pa-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+                    <MudText Typo="Typo.h6" Align="Align.Center">Aide</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Guide d'utilisation et FAQ</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>

@@ -1,0 +1,65 @@
+@page "/help/admin"
+@using GamifyMe.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Admin,SuperAdmin")]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Espace Admin - Aide</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Warning" Class="mb-6">Guide Administrateur</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8">Configurez et pilotez votre établissement GamifyMe.</MudText>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Warning">
+        <MudTabPanel Text="Gestion Quotidienne" Icon="@Icons.Material.Filled.Settings">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h5" GutterBottom="true">Configuration du Jeu</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.Assignment">
+                            <MudText Typo="Typo.body1"><b>Objectifs :</b> Créez, modifiez ou archivez des objectifs. Définissez la difficulté, les gains et la fréquence (journalier, unique...).</MudText>
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Store">
+                            <MudText Typo="Typo.body1"><b>Boutique :</b> Gérez votre catalogue. Ajoutez des produits, gérez les stocks et fixez les prix en crédits.</MudText>
+                        </MudListItem>
+                         <MudListItem Icon="@Icons.Material.Filled.MilitaryTech">
+                            <MudText Typo="Typo.body1"><b>Badges :</b> Créez des badges personnalisés pour récompenser la fidélité, la performance ou l'engagement.</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h5" GutterBottom="true">Utilisateurs & Équipes</MudText>
+                     <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.People">
+                            <MudText Typo="Typo.body1"><b>Gestion des Membres :</b> Consultez la liste des inscrits, modifiez leurs rôles (passer un utilisateur en Coach ou Staff) et gérez les bannissements si nécessaire.</MudText>
+                        </MudListItem>
+                         <MudListItem Icon="@Icons.Material.Filled.Groups">
+                            <MudText Typo="Typo.body1"><b>Groupes :</b> Créez ou modérez les groupes d'utilisateurs.</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Pilotage & Paramètres" Icon="@Icons.Material.Filled.Analytics">
+             <MudGrid>
+                <MudItem xs="12" md="6">
+                     <MudText Typo="Typo.h5" GutterBottom="true">Suivi de l'Activité</MudText>
+                     <MudText Typo="Typo.body1">
+                         Utilisez le <b>Dashboard</b> et la page <b>Statistiques</b> pour suivre les indicateurs clés : nouveaux inscrits, objectifs validés, articles vendus, taux d'engagement.
+                     </MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                     <MudText Typo="Typo.h5" GutterBottom="true">Paramètres Établissement</MudText>
+                     <MudText Typo="Typo.body1">
+                         La page "Établissement" vous permet de mettre à jour les informations de votre structure (Logo, Nom, Contact) qui apparaissent sur l'application des joueurs.
+                     </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
+     <div class="mt-8 d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => Navigation.NavigateTo("/admin/dashboard"))">Retour au Dashboard</MudButton>
+    </div>
+</MudContainer>

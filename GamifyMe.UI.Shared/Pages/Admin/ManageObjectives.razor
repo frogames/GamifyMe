@@ -37,6 +37,30 @@
         <EditForm Model="newObjective" OnValidSubmit="@(editingObjectiveId == null ? HandleCreateObjective : HandleUpdateObjective)">
                     <DataAnnotationsValidator />
 
+                    <div class="d-flex align-center gap-4 mb-3" style="background-color: var(--mud-palette-background); padding: 10px; border-radius: 4px; border: 1px solid var(--mud-palette-lines-inputs);">
+                        <MudText Typo="Typo.subtitle2" Class="mr-4">Méthodes de Validation :</MudText>
+                        
+                        <div class="d-flex align-center">
+                            <img src="img/validation_icon_staff_scan.png" style="height: 32px; width: auto; margin-right: 4px;" />
+                            <MudCheckBox T="bool" Value="true" Disabled="true" Label="Scan par Staff" Color="Color.Primary" Dense="true" />
+                        </div>
+                        
+                        <div class="d-flex align-center">
+                            <img src="img/validation_icon_user_scan.png" style="height: 32px; width: auto; margin-right: 4px;" />
+                            <MudCheckBox T="bool" Value="@HasValidationMethod(ValidationMethod.QrCode)" ValueChanged="@((v) => ToggleValidationMethod(ValidationMethod.QrCode, v))" Label="QR Code" Color="Color.Secondary" Dense="true" />
+                        </div>
+                        
+                        <div class="d-flex align-center">
+                            <img src="img/validation_icon_user_auto.png" style="height: 32px; width: auto; margin-right: 4px;" />
+                            <MudCheckBox T="bool" Value="@HasValidationMethod(ValidationMethod.Self)" ValueChanged="@((v) => ToggleValidationMethod(ValidationMethod.Self, v))" Label="Auto-validation" Color="Color.Warning" Dense="true" />
+                        </div>
+
+                        @if (editingObjectiveId != null && HasValidationMethod(ValidationMethod.QrCode))
+                        {
+                             <MudButton StartIcon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="DownloadQrCode" Class="ml-auto">Télécharger QR</MudButton>
+                        }
+                    </div>
+
                     <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
                     <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
 
@@ -169,6 +193,9 @@
 
 
 
+
+
+
                     <MudSwitch T="bool" @bind-Value="newObjective.IsActive" Label="Actif" Color="Color.Primary" Class="mb-3" />
 
                     @if (!string.IsNullOrEmpty(successMessageObjective))
@@ -200,22 +227,38 @@
         <MudCard Elevation="3">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Objectifs existants</MudText>
+                    <div class="d-flex align-center justify-space-between w-100">
+                        <MudText Typo="Typo.h6">Objectifs existants</MudText>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Calculate" OnClick="ShowWealthEstimation">Estimation Richesse</MudButton>
+                    </div>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudDropContainer T="ObjectiveDto" @ref="_dropContainer" Items="_dropZoneItems" ItemsSelector="@((item,dropzone) => dropzone == "dropzone")" ItemDropped="ItemUpdated" Class="d-flex flex-column">
-                    <ChildContent>
-                        <MudDropZone T="ObjectiveDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
-                    </ChildContent>
-                    <ItemRenderer>
-                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
-                            <div class="d-flex align-center mr-4 grab-cursor">
-                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
-                            </div>
+                @if (_dropZoneItems.Any())
+                {
+                    <div class="d-flex align-center gap-4 mb-4 pa-2 rounded mud-background-gray border-all border-solid border-1">
+                        <MudCheckBox T="bool" Label="Tout sélectionner" Value="@(selectedIds.Count > 0 && selectedIds.Count == _dropZoneItems.Count)" ValueChanged="ToggleSelectAll" Color="Color.Primary" />
+                        <MudSpacer />
+                        @if (selectedIds.Any())
+                        {
+                            <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
+                        }
+                    </div>
+                }
+
+                <div class="d-flex flex-column">
+                    @foreach (var context in _dropZoneItems)
+                    {
+                        <MudPaper @key="context.Id" Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
+                            <MudCheckBox T="bool" Value="@selectedIds.Contains(context.Id)" ValueChanged="@((v) => ToggleSelect(context.Id, v))" Color="Color.Primary" Class="mr-2" />
                             
-                            <!-- Content simulating columns -->
-                            <div style="width: 100%;" @onmousedown:stopPropagation>
+                            <div class="d-flex flex-column mr-2">
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveUp(context))" Disabled="@(_dropZoneItems.IndexOf(context) == 0)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveDown(context))" Disabled="@(_dropZoneItems.IndexOf(context) == _dropZoneItems.Count - 1)" />
+                            </div>
+
+                            <div style="width: 100%;">
                                 <MudGrid Spacing="0" Class="align-center w-100">
                                     <MudItem xs="4">
                                         <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
@@ -245,21 +288,17 @@
                                             <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
                                         }
                                     </MudItem>
-                                    <MudItem xs="2">
+                                    <MudItem xs="3">
                                         <div class="d-flex gap-1">
                                             <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
                                             <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward @CurrencyName</MudChip>
                                         </div>
                                     </MudItem>
-                                    <MudItem xs="1" Class="d-flex justify-end">
-                                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="@(() => DuplicateObjective(context))" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteObjective(context))" />
-                                    </MudItem>
                                 </MudGrid>
                             </div>
                         </MudPaper>
-                    </ItemRenderer>
-                </MudDropContainer>
+                    }
+                </div>
             </MudCardContent>
         </MudCard>
     }
@@ -281,8 +320,8 @@
     private Guid? selectedPrerequisiteId;
     private string CurrencyName = "Crédits";
     
+    private HashSet<Guid> selectedIds = new();
     private List<ObjectiveDto> _dropZoneItems = new();
-    private MudDropContainer<ObjectiveDto>? _dropContainer;
     
     private ScanValidationModal scanModal = default!;
 
@@ -316,7 +355,6 @@
             catch {}
 
             StateHasChanged();
-            _dropContainer?.Refresh();
         }
         catch (Exception ex)
         {
@@ -324,183 +362,243 @@
         }
     }
 
+    private void ToggleSelect(Guid id, bool selected)
+    {
+        if (selected) selectedIds.Add(id);
+        else selectedIds.Remove(id);
+    }
+
+    private void ToggleSelectAll(bool selected)
+    {
+        if (selected) selectedIds = new HashSet<Guid>(_dropZoneItems.Select(i => i.Id));
+        else selectedIds.Clear();
+    }
+
+    private async Task MoveUp(ObjectiveDto item)
+    {
+        var index = _dropZoneItems.IndexOf(item);
+        if (index > 0)
+        {
+            _dropZoneItems.RemoveAt(index);
+            _dropZoneItems.Insert(index - 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task MoveDown(ObjectiveDto item)
+    {
+        var index = _dropZoneItems.IndexOf(item);
+        if (index < _dropZoneItems.Count - 1)
+        {
+            _dropZoneItems.RemoveAt(index);
+            _dropZoneItems.Insert(index + 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task SaveOrder()
+    {
+        var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
+        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
+        
+        try 
+        {
+            var response = await Http.PostAsJsonAsync("api/objectives/reorder", reorderDto);
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessageObjective = "Erreur lors de la réorganisation.";
+                await LoadData(); // Revert
+            }
+        }
+        catch (Exception ex)
+        {
+             errorMessageObjective = ex.Message;
+        }
+    }
+
+    private async Task DeleteSelected()
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer les {selectedIds.Count} objectifs sélectionnés ?");
+        if (!confirmed) return;
+        
+        isBusyObjective = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var response = await Http.DeleteAsync($"api/objectives/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    errorMessageObjective = $"Erreur lors de la suppression de l'ID {id}";
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
+        finally { isBusyObjective = false; }
+    }
+
+    private async Task DuplicateSelected()
+    {
+        isBusyObjective = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var item = allObjectivesFullList.FirstOrDefault(o => o.Id == id);
+                if (item != null)
+                {
+                    await DuplicateObjectiveInternal(item);
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
+        finally { isBusyObjective = false; }
+    }
+
+    private async Task DuplicateObjectiveInternal(ObjectiveDto objectiveToDuplicate)
+    {
+        var duplicate = new CreateObjectiveDto
+        {
+            Title = $"Copie de {objectiveToDuplicate.Title}",
+            Description = objectiveToDuplicate.Description,
+            IconName = objectiveToDuplicate.IconName,
+            Location = objectiveToDuplicate.Location,
+            EventDate = objectiveToDuplicate.EventDate,
+            EndDate = objectiveToDuplicate.EndDate,
+            XpReward = objectiveToDuplicate.XpReward,
+            DocPointsReward = objectiveToDuplicate.DocPointsReward,
+            IsUnique = objectiveToDuplicate.IsUnique,
+            FrequencyHours = objectiveToDuplicate.FrequencyHours,
+            IsActive = false,
+            DisplayStartDate = objectiveToDuplicate.DisplayStartDate,
+            DisplayEndDate = objectiveToDuplicate.DisplayEndDate,
+            PrerequisiteObjectiveIds = objectiveToDuplicate.PrerequisiteObjectiveIds != null ? new List<Guid>(objectiveToDuplicate.PrerequisiteObjectiveIds) : new List<Guid>(),
+            LifespanHours = objectiveToDuplicate.LifespanHours,
+            Category = objectiveToDuplicate.Category,
+            SortOrder = objectiveToDuplicate.SortOrder,
+            IsStreakEnabled = objectiveToDuplicate.IsStreakEnabled,
+            StreakTerminalHours = objectiveToDuplicate.StreakTerminalHours,
+            StreakFrequency = objectiveToDuplicate.StreakFrequency,
+            StreakExcludedDays = objectiveToDuplicate.StreakExcludedDays,
+            StreakExcludedMonths = objectiveToDuplicate.StreakExcludedMonths,
+            Color = objectiveToDuplicate.Color
+        };
+
+        await Http.PostAsJsonAsync("api/objectives", duplicate);
+    }
+
+    private bool IsCategoryAutomatic => newObjective.Category == ObjectiveCategory.Rechargement;
+
     private void ShowCreateForm()
     {
         editingObjectiveId = null;
-        newObjective = new CreateObjectiveDto();
-        newObjective.Color = "#FFFFFF"; // Default color
-        newObjective.XpReward = 5;
-        newObjective.DocPointsReward = 5;
-        newObjective.IsActive = true;
+        newObjective = new CreateObjectiveDto { IconName = "fas fa-star", Color = "#FFFFFF", IsActive = true };
         eventTime = null;
         endTime = null;
         selectedPrerequisiteId = null;
         showForm = true;
     }
 
-    private async Task HandleCreateObjective()
+    private void CancelEditObjective()
     {
-        MergeDatesAndTimes();
-        
-        // Sync selected prerequisite
-        newObjective.PrerequisiteObjectiveIds.Clear();
-        if (selectedPrerequisiteId.HasValue)
-        {
-            newObjective.PrerequisiteObjectiveIds.Add(selectedPrerequisiteId.Value);
-        }
-
-        isBusyObjective = true;
+        showForm = false;
+        editingObjectiveId = null;
         successMessageObjective = null;
         errorMessageObjective = null;
+    }
+
+    private async Task StartEditObjective(ObjectiveDto objective)
+    {
+        editingObjectiveId = objective.Id;
+        newObjective = new CreateObjectiveDto
+        {
+            Title = objective.Title,
+            Description = objective.Description,
+            IconName = objective.IconName,
+            Location = objective.Location,
+            EventDate = objective.EventDate,
+            EndDate = objective.EndDate,
+            XpReward = objective.XpReward,
+            DocPointsReward = objective.DocPointsReward,
+            IsUnique = objective.IsUnique,
+            FrequencyHours = objective.FrequencyHours,
+            IsActive = objective.IsActive,
+            DisplayStartDate = objective.DisplayStartDate,
+            DisplayEndDate = objective.DisplayEndDate,
+            PrerequisiteObjectiveIds = objective.PrerequisiteObjectiveIds != null ? new List<Guid>(objective.PrerequisiteObjectiveIds) : new List<Guid>(),
+            LifespanHours = objective.LifespanHours,
+            Category = objective.Category,
+            SortOrder = objective.SortOrder,
+            IsStreakEnabled = objective.IsStreakEnabled,
+            StreakTerminalHours = objective.StreakTerminalHours,
+            StreakFrequency = objective.StreakFrequency,
+
+            StreakExcludedDays = objective.StreakExcludedDays,
+            StreakExcludedMonths = objective.StreakExcludedMonths,
+            Color = objective.Color,
+            AllowedValidationMethods = objective.AllowedValidationMethods
+        };
+        
+        selectedPrerequisiteId = newObjective.PrerequisiteObjectiveIds?.FirstOrDefault();
+        eventTime = objective.EventDate?.TimeOfDay;
+        endTime = objective.EndDate?.TimeOfDay;
+        
+        showForm = true;
+    }
+
+    private async Task HandleCreateObjective()
+    {
+        PrepareObjectiveBeforeSave();
+        isBusyObjective = true;
         try
         {
             var response = await Http.PostAsJsonAsync("api/objectives", newObjective);
             if (response.IsSuccessStatusCode)
             {
                 successMessageObjective = "Objectif créé !";
-                newObjective = new CreateObjectiveDto();
-                selectedPrerequisiteId = null;
                 await LoadData();
-                showForm = false;
+                CancelEditObjective();
             }
-            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
+            else { errorMessageObjective = await response.Content.ReadAsStringAsync(); }
         }
-        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
         finally { isBusyObjective = false; }
-    }
-
-    private void StartEditObjective(ObjectiveDto objectiveToEdit)
-    {
-        editingObjectiveId = objectiveToEdit.Id;
-        eventTime = objectiveToEdit.EventDate?.TimeOfDay;
-        endTime = objectiveToEdit.EndDate?.TimeOfDay;
-        
-        selectedPrerequisiteId = objectiveToEdit.PrerequisiteObjectiveIds.FirstOrDefault();
-        if (selectedPrerequisiteId == Guid.Empty) selectedPrerequisiteId = null;
-
-        newObjective = new CreateObjectiveDto
-        {
-            Title = objectiveToEdit.Title,
-            Description = objectiveToEdit.Description,
-            IconName = objectiveToEdit.IconName,
-            Location = objectiveToEdit.Location,
-            EventDate = objectiveToEdit.EventDate,
-            EndDate = objectiveToEdit.EndDate,
-            XpReward = objectiveToEdit.XpReward,
-            DocPointsReward = objectiveToEdit.DocPointsReward,
-            IsUnique = objectiveToEdit.IsUnique,
-            FrequencyHours = objectiveToEdit.FrequencyHours,
-            IsActive = objectiveToEdit.IsActive,
-            DisplayStartDate = objectiveToEdit.DisplayStartDate,
-            DisplayEndDate = objectiveToEdit.DisplayEndDate,
-            PrerequisiteObjectiveIds = objectiveToEdit.PrerequisiteObjectiveIds ?? new List<Guid>(),
-            LifespanHours = objectiveToEdit.LifespanHours,
-            Category = objectiveToEdit.Category,
-            SortOrder = objectiveToEdit.SortOrder,
-            Color = !string.IsNullOrEmpty(objectiveToEdit.Color) ? objectiveToEdit.Color : "#FFFFFF",
-            // FIXED: Copy Streak properties
-            IsStreakEnabled = objectiveToEdit.IsStreakEnabled,
-            StreakTerminalHours = objectiveToEdit.StreakTerminalHours,
-            StreakFrequency = objectiveToEdit.StreakFrequency,
-            StreakExcludedDays = objectiveToEdit.StreakExcludedDays,
-            StreakExcludedMonths = objectiveToEdit.StreakExcludedMonths
-        };
-        showForm = true;
-    }
-
-    private void CancelEditObjective()
-    {
-        editingObjectiveId = null;
-        newObjective = new CreateObjectiveDto();
-        eventTime = null;
-        endTime = null;
-        selectedPrerequisiteId = null;
-        errorMessageObjective = null;
-        showForm = false;
     }
 
     private async Task HandleUpdateObjective()
     {
         if (editingObjectiveId == null) return;
-        MergeDatesAndTimes();
-
-        // Sync selected prerequisite
-        newObjective.PrerequisiteObjectiveIds.Clear();
-        if (selectedPrerequisiteId.HasValue)
-        {
-            newObjective.PrerequisiteObjectiveIds.Add(selectedPrerequisiteId.Value);
-        }
-
+        PrepareObjectiveBeforeSave();
         isBusyObjective = true;
         try
         {
-            var response = await Http.PutAsJsonAsync($"api/objectives/{editingObjectiveId.Value}", newObjective);
+            var response = await Http.PutAsJsonAsync($"api/objectives/{editingObjectiveId}", newObjective);
             if (response.IsSuccessStatusCode)
             {
                 successMessageObjective = "Mis à jour !";
-                CancelEditObjective();
                 await LoadData();
+                CancelEditObjective();
             }
-            else { errorMessageObjective = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
-        }
-        catch (Exception ex) { errorMessageObjective = $"Erreur: {ex.Message}"; }
-        finally { isBusyObjective = false; }
-    }
-
-    private async Task DeleteObjective(ObjectiveDto objectiveToDelete)
-    {
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer '{objectiveToDelete.Title}' ?");
-        if (!confirmed) return;
-        try
-        {
-            var response = await Http.DeleteAsync($"api/objectives/{objectiveToDelete.Id}");
-            if (response.IsSuccessStatusCode) await LoadData();
-            else errorMessageObjective = "Erreur suppression.";
+            else { errorMessageObjective = await response.Content.ReadAsStringAsync(); }
         }
         catch (Exception ex) { errorMessageObjective = ex.Message; }
+        finally { isBusyObjective = false; }
     }
 
-    private async Task DuplicateObjective(ObjectiveDto objectiveToDuplicate)
+    private void PrepareObjectiveBeforeSave()
     {
-        isBusyObjective = true;
-        try
-        {
-            var duplicate = new CreateObjectiveDto
-            {
-                Title = $"Copie de {objectiveToDuplicate.Title}",
-                Description = objectiveToDuplicate.Description,
-                IconName = objectiveToDuplicate.IconName,
-                Location = objectiveToDuplicate.Location,
-                EventDate = objectiveToDuplicate.EventDate,
-                EndDate = objectiveToDuplicate.EndDate,
-                XpReward = objectiveToDuplicate.XpReward,
-                DocPointsReward = objectiveToDuplicate.DocPointsReward,
-                IsUnique = objectiveToDuplicate.IsUnique,
-                FrequencyHours = objectiveToDuplicate.FrequencyHours,
-                IsActive = false,
-                DisplayStartDate = objectiveToDuplicate.DisplayStartDate,
-                DisplayEndDate = objectiveToDuplicate.DisplayEndDate,
-                PrerequisiteObjectiveIds = objectiveToDuplicate.PrerequisiteObjectiveIds != null ? new List<Guid>(objectiveToDuplicate.PrerequisiteObjectiveIds) : new List<Guid>(),
-                LifespanHours = objectiveToDuplicate.LifespanHours,
-                Category = objectiveToDuplicate.Category,
-                SortOrder = objectiveToDuplicate.SortOrder,
-                IsStreakEnabled = objectiveToDuplicate.IsStreakEnabled,
-                StreakTerminalHours = objectiveToDuplicate.StreakTerminalHours,
-                StreakFrequency = objectiveToDuplicate.StreakFrequency,
-                StreakExcludedDays = objectiveToDuplicate.StreakExcludedDays,
-                StreakExcludedMonths = objectiveToDuplicate.StreakExcludedMonths
-            };
-
-            var response = await Http.PostAsJsonAsync("api/objectives", duplicate);
-            if (response.IsSuccessStatusCode)
-            {
-                successMessageObjective = "Objectif dupliqué !";
-                await LoadData();
-            }
-            else { errorMessageObjective = $"Erreur duplication: {await response.Content.ReadAsStringAsync()}"; }
-        }
-        catch (Exception ex) { errorMessageObjective = $"Erreur duplication: {ex.Message}"; }
-        finally { isBusyObjective = false; }
+        if (newObjective.EventDate.HasValue && eventTime.HasValue)
+            newObjective.EventDate = newObjective.EventDate.Value.Date + eventTime.Value;
+        if (newObjective.EndDate.HasValue && endTime.HasValue)
+            newObjective.EndDate = newObjective.EndDate.Value.Date + endTime.Value;
+            
+        newObjective.PrerequisiteObjectiveIds = selectedPrerequisiteId.HasValue 
+            ? new List<Guid> { selectedPrerequisiteId.Value } 
+            : new List<Guid>();
     }
 
     private async Task OpenIconPickerForObjective()
@@ -513,58 +611,8 @@
 
     private async Task ShowWealthEstimation()
     {
-        var parameters = new DialogParameters 
-        { 
-            ["Objectives"] = allObjectivesFullList,
-            ["CurrencyName"] = CurrencyName
-        };
-        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-        await DialogService.ShowAsync<WealthEstimationDialog>("Estimation Richesse", parameters, options);
-    }
-
-    private void MergeDatesAndTimes()
-    {
-        if (newObjective.EventDate.HasValue)
-        {
-            newObjective.EventDate = newObjective.EventDate.Value.Date + (eventTime ?? TimeSpan.Zero);
-        }
-        if (newObjective.EndDate.HasValue)
-        {
-            newObjective.EndDate = newObjective.EndDate.Value.Date + (endTime ?? TimeSpan.Zero);
-        }
-    }
-
-    private bool IsCategoryAutomatic => 
-        (newObjective.EventDate.HasValue && newObjective.EndDate.HasValue);
-
-    private async Task ItemUpdated(MudItemDropInfo<ObjectiveDto> dropItem)
-    {
-        // Update local list
-        dropItem.Item.Category = dropItem.Item.Category; // Keep category? Or assume single list.
-        // Actually, with a single DropZone, we just reorder the list.
-        
-        // Remove item from old position
-        _dropZoneItems.Remove(dropItem.Item);
-        // Insert at new position
-        _dropZoneItems.Insert(dropItem.IndexInZone, dropItem.Item);
-        
-        // Trigger server update
-        var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
-        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
-        
-        try 
-        {
-            var response = await Http.PostAsJsonAsync("api/objectives/reorder", reorderDto);
-             if (!response.IsSuccessStatusCode)
-             {
-                 errorMessageObjective = "Erreur lors de la réorganisation.";
-                 await LoadData(); // Revert
-             }
-        }
-        catch (Exception ex)
-        {
-             errorMessageObjective = ex.Message;
-        }
+        var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Large };
+        await DialogService.ShowAsync<WealthEstimationDialog>("Estimation de la Richesse", options);
     }
 
     private string GetObjectiveSummary()
@@ -646,8 +694,10 @@
             {
                 sb.Append(" 🔥 SÉRIE ACTIVÉE : ");
                 switch(newObjective.StreakFrequency) {
-                    case StreakFrequency.Hourly: sb.Append("Validation requise HEURE PAR HEURE."); 
-                        if (newObjective.StreakTerminalHours.HasValue) sb.Append($" (Délai max: {newObjective.StreakTerminalHours}h)."); break;
+                    case StreakFrequency.Hourly: 
+                        sb.Append("Validation requise HEURE PAR HEURE."); 
+                        if (newObjective.StreakTerminalHours.HasValue) sb.Append($" (Délai max: {newObjective.StreakTerminalHours}h)."); 
+                        break;
                     case StreakFrequency.Daily: sb.Append("Validation requise CHAQUE JOUR."); break;
                     case StreakFrequency.Weekly: sb.Append("Validation requise CHAQUE SEMAINE."); break;
                     case StreakFrequency.Monthly: sb.Append("Validation requise CHAQUE MOIS."); break;
@@ -655,6 +705,19 @@
                 sb.Append(" Une série sera maintenue.");
             }
         }
+        sb.AppendLine(); 
+
+        // 6. Méthodes de Validation
+        sb.Append("🛡️ MÉTHODES DE VALIDATION : ");
+        var methods = new List<string>();
+        if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan)) methods.Add("Scan Staff");
+        if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode)) methods.Add("QR Code");
+        if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.Self)) methods.Add("Auto-validation");
+        
+        if (methods.Any())
+            sb.Append(string.Join(" OU ", methods) + ".");
+        else
+            sb.Append("Aucune méthode sélectionnée (Attention !).");
 
         return sb.ToString();
     }
@@ -695,6 +758,25 @@
     private string ToFrenchDay(DayOfWeek d) => System.Globalization.CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetDayName(d);
     private string ToFrenchMonth(int m) => System.Globalization.CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetMonthName(m);
 
+    private bool HasValidationMethod(ValidationMethod method)
+    {
+        return newObjective.AllowedValidationMethods.HasFlag(method);
+    }
+
+    private void ToggleValidationMethod(ValidationMethod method, bool isChecked)
+    {
+        if (isChecked)
+            newObjective.AllowedValidationMethods |= method;
+        else
+            newObjective.AllowedValidationMethods &= ~method;
+    }
+
+    private async Task DownloadQrCode()
+    {
+        if (editingObjectiveId == null) return;
+        string qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={editingObjectiveId}&color=000000&bgcolor=FFFFFF";
+        await JSRuntime.InvokeVoidAsync("open", qrImageUrl, "_blank");
+    }
 }
 <style>
     .custom-hover-row:hover {

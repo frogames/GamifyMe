@@ -6,5 +6,6 @@ namespace GamifyMe.Shared.Dtos
         public int MaxUsers { get; set; }
         public string SystemHealth { get; set; } = "Bonne";
         public int HealthScore { get; set; }
+        public int RealHealthScore { get; set; }
     }
 }

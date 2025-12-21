@@ -5,6 +5,7 @@ using GamifyMe.Shared.Constants;
 using GamifyMe.Api.Data;
 using GamifyMe.Api.Services;
 using GamifyMe.Shared.Dtos;
+using GamifyMe.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,11 +18,13 @@ namespace GamifyMe.Api.Controllers
     public class ObjectivesController : ControllerBase
     {
         private readonly ObjectiveService _objectiveService;
+        private readonly BadgesService _badgesService;
         private readonly DataContext _context; // Still needed for user lookup if not moved to service
 
-        public ObjectivesController(ObjectiveService objectiveService, DataContext context)
+        public ObjectivesController(ObjectiveService objectiveService, BadgesService badgesService, DataContext context)
         {
             _objectiveService = objectiveService;
+            _badgesService = badgesService;
             _context = context;
         }
 
@@ -104,6 +107,52 @@ namespace GamifyMe.Api.Controllers
             var success = await _objectiveService.ReorderObjectivesAsync(request.OrderedIds);
             if (!success) return BadRequest("Erreur lors de la réorganisation.");
             return Ok();
+        }
+
+        [HttpPost("{id}/validate-self")]
+        public async Task<ActionResult<ValidationResponseDto>> ValidateSelf(Guid id)
+        {
+             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+
+             var result = await _objectiveService.ValidateObjectiveAsync(userId, id, validatedById: userId, methodUsed: ValidationMethod.Self, establishmentId: establishmentId);
+             
+             if (result.Success)
+             {
+                 try 
+                 { 
+                     var newBadges = await _badgesService.CheckAndUnlockBadgesAsync(userId, establishmentId); 
+                     if (newBadges != null && newBadges.Any())
+                     {
+                         result.NewAvailableBadges = newBadges;
+                     }
+                 } catch {}
+             }
+             
+             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id}/validate-qr")]
+        public async Task<ActionResult<ValidationResponseDto>> ValidateQr(Guid id, [FromBody] QrValidationRequestDto request)
+        {
+             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+             var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
+
+             var result = await _objectiveService.ValidateObjectiveAsync(userId, id, validatedById: userId, methodUsed: ValidationMethod.QrCode, qrContent: request.Content, establishmentId: establishmentId);
+             
+             if (result.Success)
+             {
+                 try 
+                 { 
+                     var newBadges = await _badgesService.CheckAndUnlockBadgesAsync(userId, establishmentId); 
+                     if (newBadges != null && newBadges.Any())
+                     {
+                         result.NewAvailableBadges = newBadges;
+                     }
+                 } catch {}
+             }
+             
+             return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

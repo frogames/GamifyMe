@@ -355,4 +355,13 @@
   <data name="AvailableObjectivesTitle" xml:space="preserve">
     <value>Objectifs disponibles</value>
   </data>
+  <data name="StoreSubtitle" xml:space="preserve">
+    <value>Échangez vos crédits durement gagnés contre des récompenses exclusives et des bonus !</value>
+  </data>
+  <data name="InventorySubtitle" xml:space="preserve">
+    <value>Gérez vos objets, équipez vos styles numériques et activez vos boosts ici.</value>
+  </data>
+  <data name="BadgesSubtitle" xml:space="preserve">
+    <value>Suivez vos exploits et collectionnez les badges pour montrer votre progression !</value>
+  </data>
 </root>

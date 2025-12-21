@@ -1,0 +1,48 @@
+@page "/help/coach"
+@using GamifyMe.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Coach,Staff,Admin,SuperAdmin")]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Espace Coach - Aide</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Success" Class="mb-6">Guide Coach</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8">Gérez les interactions avec les joueurs, validez les objectifs et distribuez les récompenses.</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="3">
+                <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Success">Interactions Joueurs</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.QrCodeScanner" IconColor="Color.Success">
+                        <MudText Typo="Typo.body1"><b>Le Scanner :</b> Votre outil principal. Utilisez la page "Scanner" ou l'application mobile pour scanner le QR Code des joueurs.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
+                        <MudText Typo="Typo.body1"><b>Valider un Objectif :</b> Une fois le joueur identifié, sélectionnez l'objectif qu'il a réalisé. La validation crédite automatiquement son compte.</MudText>
+                    </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.ShoppingBag" IconColor="Color.Success">
+                        <MudText Typo="Typo.body1"><b>Retrait Boutique :</b> Lorsqu'un joueur veut récupérer une commande ou acheter un article, scannez son code. Validez la transaction pour débiter ses crédits.</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+             <MudPaper Class="pa-6" Elevation="3">
+                <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Warning">Bonnes Pratiques</MudText>
+                <MudAlert Severity="Severity.Warning" Class="mb-4">Responsabilité</MudAlert>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    Une validation est irréversible et notifie le joueur immédiatement. Assurez-vous toujours que l'action a bien été réalisée conforme aux règles.
+                </MudText>
+                <MudText Typo="Typo.h6" Class="mt-4">Besoin d'aide ?</MudText>
+                 <MudText Typo="Typo.body2">
+                    Si vous rencontrez un problème technique ou un litige avec un joueur, contactez un Administrateur.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+     <div class="mt-8 d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Navigation.NavigateTo("/dashboard"))">Retour au Dashboard</MudButton>
+    </div>
+</MudContainer>

@@ -13,6 +13,9 @@
 
         // --- DIGITAL REWARDS ---
         public string? ScanSoundUrl { get; set; }
+        
+        public List<BadgeDto> NewAvailableBadges { get; set; } = new();
+        public List<ObjectiveDto> NewAvailableObjectives { get; set; } = new();
 
         // --- OVERRIDE LOGIC ---
         public bool RequiresConfirmation { get; set; }

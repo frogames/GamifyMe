@@ -119,8 +119,14 @@
             </MudCardContent>
         </MudCard>
     }
-    else
-    {
+        <div class="d-flex align-center gap-4 mb-4 pa-2 rounded mud-background-gray border-all border-solid border-1">
+            <MudSpacer />
+            @if (selectedGroups.Any())
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedGroups.Count)</MudButton>
+            }
+        </div>
+
         <MudCard Elevation="3">
             <MudCardHeader>
                 <CardHeaderContent>
@@ -128,7 +134,7 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTable Items="@groupsList" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer custom-hover-row" RowStyleFunc="@((GroupDto item, int _) => item.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")">
+                <MudTable Items="@groupsList" MultiSelection="true" @bind-SelectedItems="selectedGroups" Hover="true" Dense="true" Striped="true" OnRowClick="@((TableRowClickEventArgs<GroupDto> e) => StartEdit(e.Item))" T="GroupDto" RowClass="cursor-pointer custom-hover-row" RowStyleFunc="@((GroupDto item, int _) => item.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")">
                     <HeaderContent>
                         <MudTh>Nom</MudTh>
                         <MudTh>Statut</MudTh>
@@ -172,13 +178,11 @@
                             <MudTooltip Text="Télécharger QR Code">
                                 <MudIconButton Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Color="Color.Primary" OnClick="@(() => DownloadQrCode(group))" />
                             </MudTooltip>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteGroup(group))" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudCardContent>
         </MudCard>
-    }
 </MudContainer>
 
 <style>
@@ -317,6 +321,31 @@
             else { errorMessage = $"Erreur: {await response.Content.ReadAsStringAsync()}"; }
         }
         catch (Exception ex) { errorMessage = $"Erreur: {ex.Message}"; }
+        finally { isBusy = false; }
+    }
+
+    private HashSet<GroupDto> selectedGroups = new();
+
+    private async Task DeleteSelected()
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer les {selectedGroups.Count} groupes sélectionnés ?");
+        if (!confirmed) return;
+        
+        isBusy = true;
+        try 
+        {
+            foreach (var group in selectedGroups.ToList())
+            {
+                var response = await Http.DeleteAsync($"api/groups/{group.Id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    errorMessage = $"Erreur lors de la suppression du groupe {group.Name}";
+                }
+            }
+            selectedGroups.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
         finally { isBusy = false; }
     }
 

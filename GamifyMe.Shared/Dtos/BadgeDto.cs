@@ -22,6 +22,9 @@ namespace GamifyMe.Shared.Dtos
         public int XpReward { get; set; }
         public int DocPointsReward { get; set; }
         public Guid? RewardStoreItemId { get; set; }
+
+        public Guid? PrerequisiteBadgeId { get; set; }
+        public Guid? PrerequisiteObjectiveId { get; set; }
         
         public bool IsUnlocked { get; set; } // For current user context
         public bool IsFavorite { get; set; } // For current user context
@@ -34,6 +37,10 @@ namespace GamifyMe.Shared.Dtos
         public List<ObjectiveDto>? RequiredObjectives { get; set; }
         public List<StoreItemDto>? RequiredStoreItems { get; set; }
 
+        public List<BadgeSimpleDto> UnlockedBadges { get; set; } = new(); // Badges having this as prerequisite
+        public List<ObjectiveSimpleDto> UnlockedObjectives { get; set; } = new(); // Objectives having this as prerequisite
+
+        public int SortOrder { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

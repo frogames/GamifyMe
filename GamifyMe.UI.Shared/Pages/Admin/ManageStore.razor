@@ -151,18 +151,32 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudDropContainer T="StoreItemDto" @ref="_dropContainer" Items="_dropZoneItems" ItemsSelector="@((item,dropzone) => dropzone == "dropzone")" ItemDropped="ItemUpdated" Class="d-flex flex-column">
-                    <ChildContent>
-                        <MudDropZone T="StoreItemDto" Identifier="dropzone" Class="pa-4" AllowReorder="true" />
-                    </ChildContent>
-                    <ItemRenderer>
-                        <MudPaper Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid #eee; {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
-                             <div class="d-flex align-center mr-4 grab-cursor">
-                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Color="Color.Default" />
-                            </div>
+                @if (_dropZoneItems.Any())
+                {
+                    <div class="d-flex align-center gap-4 mb-4 pa-2 rounded mud-background-gray border-all border-solid border-1">
+                        <MudCheckBox T="bool" Label="Tout sélectionner" Value="@(selectedIds.Count > 0 && selectedIds.Count == _dropZoneItems.Count)" ValueChanged="ToggleSelectAll" Color="Color.Primary" />
+                        <MudSpacer />
+                        @if (selectedIds.Any())
+                        {
+                            <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
+                        }
+                    </div>
+                }
+
+                <div class="d-flex flex-column">
+                    @foreach (var context in _dropZoneItems)
+                    {
+                        <MudPaper @key="context.Id" Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid #eee; {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
+                             <MudCheckBox T="bool" Value="@selectedIds.Contains(context.Id)" ValueChanged="@((v) => ToggleSelect(context.Id, v))" Color="Color.Primary" Class="mr-2" />
+                            
+                             <div class="d-flex flex-column mr-2">
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveUp(context))" Disabled="@(_dropZoneItems.IndexOf(context) == 0)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveDown(context))" Disabled="@(_dropZoneItems.IndexOf(context) == _dropZoneItems.Count - 1)" />
+                             </div>
 
                              <!-- Content simulating columns -->
-                             <div style="width: 100%;" @onmousedown:stopPropagation>
+                             <div style="width: 100%;">
                                  <MudGrid Spacing="0" Class="align-center w-100">
                                      <MudItem xs="4">
                                          <div class="d-flex align-center" @onclick="@(() => StartEditStoreItem(context))" style="cursor: pointer;">
@@ -183,7 +197,7 @@
                                              <MudChip T="string" Size="Size.Small" Color="Color.Default">Stock: @context.Stock</MudChip>
                                          }
                                      </MudItem>
-                                     <MudItem xs="2">
+                                     <MudItem xs="3">
                                          <MudChip T="string" Size="Size.Small" Color="@(context.ItemType == StoreItemType.Physical ? Color.Primary : Color.Secondary)">@context.ItemType</MudChip>
                                      </MudItem>
                                      <MudItem xs="3">
@@ -203,26 +217,22 @@
                                             <MudChip T="string" Size="Size.Small" Color="Color.Success">Toujours</MudChip>
                                         }
                                      </MudItem>
-                                     <MudItem xs="1" Class="d-flex justify-end">
-                                         <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" OnClick="() => DuplicateStoreItem(context)" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteStoreItem(context)" />
-                                     </MudItem>
                                  </MudGrid>
                              </div>
                         </MudPaper>
-                    </ItemRenderer>
-                </MudDropContainer>
+                    }
+                </div>
             </MudCardContent>
         </MudCard>
     }
 </MudContainer>
 
 @code {
+    private HashSet<Guid> selectedIds = new();
     private StoreItemDto newStoreItem = new();
     private List<StoreItemDto> allStoreItemsList = new();
     private Guid? editingStoreItemId = null;
     private List<StoreItemDto> _dropZoneItems = new();
-    private MudDropContainer<StoreItemDto>? _dropContainer;
 
     public class DigitalItemPreset
     {
@@ -271,9 +281,6 @@
                 {
                     newStoreItem.IsUnique = false;
                 }
-
-                Console.WriteLine($"[ManageStore] Preset selected - Code: {_selectedPreset.Code}, URL: {_selectedPreset.Url}");
-                Console.WriteLine($"[ManageStore] Item updated - DigitalActionCode: {newStoreItem.DigitalActionCode}, DigitalAssetUrl: {newStoreItem.DigitalAssetUrl}");
             }
         }
     }
@@ -307,7 +314,6 @@
             allStoreItemsList = items.OrderBy(i => i.SortOrder).ToList();
             _dropZoneItems = allStoreItemsList;
             StateHasChanged();
-            _dropContainer?.Refresh();
         }
         catch (Exception ex)
         {
@@ -421,42 +427,6 @@
         catch (Exception ex) { errorMessageStore = ex.Message; }
     }
 
-    private async Task DuplicateStoreItem(StoreItemDto itemToDuplicate)
-    {
-        isBusyStore = true;
-        try
-        {
-            var duplicate = new StoreItemDto
-            {
-                Name = $"Copie de {itemToDuplicate.Name}",
-                Description = itemToDuplicate.Description,
-                Price = itemToDuplicate.Price,
-                IconName = itemToDuplicate.IconName,
-                ItemType = itemToDuplicate.ItemType,
-                DigitalActionCode = itemToDuplicate.DigitalActionCode,
-                Stock = itemToDuplicate.Stock,
-                IsActive = itemToDuplicate.IsActive,
-                StartDate = itemToDuplicate.StartDate,
-                EndDate = itemToDuplicate.EndDate,
-                DigitalAssetUrl = itemToDuplicate.DigitalAssetUrl,
-                IsUnique = itemToDuplicate.IsUnique,
-                ImageUrl = itemToDuplicate.ImageUrl,
-                Color = itemToDuplicate.Color,
-                SortOrder = itemToDuplicate.SortOrder
-            };
-
-            var response = await Http.PostAsJsonAsync("api/store", duplicate);
-            if (response.IsSuccessStatusCode)
-            {
-                successMessageStore = "Objet dupliqué !";
-                await LoadData();
-            }
-            else { errorMessageStore = $"Erreur duplication: {await response.Content.ReadAsStringAsync()}"; }
-        }
-        catch (Exception ex) { errorMessageStore = $"Erreur duplication: {ex.Message}"; }
-        finally { isBusyStore = false; }
-    }
-
     private async Task OpenIconPickerForStore()
     {
         var options = new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small };
@@ -511,30 +481,128 @@
 
     public class ImageUploadResult
     {
-        public string Url { get; set; }
+        public string Url { get; set; } = "";
     }
-    
-    private async Task ItemUpdated(MudItemDropInfo<StoreItemDto> dropItem)
+
+    private void ToggleSelect(Guid id, bool selected)
     {
-        _dropZoneItems.Remove(dropItem.Item);
-        _dropZoneItems.Insert(dropItem.IndexInZone, dropItem.Item);
-        
+        if (selected) selectedIds.Add(id);
+        else selectedIds.Remove(id);
+    }
+
+    private void ToggleSelectAll(bool selected)
+    {
+        if (selected) selectedIds = new HashSet<Guid>(_dropZoneItems.Select(i => i.Id));
+        else selectedIds.Clear();
+    }
+
+    private async Task MoveUp(StoreItemDto item)
+    {
+        var index = _dropZoneItems.IndexOf(item);
+        if (index > 0)
+        {
+            _dropZoneItems.RemoveAt(index);
+            _dropZoneItems.Insert(index - 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task MoveDown(StoreItemDto item)
+    {
+        var index = _dropZoneItems.IndexOf(item);
+        if (index < _dropZoneItems.Count - 1)
+        {
+            _dropZoneItems.RemoveAt(index);
+            _dropZoneItems.Insert(index + 1, item);
+            await SaveOrder();
+        }
+    }
+
+    private async Task SaveOrder()
+    {
         var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
         var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
         
         try 
         {
             var response = await Http.PostAsJsonAsync("api/store/reorder", reorderDto);
-             if (!response.IsSuccessStatusCode)
-             {
-                 errorMessageStore = "Erreur lors de la réorganisation.";
-                 await LoadData();
-             }
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessageStore = "Erreur lors de la réorganisation.";
+                await LoadData();
+            }
         }
         catch (Exception ex)
         {
              errorMessageStore = ex.Message;
         }
+    }
+
+    private async Task DeleteSelected()
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Supprimer les {selectedIds.Count} objets sélectionnés ?");
+        if (!confirmed) return;
+        
+        isBusyStore = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var response = await Http.DeleteAsync($"api/store/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    errorMessageStore = $"Erreur lors de la suppression de l'ID {id}";
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+        finally { isBusyStore = false; }
+    }
+
+    private async Task DuplicateSelected()
+    {
+        isBusyStore = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var item = allStoreItemsList.FirstOrDefault(o => o.Id == id);
+                if (item != null)
+                {
+                    await DuplicateStoreItemInternal(item);
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+        finally { isBusyStore = false; }
+    }
+
+    private async Task DuplicateStoreItemInternal(StoreItemDto itemToDuplicate)
+    {
+        var duplicate = new StoreItemDto
+        {
+            Name = $"Copie de {itemToDuplicate.Name}",
+            Description = itemToDuplicate.Description,
+            Price = itemToDuplicate.Price,
+            IconName = itemToDuplicate.IconName,
+            ItemType = itemToDuplicate.ItemType,
+            DigitalActionCode = itemToDuplicate.DigitalActionCode,
+            Stock = itemToDuplicate.Stock,
+            IsActive = false,
+            StartDate = itemToDuplicate.StartDate,
+            EndDate = itemToDuplicate.EndDate,
+            DigitalAssetUrl = itemToDuplicate.DigitalAssetUrl,
+            IsUnique = itemToDuplicate.IsUnique,
+            ImageUrl = itemToDuplicate.ImageUrl,
+            Color = itemToDuplicate.Color,
+            SortOrder = itemToDuplicate.SortOrder
+        };
+
+        await Http.PostAsJsonAsync("api/store", duplicate);
     }
 
     private string GetStoreItemSummary()

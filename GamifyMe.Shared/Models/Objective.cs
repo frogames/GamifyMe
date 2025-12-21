@@ -44,6 +44,16 @@
         public StreakFrequency StreakFrequency { get; set; } = StreakFrequency.Hourly;
         public string? StreakExcludedDays { get; set; } // Comma separated integers (0=Sunday, 6=Saturday)
         public string? StreakExcludedMonths { get; set; } // Comma separated integers (1-12)
+
+        public ValidationMethod AllowedValidationMethods { get; set; } = ValidationMethod.StaffScan;
+    }
+
+    [Flags]
+    public enum ValidationMethod
+    {
+        StaffScan = 1,
+        QrCode = 2,
+        Self = 4
     }
 
     public enum ObjectiveCategory

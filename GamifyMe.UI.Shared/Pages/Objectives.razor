@@ -478,7 +478,7 @@
         }
     }
 
-    private void OpenDetails(ObjectiveDto obj)
+    private async Task OpenDetails(ObjectiveDto obj)
     {
         var parameters = new DialogParameters<ObjectiveDetailsDialog> 
         { 
@@ -493,7 +493,13 @@
             FullWidth = true,
             NoHeader = true // Remove default header
         };
-        DialogService.Show<ObjectiveDetailsDialog>("", parameters, options);
+        var dialog = DialogService.Show<ObjectiveDetailsDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool success && success)
+        {
+            await LoadObjectives();
+        }
     }
 
     public class ObjectiveState

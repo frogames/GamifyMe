@@ -1,0 +1,45 @@
+@page "/help/superadmin"
+@using GamifyMe.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Super Admin - Aide</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Error" Class="mb-6">Guide Super Admin</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8">Administration globale de la plateforme GamifyMe.</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="3">
+                <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Error">Gestion des Tenants (Établissements)</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Business" IconColor="Color.Error">
+                        <MudText Typo="Typo.body1"><b>Création & Intégration :</b> Créez de nouveaux établissements partenaires. Configurez leurs quotas, leurs administrateurs initiaux et leurs abonnements.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Error">
+                        <MudText Typo="Typo.body1"><b>Supervision :</b> Vous avez un accès complet à tous les tenants pour le support et la maintenance.</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="3">
+                <MudText Typo="Typo.h5" GutterBottom="true" Color="Color.Error">Maintenance Système</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Error">
+                        <MudText Typo="Typo.body1"><b>Stats Globales :</b> Surveillez la croissance de la plateforme, le nombre total d'utilisateurs actifs et la charge système.</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Security" IconColor="Color.Error">
+                        <MudText Typo="Typo.body1"><b>Sécurité & Rôles :</b> Gérez les administrateurs globaux et assurez l'intégrité de la plateforme.</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+     <div class="mt-8 d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => Navigation.NavigateTo("/superadmin/dashboard"))">Retour au Dashboard</MudButton>
+    </div>
+</MudContainer>

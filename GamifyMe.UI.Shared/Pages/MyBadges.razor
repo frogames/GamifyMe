@@ -6,9 +6,11 @@
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Components
 
+@using Microsoft.Extensions.Localization
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 
 <PageTitle>Mes Badges</PageTitle>
 
@@ -20,6 +22,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <MudText Typo="Typo.h4" GutterBottom="true">Mes Badges</MudText>
+    <MudText Typo="Typo.body1" Class="mb-4 text-secondary">@Loc["BadgesSubtitle"]</MudText>
 
     @if (isLoading)
     {
@@ -50,7 +53,7 @@
             <MudText Typo="Typo.h5" Class="mt-6 mb-4 pl-2" Color="Color.Primary">@group.Key</MudText>
             
             <MudGrid>
-                @foreach (var badge in group)
+                @foreach (var badge in group.OrderBy(b => b.SortOrder))
                 {
                     <MudItem xs="6" sm="4" md="3" lg="2">
                         <MudCard Class="d-flex flex-column align-center pa-2 cursor-pointer hover-scale inner-glow-card" 

@@ -1,0 +1,36 @@
+@using MudBlazor
+@using GamifyMe.UI.Shared.Components
+
+<MudDialog Style="background-color: black; color: white;">
+    <DialogContent>
+        <div class="d-flex flex-column align-center justify-center" style="height: 400px; width: 100%;">
+            <MudText Typo="Typo.h6" Class="mb-4" Align="Align.Center">Scannez le QR Code de l'objectif</MudText>
+            
+            <div class="scanner-container" style="width: 100%; max-width: 350px; aspect-ratio: 1/1; border: 4px solid white; border-radius: 12px; overflow: hidden; background: black;">
+                <QrCodeScanner @ref="scannerParams" OnScanSuccess="OnScan" />
+            </div>
+
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel" Class="mt-4">Annuler</MudButton>
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private QrCodeScanner scannerParams;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && scannerParams != null)
+        {
+            await scannerParams.StartAsync();
+        }
+    }
+
+    private void OnScan(string code)
+    {
+        MudDialog.Close(DialogResult.Ok(code));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

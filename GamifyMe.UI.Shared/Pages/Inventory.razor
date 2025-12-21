@@ -3,17 +3,20 @@
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Components
 @using System.Net.Http.Json
+@using Microsoft.Extensions.Localization
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
 @inject IDialogService DialogService
+@inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 
 <PageTitle>Mon Inventaire</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-16">
     <div class="d-flex justify-space-between align-center mb-6">
         <MudText Typo="Typo.h5" Color="Color.Primary">Mon Inventaire</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4 text-secondary">@Loc["InventorySubtitle"]</MudText>
     </div>
 
     @if (isLoading)
