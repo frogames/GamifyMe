@@ -1,0 +1,183 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Helpers
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (_kit == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    @if (!string.IsNullOrEmpty(_kit.ImageUrl))
+                    {
+                        <MudImage Src="@_kit.ImageUrl" Fluid="true" Class="rounded-lg" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
+                    }
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudText Typo="Typo.h5" Class="mb-2">@_kit.Name</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@_kit.Category</MudChip>
+                    <MudRating SelectedValue="@((int)Math.Round(_kit.AverageRating))" ReadOnly="true" Size="Size.Small" />
+                    
+                    <MudText Typo="Typo.body1" Class="mt-4 mb-4">@_kit.Description</MudText>
+                </MudItem>
+            </MudGrid>
+            
+            <MudText Typo="Typo.subtitle1" Class="mt-4">Contenu inclus:</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4">Ce kit déploiera les éléments suivants dans votre établissement.</MudText>
+                    
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                        @if (_kit.Objectives.Any())
+                        {
+                            <MudTabPanel Text="@($"Objectifs ({_kit.Objectives.Count})")" Icon="@Icons.Material.Filled.CheckCircle">
+                                <MudList T="string" Dense="true" DisablePadding="true">
+                                    @foreach (var obj in _kit.Objectives)
+                                    {
+                                        <MudListItem Text="@obj.Title" SecondaryText="@obj.Description" Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Primary" />
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudTabPanel>
+                        }
+                        @if (_kit.Badges.Any())
+                        {
+                            <MudTabPanel Text="@($"Badges ({_kit.Badges.Count})")" Icon="@Icons.Material.Filled.MilitaryTech">
+                                <MudList T="string" Dense="true" DisablePadding="true">
+                                    @foreach (var badge in _kit.Badges)
+                                    {
+                                        <MudListItem Text="@badge.Name" SecondaryText="@badge.Description" Icon="@IconLibrary.GetIcon(badge.IconName)" IconColor="Color.Warning" />
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudTabPanel>
+                        }
+                        @if (_kit.StoreItems.Any())
+                        {
+                             <MudTabPanel Text="@($"Boutique ({_kit.StoreItems.Count})")" Icon="@Icons.Material.Filled.ShoppingBag">
+                                <MudList T="string" Dense="true" DisablePadding="true">
+                                    @foreach (var item in _kit.StoreItems)
+                                    {
+                                        <MudListItem Text="@($"{item.Name} ({item.Price} Crédits)")" SecondaryText="@item.Description" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="Color.Success" />
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudTabPanel>
+                        }
+                        @if (_kit.Groups.Any())
+                        {
+                             <MudTabPanel Text="@($"Groupes ({_kit.Groups.Count})")" Icon="@Icons.Material.Filled.Groups">
+                                <MudList T="string" Dense="true" DisablePadding="true">
+                                    @foreach (var group in _kit.Groups)
+                                    {
+                                        <MudListItem Text="@group.Name" SecondaryText="@group.Description" Icon="@IconLibrary.GetIcon(group.IconName)" IconColor="Color.Info" />
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudTabPanel>
+                        }
+                    </MudTabs>
+
+        }
+            
+            <MudDivider Class="my-4" />
+            
+             <!-- Rating Section -->
+             <div class="d-flex align-center gap-2">
+                 <MudRating @bind-SelectedValue="_userRating" />
+                 <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="SubmitRating" Disabled="_submittingRating">Noter</MudButton>
+             </div>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Fermer</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ImportKit">Importer ce Kit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Guid KitId { get; set; }
+
+    private ContentKitDto? _kit;
+    private int _userRating = 0;
+    private bool _submittingRating = false;
+
+    private async Task SubmitRating()
+    {
+        if (_userRating == 0) return;
+        _submittingRating = true;
+        try
+        {
+            var dto = new RateKitDto { Rating = _userRating };
+            var response = await Http.PostAsJsonAsync($"api/kits/{KitId}/rate", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Avis enregistré merci !", Severity.Success);
+            }
+        }
+        catch(Exception ex)
+        {
+             Snackbar.Add("Erreur lors de l'envoi de l'avis.", Severity.Error);
+        }
+        finally
+        {
+            _submittingRating = false;
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _kit = await Http.GetFromJsonAsync<ContentKitDto>($"api/kits/{KitId}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Erreur lors du chargement du kit.", Severity.Error);
+            MudDialog.Cancel();
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task ImportKit()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+        // The parent page handles the actual import call if checking result, 
+        // OR we can do it here. 
+        // Logic in parent page checks Cancelled. If !Cancelled, it assumes success? 
+        // Actually earlier code in `EstablishmentSettings` had logic.
+        // Let's implement import here to be self-contained? 
+        // But the parent page `Kits.razor` has the `ImportKit` method too. 
+        // Let's call import here and close with true.
+        
+        try
+        {
+           var response = await Http.PostAsync($"api/kits/{KitId}/import", null);
+           if (response.IsSuccessStatusCode)
+           {
+               Snackbar.Add("Kit importé avec succès !", Severity.Success);
+               MudDialog.Close(DialogResult.Ok(true));
+           }
+           else
+           {
+                Snackbar.Add("Erreur lors de l'import.", Severity.Error);
+           }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+    }
+
+
+}

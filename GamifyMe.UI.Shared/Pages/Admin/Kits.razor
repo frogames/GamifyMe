@@ -1,0 +1,197 @@
+@page "/admin/kits"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Kits de Contenu</MudText>
+    <MudText Class="mb-8">Parcourez notre catalogue de kits prêts à l'emploi pour animez votre établissement.</MudText>
+
+    <MudGrid>
+        <!-- Filters Sidebar -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-4">Filtres</MudText>
+                
+                <MudTextField @bind-Value="_filter.SearchTerm" Label="Rechercher..." Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" OnDebounceIntervalElapsed="LoadKits" DebounceInterval="500" Class="mb-4" />
+
+                <MudSelect T="KitCategory?" Label="Catégorie" @bind-Value="_filter.Category" SelectedValuesChanged="LoadKits" Clearable="true" Variant="Variant.Outlined" Class="mb-4">
+                    @foreach (var cat in Enum.GetValues<KitCategory>())
+                    {
+                        <MudSelectItem T="KitCategory?" Value="@cat">@cat</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Contenu</MudText>
+                <MudCheckBox T="bool?" @bind-Value="_filter.HasObjectives" Label="Objectifs" Color="Color.Primary" CheckedChanged="LoadKits" />
+                <MudCheckBox T="bool?" @bind-Value="_filter.HasBadges" Label="Badges" Color="Color.Primary" CheckedChanged="LoadKits" />
+                <MudCheckBox T="bool?" @bind-Value="_filter.HasGroups" Label="Groupes" Color="Color.Primary" CheckedChanged="LoadKits" />
+                <MudCheckBox T="bool?" @bind-Value="_filter.HasStoreItems" Label="Boutique" Color="Color.Primary" CheckedChanged="LoadKits" />
+            </MudPaper>
+        </MudItem>
+
+        <!-- Kits Grid -->
+        <MudItem xs="12" md="9">
+            @if (_loading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+            }
+
+            @if (_kits != null && _kits.Any())
+            {
+                <MudGrid>
+                    @foreach (var kit in _kits)
+                    {
+                        <MudItem xs="12" sm="6" lg="4">
+                            <MudCard Class="h-100 d-flex flex-column">
+                                @if (!string.IsNullOrEmpty(kit.ImageUrl))
+                                {
+                                    <MudCardMedia Image="@kit.ImageUrl" Height="140" />
+                                }
+                                <MudCardContent Class="flex-grow-1">
+                                    <div class="d-flex justify-space-between align-start mb-2">
+                                        <MudText Typo="Typo.h6">@kit.Name</MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@kit.Category</MudChip>
+                                    </div>
+                                    
+                                    <MudRating SelectedValue="@((int)Math.Round(kit.AverageRating))" ReadOnly="true" Size="Size.Small" />
+                                    <MudText Typo="Typo.caption" Class="ml-1">(@kit.UsageCount utilisations)</MudText>
+
+                                    <MudText Typo="Typo.body2" Class="mt-2 text-truncate-3">@kit.Description</MudText>
+                                    
+                                    <div class="d-flex gap-2 mt-3 flex-wrap">
+                                        @if(kit.HasObjectives) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Objectifs</MudChip> }
+                                        @if(kit.HasBadges) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Badges</MudChip> }
+                                        @if(kit.HasStoreItems) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Boutique</MudChip> }
+                                    </div>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenKitDetails(kit))">Détails</MudButton>
+                                    <MudSpacer />
+                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => ImportKit(kit))">Importer</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else if (!_loading)
+            {
+                <MudAlert Severity="Severity.Info">Aucun kit ne correspond à vos critères.</MudAlert>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@code {
+    private List<ContentKitDto> _kits = new();
+    private KitFilterDto _filter = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadKits();
+    }
+
+    private async Task LoadKits()
+    {
+        _loading = true;
+        try
+        {
+            // Build Query String from Filter
+            var query = new List<string>();
+            if (_filter.Category.HasValue) query.Add($"category={_filter.Category}");
+            if (_filter.HasObjectives == true) query.Add("hasObjectives=true");
+            if (_filter.HasBadges == true) query.Add("hasBadges=true");
+            if (_filter.HasGroups == true) query.Add("hasGroups=true");
+            if (_filter.HasStoreItems == true) query.Add("hasStoreItems=true");
+            if (!string.IsNullOrEmpty(_filter.SearchTerm)) query.Add($"searchTerm={Uri.EscapeDataString(_filter.SearchTerm)}");
+
+            var queryString = query.Any() ? "?" + string.Join("&", query) : "";
+            
+            _kits = await Http.GetFromJsonAsync<List<ContentKitDto>>($"api/kits{queryString}") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Erreur lors du chargement des kits : " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    // Because CheckedChanged returns Task, we need to wrap LoadKits to return void or match expected delegate
+    // Or just let it be sync in the UI event. MudCheckBox CheckedChanged expects EventCallback<T>. 
+    // Wait, CheckedChanged expects EventCallback<T>, so `LoadKits` which returns Task is fine (async void equivalent).
+    
+    private void OpenKitDetails(ContentKitDto kit)
+    {
+         var parameters = new DialogParameters { ["KitId"] = kit.Id }; // Reusing existing dialog but passing KitId (which matches backend expetation for wrapper?)
+         // The existing dialog expects KitId (Guid).
+         // My new api `api/kits/{id}/import` uses the Kit Id.
+         // Current `ContentKitDetailsDialog` likely calls `api/establishment/kit/{id}/details`. 
+         // I updated logic: The Kit ID matches the ContentKit Entity ID.
+         // BUT `EstablishmentController.GetKitDetails(Guid id)` expects an EstablishmentID (the template).
+         // My Kit Entity has an ID, and a TemplateEstablishmentId.
+         // So if I pass `Kit.Id` to the dialog, it will try to fetch Establishment with that ID? 
+         // NO. ContentKit.Id != Establishment.Id.
+         
+         // I need to update `ContentKitDetailsDialog` OR Create a new `KitDetailsDialog`.
+         // Using the existing one is risky if it's tightly coupled to Establishment Controller.
+         // Let's create a new `ViewKitDialog.razor` or update the logic?
+         // User requested: "Je veux que tu crées une page spécifiques pour les kits de contenus... donne la possibilité... filtrer..."
+         // And "En plus du nom... donne la possibilité au super admin d'associer une image... utilise la pour prévisialiser..."
+         
+         // Reusing logic:
+         // I should probably pass the whole DTO to a simpler dialog, OR fetching details from `api/kits/{id}` which I implemented.
+         // `api/kits/{id}` returns `ContentKitDto`.
+         
+         // I will create `ViewKitDialog.razor` that fetches `api/kits/{id}` and displays it.
+         // It can reuse `ContentImportService` logic via `api/kits/{id}/import`.
+         
+         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+         DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.ViewKitDialog>("Détails du Kit", new DialogParameters { ["KitId"] = kit.Id }, options);
+    }
+
+    private async Task ImportKit(ContentKitDto kit)
+    {
+         var confirmed = await DialogService.ShowMessageBox(
+            "Confirmation", 
+            $"Voulez-vous vraiment importer le kit '{kit.Name}' ? Les contenus seront ajoutés à votre établissement.", 
+            yesText:"Importer", cancelText:"Annuler");
+
+        if (confirmed == true)
+        {
+            try
+            {
+               var response = await Http.PostAsync($"api/kits/{kit.Id}/import", null);
+               if (response.IsSuccessStatusCode)
+               {
+                   Snackbar.Add("Kit importé avec succès !", Severity.Success);
+               }
+               else
+               {
+                    Snackbar.Add("Erreur lors de l'import.", Severity.Error);
+               }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

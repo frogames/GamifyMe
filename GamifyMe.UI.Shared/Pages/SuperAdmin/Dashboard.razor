@@ -62,6 +62,15 @@
                     </MudCardContent>
                 </MudCard>
             </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("superadmin/kits"))'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Gestion des Kits</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-secondary">Créer et modifier les kits de contenu</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
             <MudItem xs="12" sm="6" md="4">
                 <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick='(() => Navigation.NavigateTo("help/superadmin"))'>

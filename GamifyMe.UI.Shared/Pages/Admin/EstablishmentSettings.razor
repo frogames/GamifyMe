@@ -65,23 +65,40 @@
              <MudItem xs="12">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-4">Kits de contenu</MudText>
-                    <MudText Class="mb-4">Ajoutez rapidement du contenu thématique à votre établissement.</MudText>
-                    <MudGrid>
-                        <MudItem xs="12" sm="6" md="4">
-                            <MudCard>
-                                <MudCardMedia Image="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1470" Height="140" />
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6">Kit Salle de Sport</MudText>
-                                    <MudText Typo="Typo.body2">Objectifs, badges, groupes et récompenses pour motiver les sportifs.</MudText>
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenKitDetails(Guid.Parse("00000000-0000-0000-0000-000000000003")))">Voir le détail</MudButton>
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto" OnClick="@(() => ImportKit(Guid.Parse("00000000-0000-0000-0000-000000000003")))">Ajouter</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
-                         <!-- Other kits removed as requested -->
-                    </MudGrid>
+                    <MudText Class="mb-4">Ajoutez rapidement du contenu thématique à votre établissement. <MudLink Href="/admin/kits">Voir tout le catalogue</MudLink></MudText>
+                    
+                    @if (_topKits == null)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    }
+                    else if (_topKits.Any())
+                    {
+                        <MudGrid>
+                            @foreach (var kit in _topKits)
+                            {
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudCard Class="h-100">
+                                        @if (!string.IsNullOrEmpty(kit.ImageUrl))
+                                        {
+                                            <MudCardMedia Image="@kit.ImageUrl" Height="140" />
+                                        }
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">@kit.Name</MudText>
+                                            <MudText Typo="Typo.body2" Class="text-truncate-3">@kit.Description</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenKitDetails(kit))">Détails</MudButton>
+                                            <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto" OnClick="@(() => ImportKit(kit))">Importer</MudButton>
+                                        </MudCardActions>
+                                    </MudCard>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">Aucun kit disponible pour le moment.</MudAlert>
+                    }
                 </MudPaper>
             </MudItem>
         </MudGrid>
@@ -90,17 +107,24 @@
 
 @code {
     private EstablishmentSettingsDto? _settings;
+    private List<ContentKitDto>? _topKits;
     private bool _saving = false;
 
     protected override async Task OnInitializedAsync()
     {
         try 
         {
-            _settings = await Http.GetFromJsonAsync<EstablishmentSettingsDto>("api/establishment/settings");
+            var settingsTask = Http.GetFromJsonAsync<EstablishmentSettingsDto>("api/establishment/settings");
+            var kitsTask = Http.GetFromJsonAsync<List<ContentKitDto>>("api/kits/top");
+            
+            await Task.WhenAll(settingsTask, kitsTask);
+            
+            _settings = await settingsTask;
+            _topKits = await kitsTask;
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Erreur lors du chargement des paramètres: " + ex.Message, Severity.Error);
+            Snackbar.Add("Erreur lors du chargement: " + ex.Message, Severity.Error);
         }
     }
 
@@ -184,32 +208,26 @@
         }
     }
 
-    private async Task OpenKitDetails(Guid kitId)
+    private void OpenKitDetails(ContentKitDto kit)
     {
-        var parameters = new DialogParameters { ["KitId"] = kitId };
+        var parameters = new DialogParameters { ["KitId"] = kit.Id };
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         
-        var dialog = DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.ContentKitDetailsDialog>("Détails du Kit", parameters, options);
-        var result = await dialog.Result;
-        
-        if (!result.Canceled)
-        {
-            // Import done inside dialog successfully
-        }
+        DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.ViewKitDialog>("Détails du Kit", parameters, options);
     }
 
-    private async Task ImportKit(Guid kitId)
+    private async Task ImportKit(ContentKitDto kit)
     {
         var confirmed = await DialogService.ShowMessageBox(
             "Confirmation", 
-            "Voulez-vous vraiment importer ce kit ? Les contenus seront ajoutés à votre établissement.", 
+            $"Voulez-vous vraiment importer le kit '{kit.Name}' ? Les contenus seront ajoutés à votre établissement.", 
             yesText:"Importer", cancelText:"Annuler");
 
         if (confirmed == true)
         {
             try
             {
-               var response = await Http.PostAsync($"api/establishment/kit/{kitId}/import", null);
+               var response = await Http.PostAsync($"api/kits/{kit.Id}/import", null);
                if (response.IsSuccessStatusCode)
                {
                    Snackbar.Add("Kit importé avec succès !", Severity.Success);

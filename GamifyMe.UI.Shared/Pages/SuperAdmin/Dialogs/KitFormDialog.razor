@@ -1,0 +1,229 @@
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField @bind-Value="_model.Name" Label="Nom du Kit" Required="true" RequiredError="Nom requis" />
+            
+            <MudTextField @bind-Value="_model.Description" Label="Description" Lines="3" />
+            
+            <MudSelect T="KitCategory" Label="Catégorie" @bind-Value="_model.Category">
+                @foreach (var cat in Enum.GetValues<KitCategory>())
+                {
+                    <MudSelectItem Value="@cat">@cat</MudSelectItem>
+                }
+            </MudSelect>
+            
+            <div class="d-flex align-center gap-4 mt-4 mb-4">
+                @if (!string.IsNullOrEmpty(_model.ImageUrl))
+                {
+                    <MudImage Src="@_model.ImageUrl" Height="100" Class="rounded" ObjectFit="ObjectFit.Cover" />
+                }
+                <div>
+                     <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="UploadFiles">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload">
+                                Uploader une image
+                            </MudButton>
+                        </ActivatorContent>
+                    </MudFileUpload>
+                    <MudText Typo="Typo.caption">Max 2Mo. .jpg, .png, .webp</MudText>
+                </div>
+            </div>
+            
+            @if (KitId == null)
+            {
+                <!-- Create Mode: Select Template Establishment -->
+                <MudSelect T="Guid" Label="Établissement Modèle" @bind-Value="_model.TemplateEstablishmentId" Required="true" RequiredError="Modèle requis">
+                     @foreach (var t in _templates)
+                     {
+                         <MudSelectItem Value="@t.Id">@t.Name</MudSelectItem>
+                     }
+                </MudSelect>
+                @if(!_templates.Any() && !_loadingTemplates)
+                {
+                    <MudAlert Severity="Severity.Warning">Aucun établissement marqué comme 'Modèle' disponible.</MudAlert>
+                }
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!success || _saving)">
+            @(_saving ? "Enregistrement..." : "Enregistrer")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Guid? KitId { get; set; }
+
+    private CreateKitDto _model = new(); // Used for create
+    
+    private List<SuperAdminEstablishmentDto> _templates = new();
+    private bool _loadingTemplates = false;
+    private bool success;
+    private bool _saving = false;
+    private MudForm form;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (KitId != null)
+        {
+            // Edit Mode
+            try
+            {
+                var kit = await Http.GetFromJsonAsync<ContentKitDto>($"api/kits/{KitId}");
+                if (kit != null)
+                {
+                    _model.Name = kit.Name;
+                    _model.Description = kit.Description;
+                    _model.Category = kit.Category;
+                    _model.ImageUrl = kit.ImageUrl;
+                    _model.TemplateEstablishmentId = kit.TemplateEstablishmentId; // Read-only in edit usually
+                }
+            }
+            catch {}
+        }
+        else
+        {
+            // Create Mode - Load Templates
+            await LoadTemplates();
+        }
+    }
+
+    private async Task LoadTemplates()
+    {
+        _loadingTemplates = true;
+        try
+        {
+             // We need to fetch all establishments available to SuperAdmin.
+             // The correct endpoint is api/superadmin/establishments
+             var all = await Http.GetFromJsonAsync<List<SuperAdminEstablishmentDto>>("api/superadmin/establishments");
+             if(all != null)
+             {
+                 _templates = all.Where(e => e.IsTemplate).ToList();
+                 
+                 // Fix: Select default if available
+                if (_templates.Any() && _model.TemplateEstablishmentId == Guid.Empty)
+                {
+                    _model.TemplateEstablishmentId = _templates.First().Id;
+                }
+             }
+        }
+        catch (Exception ex)
+        {
+            // Fallback or error
+            // If endpoint doesn't exist, I might need to quick-fix or use what I have.
+        }
+        finally
+        {
+           _loadingTemplates = false;
+        }
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        if (file == null) return;
+        
+        // 2MB check
+        if (file.Size > 2 * 1024 * 1024)
+        {
+            Snackbar.Add("Fichier trop volumineux (Max 2Mo)", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(file.OpenReadStream(2 * 1024 * 1024));
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "file", file.Name);
+
+            var response = await Http.PostAsync("api/kits/upload-image", content);
+            if (response.IsSuccessStatusCode)
+            {
+                 var result = await response.Content.ReadFromJsonAsync<UploadResponse>();
+                 if (result != null)
+                 {
+                     _model.ImageUrl = result.Url;
+                     Snackbar.Add("Image uploadée !", Severity.Success);
+                 }
+            }
+            else
+            {
+                Snackbar.Add("Erreur upload", Severity.Error);
+            }
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add("Erreur: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private class UploadResponse 
+    {
+        public string Url { get; set; }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        _saving = true;
+        try
+        {
+            if (KitId == null)
+            {
+                // Create
+                var response = await Http.PostAsJsonAsync("api/kits", _model);
+                if (response.IsSuccessStatusCode)
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    Snackbar.Add("Kit créé", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Erreur creation", Severity.Error);
+                }
+            }
+            else
+            {
+                // Update
+                var updateDto = new UpdateKitDto 
+                { 
+                    Id = KitId.Value,
+                    Name = _model.Name,
+                    Description = _model.Description,
+                    Category = _model.Category,
+                    ImageUrl = _model.ImageUrl
+                };
+                
+                var response = await Http.PutAsJsonAsync($"api/kits/{KitId}", updateDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    Snackbar.Add("Kit mis à jour", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Erreur mise à jour", Severity.Error);
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add("Erreur: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

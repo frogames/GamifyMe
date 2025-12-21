@@ -15,19 +15,28 @@ namespace GamifyMe.Api.Data
 
         // --- Tables ---
         public DbSet<User> Users { get; set; }
-        public DbSet<Establishment> Establishments { get; set; }
-        public DbSet<Wallet> Wallets { get; set; }
-        public DbSet<Objective> Objectives { get; set; }
-        public DbSet<Validation> Validations { get; set; }
         public DbSet<StoreItem> StoreItems { get; set; }
+        public DbSet<Establishment> Establishments { get; set; }
+        public DbSet<Objective> Objectives { get; set; }
+        public DbSet<Badge> Badges { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        // public DbSet<GroupUser> GroupUsers { get; set; } // Removing if not exists, but let's check. 
+        // Logic: Group.cs likely has Members. 
+        // Let's stick to what we know exists or was there. 
+        
+        // I will use a safe replacement based on what I see in list_dir
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Validation> Validations { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
-        // public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; } // Removed to avoid conflict
-        public DbSet<Group> Groups { get; set; }
         public DbSet<BonusPeriod> BonusPeriods { get; set; }
         public DbSet<UserObjective> UserObjectives { get; set; }
-        public DbSet<Badge> Badges { get; set; }
         public DbSet<UserBadge> UserBadges { get; set; }
+        
+        public DbSet<ContentKit> ContentKits { get; set; }
+        public DbSet<KitRating> KitRatings { get; set; }
+        // public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; } // Removed to avoid conflict
+ // Kept from original, not explicitly removed by snippet
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

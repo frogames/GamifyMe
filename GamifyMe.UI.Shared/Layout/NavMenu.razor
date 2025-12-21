@@ -30,7 +30,8 @@
              <MudNavGroup Title="SuperAdmin" @bind-Expanded="_expandSuperAdmin" Icon="@Icons.Material.Filled.SupervisorAccount" Class="mp-menu-superadmin">
                 <MudNavLink Href="superadmin/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard Global</MudNavLink>
                 <MudNavLink Href="superadmin/establishments" Icon="@Icons.Material.Filled.Business">Établissements</MudNavLink>
-        <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
+                <MudNavLink Href="superadmin/kits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory">Gestion des Kits</MudNavLink>
+                <MudNavLink Href="superadmin/stats" Icon="@Icons.Material.Filled.Analytics">Stats Globales</MudNavLink>
                 <MudNavLink Href="help/superadmin" Icon="@Icons.Material.Filled.Help">Aide</MudNavLink>
             </MudNavGroup>
         </AuthorizeView>
@@ -108,6 +109,7 @@
     {
         <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.DashboardCustomize">Dashboard</MudNavLink>
         <MudNavLink Href="admin/establishment" Icon="@Icons.Material.Filled.Business">Établissement</MudNavLink>
+        <MudNavLink Href="admin/kits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory2">Kits de Contenu</MudNavLink>
         <MudNavLink Href="admin/users" Icon="@Icons.Material.Filled.People">Utilisateurs</MudNavLink>
         <MudNavLink Href="admin/stats" Icon="@Icons.Material.Filled.PieChart">Statistiques</MudNavLink>
         <MudNavLink Href="admin/subscription" Icon="@Icons.Material.Filled.CreditCard">Forfait</MudNavLink>

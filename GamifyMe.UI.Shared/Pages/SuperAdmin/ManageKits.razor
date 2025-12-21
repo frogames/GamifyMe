@@ -1,0 +1,139 @@
+@page "/superadmin/kits"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Gestion des Kits de Contenu</MudText>
+    
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateKit" StartIcon="@Icons.Material.Filled.Add" Class="mb-4">Nouveau Kit</MudButton>
+
+    <MudTable Items="_kits" Loading="_loading" Hover="true" Striped="true" Filter="new Func<ContentKitDto,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Liste des Kits</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Rechercher" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Nom</MudTh>
+            <MudTh>Catégorie</MudTh>
+            <MudTh>Contenu</MudTh>
+            <MudTh>Utilisations</MudTh>
+            <MudTh>Note</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nom">@context.Name</MudTd>
+            <MudTd DataLabel="Catégorie">@context.Category</MudTd>
+            <MudTd DataLabel="Contenu">
+                @if(context.HasObjectives) { <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Title="Objectifs" /> }
+                @if(context.HasBadges) { <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" Title="Badges" /> }
+                @if(context.HasGroups) { <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Small" Title="Groupes" /> }
+                @if(context.HasStoreItems) { <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Small" Title="Boutique" /> }
+            </MudTd>
+            <MudTd DataLabel="Utilisations">@context.UsageCount</MudTd>
+            <MudTd DataLabel="Note">@context.AverageRating.ToString("F1")</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditKit(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteKit(context))" />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private List<ContentKitDto> _kits = new();
+    private bool _loading = true;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadKits();
+    }
+
+    private async Task LoadKits()
+    {
+        _loading = true;
+        try
+        {
+            _kits = await Http.GetFromJsonAsync<List<ContentKitDto>>("api/kits") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Erreur lors du chargement des kits: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool FilterFunc(ContentKitDto kit)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString)) return true;
+        if (kit.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (kit.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    private async Task CreateKit()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = DialogService.Show<GamifyMe.UI.Shared.Pages.SuperAdmin.Dialogs.KitFormDialog>("Nouveau Kit", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadKits();
+        }
+    }
+
+    private async Task EditKit(ContentKitDto kit)
+    {
+        var parameters = new DialogParameters { ["KitId"] = kit.Id };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = DialogService.Show<GamifyMe.UI.Shared.Pages.SuperAdmin.Dialogs.KitFormDialog>("Modifier le Kit", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadKits();
+        }
+    }
+
+    private async Task DeleteKit(ContentKitDto kit)
+    {
+         var confirmed = await DialogService.ShowMessageBox(
+            "Supprimer le kit", 
+            $"Voulez-vous vraiment supprimer le kit '{kit.Name}' ? Cela n'affectera pas les établissements qui l'ont déjà importé.", 
+            yesText:"Supprimer", cancelText:"Annuler");
+
+        if (confirmed == true)
+        {
+            try
+            {
+                var response = await Http.DeleteAsync($"api/kits/{kit.Id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Kit supprimé.", Severity.Success);
+                    await LoadKits();
+                }
+                else
+                {
+                    Snackbar.Add("Erreur lors de la suppression.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("Erreur: " + ex.Message, Severity.Error);
+            }
+        }
+    }
+}
