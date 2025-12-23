@@ -20,6 +20,7 @@
                 <MudTextField @bind-Value="_filter.SearchTerm" Label="Rechercher..." Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" OnDebounceIntervalElapsed="LoadKits" DebounceInterval="500" Class="mb-4" />
 
                 <MudSelect T="KitCategory?" Label="Catégorie" @bind-Value="_filter.Category" SelectedValuesChanged="LoadKits" Clearable="true" Variant="Variant.Outlined" Class="mb-4">
+                    <MudSelectItem T="KitCategory?" Value="null">Tous</MudSelectItem>
                     @foreach (var cat in Enum.GetValues<KitCategory>())
                     {
                         <MudSelectItem T="KitCategory?" Value="@cat">@cat</MudSelectItem>
@@ -27,15 +28,27 @@
                 </MudSelect>
 
                 <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Contenu</MudText>
-                <MudCheckBox T="bool?" @bind-Value="_filter.HasObjectives" Label="Objectifs" Color="Color.Primary" CheckedChanged="LoadKits" />
-                <MudCheckBox T="bool?" @bind-Value="_filter.HasBadges" Label="Badges" Color="Color.Primary" CheckedChanged="LoadKits" />
-                <MudCheckBox T="bool?" @bind-Value="_filter.HasGroups" Label="Groupes" Color="Color.Primary" CheckedChanged="LoadKits" />
-                <MudCheckBox T="bool?" @bind-Value="_filter.HasStoreItems" Label="Boutique" Color="Color.Primary" CheckedChanged="LoadKits" />
+                <MudCheckBox T="bool?" Value="_filter.HasObjectives" ValueChanged="@(async (v) => { _filter.HasObjectives = v; await LoadKits(); })" Label="Objectifs" Color="Color.Primary" />
+                <MudCheckBox T="bool?" Value="_filter.HasBadges" ValueChanged="@(async (v) => { _filter.HasBadges = v; await LoadKits(); })" Label="Badges" Color="Color.Primary" />
+                <MudCheckBox T="bool?" Value="_filter.HasGroups" ValueChanged="@(async (v) => { _filter.HasGroups = v; await LoadKits(); })" Label="Groupes" Color="Color.Primary" />
+                <MudCheckBox T="bool?" Value="_filter.HasStoreItems" ValueChanged="@(async (v) => { _filter.HasStoreItems = v; await LoadKits(); })" Label="Boutique" Color="Color.Primary" />
             </MudPaper>
         </MudItem>
 
         <!-- Kits Grid -->
+@using System.ComponentModel.DataAnnotations
+
         <MudItem xs="12" md="9">
+            <div class="d-flex justify-space-between align-center mb-4">
+                 <MudText><b>@_kits.Count</b> kits trouvés</MudText>
+                 <MudSelect T="SortOption" Label="Trier par" @bind-Value="_sortBy" SelectedValuesChanged="SortKits" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Margin="Margin.Dense" Class="d-flex" Style="width: 220px;">
+                     <MudSelectItem Value="SortOption.Usage">Popularité</MudSelectItem>
+                     <MudSelectItem Value="SortOption.Rating">Note</MudSelectItem>
+                     <MudSelectItem Value="SortOption.Name">Alphabétique</MudSelectItem>
+                     <MudSelectItem Value="SortOption.Category">Catégorie</MudSelectItem>
+                </MudSelect>
+            </div>
+
             @if (_loading)
             {
                 <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
@@ -47,7 +60,7 @@
                     @foreach (var kit in _kits)
                     {
                         <MudItem xs="12" sm="6" lg="4">
-                            <MudCard Class="h-100 d-flex flex-column">
+                            <MudCard Class="h-100 d-flex flex-column" Style="@($"border-top: 5px solid var(--mud-palette-{GetCategoryColor(kit.Category).ToString().ToLower()});")">
                                 @if (!string.IsNullOrEmpty(kit.ImageUrl))
                                 {
                                     <MudCardMedia Image="@kit.ImageUrl" Height="140" />
@@ -55,7 +68,7 @@
                                 <MudCardContent Class="flex-grow-1">
                                     <div class="d-flex justify-space-between align-start mb-2">
                                         <MudText Typo="Typo.h6">@kit.Name</MudText>
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@kit.Category</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(kit.Category)">@kit.Category</MudChip>
                                     </div>
                                     
                                     <MudRating SelectedValue="@((int)Math.Round(kit.AverageRating))" ReadOnly="true" Size="Size.Small" />
@@ -66,6 +79,7 @@
                                     <div class="d-flex gap-2 mt-3 flex-wrap">
                                         @if(kit.HasObjectives) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Objectifs</MudChip> }
                                         @if(kit.HasBadges) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Badges</MudChip> }
+                                        @if(kit.HasGroups) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Groupes</MudChip> }
                                         @if(kit.HasStoreItems) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Boutique</MudChip> }
                                     </div>
                                 </MudCardContent>
@@ -98,12 +112,33 @@
 
 @code {
     private List<ContentKitDto> _kits = new();
-    private KitFilterDto _filter = new();
+    private KitFilterDto _filter = new() { HasObjectives = false, HasBadges = false, HasGroups = false, HasStoreItems = false };
     private bool _loading = true;
+    private SortOption _sortBy = SortOption.Usage;
+
+    public enum SortOption
+    {
+        Name,
+        Usage,
+        Rating,
+        Category
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await LoadKits();
+    }
+
+    private Color GetCategoryColor(KitCategory category)
+    {
+        return category switch
+        {
+            KitCategory.Sport => Color.Success,
+            KitCategory.Mediatheque => Color.Info,
+            KitCategory.Evenement => Color.Warning,
+            KitCategory.Famille => Color.Secondary,
+            _ => Color.Primary
+        };
     }
 
     private async Task LoadKits()
@@ -123,6 +158,7 @@
             var queryString = query.Any() ? "?" + string.Join("&", query) : "";
             
             _kits = await Http.GetFromJsonAsync<List<ContentKitDto>>($"api/kits{queryString}") ?? new();
+            SortKits();
         }
         catch (Exception ex)
         {
@@ -132,6 +168,20 @@
         {
             _loading = false;
         }
+    }
+    
+    private void SortKits()
+    {
+        if (_kits == null) return;
+
+        _kits = _sortBy switch
+        {
+            SortOption.Name => _kits.OrderBy(k => k.Name).ToList(),
+            SortOption.Usage => _kits.OrderByDescending(k => k.UsageCount).ToList(),
+            SortOption.Rating => _kits.OrderByDescending(k => k.AverageRating).ToList(),
+            SortOption.Category => _kits.OrderBy(k => k.Category).ThenBy(k => k.Name).ToList(),
+            _ => _kits
+        };
     }
     
     // Because CheckedChanged returns Task, we need to wrap LoadKits to return void or match expected delegate

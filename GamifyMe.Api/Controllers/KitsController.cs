@@ -45,22 +45,22 @@ namespace GamifyMe.Api.Controllers
 
             if (filter.HasObjectives.HasValue && filter.HasObjectives.Value)
             {
-                query = query.Where(k => k.HasObjectives);
+                query = query.Where(k => _context.Objectives.Any(o => o.EstablishmentId == k.TemplateEstablishmentId));
             }
 
             if (filter.HasBadges.HasValue && filter.HasBadges.Value)
             {
-                query = query.Where(k => k.HasBadges);
+                query = query.Where(k => _context.Badges.Any(b => b.EstablishmentId == k.TemplateEstablishmentId));
             }
 
             if (filter.HasGroups.HasValue && filter.HasGroups.Value)
             {
-                query = query.Where(k => k.HasGroups);
+                query = query.Where(k => _context.Groups.Any(g => g.EstablishmentId == k.TemplateEstablishmentId));
             }
             
             if (filter.HasStoreItems.HasValue && filter.HasStoreItems.Value)
             {
-                query = query.Where(k => k.HasStoreItems);
+                query = query.Where(k => _context.StoreItems.Any(s => s.EstablishmentId == k.TemplateEstablishmentId));
             }
 
             if (!string.IsNullOrEmpty(filter.SearchTerm))
@@ -69,9 +69,24 @@ namespace GamifyMe.Api.Controllers
                 query = query.Where(k => k.Name.ToLower().Contains(term) || k.Description.ToLower().Contains(term));
             }
 
-            var kits = await query.ToListAsync();
+            // Projection to ensure live data for flags
+            var kits = await query.Select(k => new ContentKitDto
+            {
+                Id = k.Id,
+                Name = k.Name,
+                Description = k.Description,
+                Category = k.Category,
+                ImageUrl = k.ImageUrl,
+                TemplateEstablishmentId = k.TemplateEstablishmentId,
+                HasObjectives = _context.Objectives.Any(o => o.EstablishmentId == k.TemplateEstablishmentId),
+                HasBadges = _context.Badges.Any(b => b.EstablishmentId == k.TemplateEstablishmentId),
+                HasGroups = _context.Groups.Any(g => g.EstablishmentId == k.TemplateEstablishmentId),
+                HasStoreItems = _context.StoreItems.Any(s => s.EstablishmentId == k.TemplateEstablishmentId),
+                UsageCount = k.UsageCount,
+                AverageRating = k.AverageRating
+            }).ToListAsync();
 
-            return Ok(kits.Select(MapToDto).ToList());
+            return Ok(kits);
         }
 
         [HttpGet("top")]
@@ -143,6 +158,12 @@ namespace GamifyMe.Api.Controllers
                 Price = s.Price,
                 ImageUrl = s.ImageUrl
             }).ToList();
+
+            // Synch flags with actual content
+            dto.HasObjectives = dto.Objectives.Any();
+            dto.HasBadges = dto.Badges.Any();
+            dto.HasGroups = dto.Groups.Any();
+            dto.HasStoreItems = dto.StoreItems.Any();
 
             return Ok(dto);
         }
