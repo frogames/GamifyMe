@@ -1,5 +1,6 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 @inject ISnackbar Snackbar
 <MudDialog Style="@($"border-radius: 16px; background-color:{(string.IsNullOrEmpty(Item.Color) ? "var(--mud-palette-surface)" : Item.Color)}; color:{(string.IsNullOrEmpty(Item.Color) ? "inherit" : ColorHelper.GetContrastColor(Item.Color))};")" Class="mud-dialog-no-padding" ContentClass="pa-0">
     <DialogContent>
@@ -23,7 +24,7 @@
                             <div class="d-flex flex-column align-start">
                                  <div class="d-flex align-center mb-1">
                                     <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Medium" Class="mr-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)};" : "")">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Medium" Style="@($"color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
+                                        <GamifyIcon IconName="@Item.IconName" Size="Size.Medium" Style="@($"color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
                                     </MudAvatar>
                                     <MudText Typo="Typo.h5" Align="Align.Left" Style="font-weight:bold;">@Item.Name</MudText>
                                  </div>
@@ -45,7 +46,7 @@
                     {
                         <div class="d-flex flex-column align-center mb-2" style="margin-top: 5px;">
                             <MudAvatar Color="@(string.IsNullOrEmpty(Item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(Item.Color)}; width: 80px; height: 80px;" : "width: 80px; height: 80px;")">
-                                <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="@($"font-size: 3rem; color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
+                                <GamifyIcon IconName="@Item.IconName" Size="Size.Large" Style="@($"font-size: 3rem; color:{(string.IsNullOrEmpty(Item.Color) ? "white" : ColorHelper.GetContrastColor(Item.Color))};")" />
                             </MudAvatar>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold;">@Item.Name</MudText>
                             

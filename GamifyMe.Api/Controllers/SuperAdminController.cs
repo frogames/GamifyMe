@@ -116,6 +116,13 @@ namespace GamifyMe.Api.Controllers
                 return BadRequest("Impossible de supprimer cet établissement : il contient des comptes SuperAdmin. Veuillez les transférer vers un autre établissement avant de procéder.");
             }
 
+            // Vérifier si l'établissement est utilisé comme template par des Kits
+            var linkedKits = await _context.ContentKits.Where(k => k.TemplateEstablishmentId == id).Select(k => k.Name).ToListAsync();
+            if (linkedKits.Any())
+            {
+                return BadRequest($"Impossible de supprimer cet établissement car il est utilisé comme source par les kits de contenu suivants : {string.Join(", ", linkedKits)}. Veuillez d'abord supprimer ces kits.");
+            }
+
             try
             {
                 // Manually delete dependent data if needed, but EF Cascade should handle basic structure

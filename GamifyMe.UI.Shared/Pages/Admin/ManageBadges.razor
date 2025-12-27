@@ -53,7 +53,7 @@
                                     <MudTooltip Text="Cliquez pour changer l'icône">
                                         <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                             <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="80px" Height="80px" @onclick="OpenIconPicker" Style="@($"background-color: {newBadge.Color};")">
-                                                <MudIcon Icon="@IconLibrary.GetIcon(newBadge.IconName)" Style="@($"font-size: 2.5rem; color: {ColorHelper.GetContrastColor(newBadge.Color ?? "#FFD700")};")" />
+                                                <GamifyIcon IconName="@newBadge.IconName" Style="@($"font-size: 2.5rem; color: {ColorHelper.GetContrastColor(newBadge.Color ?? "#FFD700")};")" />
                                             </MudPaper>
                                         </MudBadge>
                                     </MudTooltip>
@@ -271,7 +271,7 @@
                                     }
                                     else
                                     {
-                                        <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" />
+                                        <GamifyIcon IconName="@badge.IconName" />
                                     }
                                 </MudAvatar>
                                 <div class="d-flex flex-column">

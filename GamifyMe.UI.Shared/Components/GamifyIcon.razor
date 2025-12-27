@@ -1,0 +1,61 @@
+@using MudBlazor
+@using MudBlazor.Utilities
+@using GamifyMe.UI.Shared.Helpers
+
+@if (IsStandardIcon)
+{
+    @* Use MudIcon for standard 24x24 icons to ensure they render correctly *@
+    <MudIcon Icon="@IconPath" 
+             Color="@Color" 
+             Size="@Size" 
+             Class="@Class"
+             Style="@Style"
+             @attributes="UserAttributes" />
+}
+else
+{
+    @* Use manual SVG for custom icons with non-standard ViewBoxes *@
+    <svg viewBox="@ViewBox" 
+         class="@ClassString" 
+         style="@StyleString" 
+         @attributes="UserAttributes"
+         aria-hidden="true">
+        <path d="@IconPath" fill="currentColor" />
+    </svg>
+}
+
+@code {
+    [Parameter] public string IconName { get; set; } = "";
+    [Parameter] public string? Icon { get; set; } 
+    [Parameter] public Color Color { get; set; } = Color.Inherit;
+    [Parameter] public Size Size { get; set; } = Size.Medium; 
+    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public string Style { get; set; } = "";
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UserAttributes { get; set; } = new();
+
+    private string IconPath => !string.IsNullOrEmpty(Icon) ? Icon : IconLibrary.GetIcon(IconName);
+    
+    private string ViewBox 
+    {
+        get 
+        {
+            if (!string.IsNullOrEmpty(IconName))
+            {
+                return IconLibrary.GetIconViewBox(IconName);
+            }
+            return "0 0 24 24";
+        }
+    }
+
+    private bool IsStandardIcon => !IconLibrary.IsCustomIcon(IconName);
+
+    private string ClassString => new CssBuilder("mud-icon-root mud-svg-icon")
+        .AddClass($"mud-{Color.ToDescriptionString()}-text", Color != Color.Default && Color != Color.Inherit)
+        .AddClass($"mud-icon-size-{Size.ToDescriptionString()}")
+        .AddClass(Class)
+        .Build();
+        
+    private string StyleString => new StyleBuilder()
+        .AddStyle(Style)
+        .Build();
+}

@@ -31,6 +31,10 @@ namespace GamifyMe.Shared.Models
         public string? StripePriceId { get; set; } // Example: price_12345
         public SubscriptionStatus SubscriptionStatus { get; set; } = SubscriptionStatus.Active; // Default to Active (or Trialing if logic exists)
 
+
+        // Paramètres de Stratégie
+        public GamificationStrategy? Strategy { get; set; }
+
         // Optionnel : Ajouter des relations si nécessaire plus tard
         // public User AdminUser { get; set; }
         // public Plan Plan { get; set; }

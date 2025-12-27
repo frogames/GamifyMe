@@ -1,0 +1,141 @@
+@page "/admin/strategy"
+@attribute [Authorize(Roles = "SuperAdmin, Admin, Coach")]
+
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Configuration Stratégique</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" Class="mb-4">Configuration Stratégique</MudText>
+    <MudText Typo="Typo.body1" Class="mb-8 text-secondary">
+        Définissez l'âme de votre système de gamification. Ces choix influenceront les indicateurs de santé.
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudCard Class="pa-4">
+            <MudCardContent>
+                <MudForm @bind-IsValid="@success">
+                    <!-- 1. Moteur d'Engagement -->
+                    <MudText Typo="Typo.h6" Class="mt-4">1. Moteur d'Engagement</MudText>
+                    <MudText Typo="Typo.caption" Class="mb-2 d-block">Qu'est-ce qui motive principalement vos utilisateurs ?</MudText>
+                    
+                    <MudRadioGroup @bind-Value="strategy.EngagementEngine">
+                        <MudRadio Value="EngagementEngine.Mastery" Color="Color.Primary">
+                            <div class="d-flex flex-column">
+                                <MudText>Maîtrise (Progression personnelle)</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">L'utilisateur veut s'améliorer et compléter des collections.</MudText>
+                            </div>
+                        </MudRadio>
+                        <MudRadio Value="EngagementEngine.Social" Color="Color.Secondary">
+                            <div class="d-flex flex-column">
+                                <MudText>Social (Appartenance)</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">L'utilisateur veut collaborer et interagir avec son groupe.</MudText>
+                            </div>
+                        </MudRadio>
+                        <MudRadio Value="EngagementEngine.Status" Color="Color.Warning">
+                            <div class="d-flex flex-column">
+                                <MudText>Statut (Compétition)</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">L'utilisateur veut être le meilleur et le montrer.</MudText>
+                            </div>
+                        </MudRadio>
+                    </MudRadioGroup>
+
+                    <MudDivider Class="my-6"/>
+
+                    <!-- 2. Fréquence de Feedback -->
+                    <MudText Typo="Typo.h6">2. Feedback & Récompenses</MudText>
+                    <MudRadioGroup @bind-Value="strategy.FeedbackFrequency">
+                        <MudRadio Value="FeedbackFrequency.Immediate" Color="Color.Success">Immédiat (Récompense dès l'action)</MudRadio>
+                        <MudRadio Value="FeedbackFrequency.Deferred" Color="Color.Info">Différé (Récompense en fin de période)</MudRadio>
+                    </MudRadioGroup>
+
+                    <MudDivider Class="my-6"/>
+
+                    <!-- 3. Structure Temporelle -->
+                    <MudText Typo="Typo.h6">3. Structure Temporelle</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="CycleType" Label="Type de Cycle" @bind-Value="strategy.CycleType" Variant="Variant.Outlined">
+                                <MudSelectItem Value="CycleType.Unique">Unique (Une seule fois)</MudSelectItem>
+                                <MudSelectItem Value="CycleType.Repetitive">Répétitif (Saisons)</MudSelectItem>
+                                <MudSelectItem Value="CycleType.Infinite">Infini (Pas de fin)</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField @bind-Value="strategy.CycleDurationMonths" Label="Durée du cycle (Mois)" Variant="Variant.Outlined" Min="1" Max="60" />
+                        </MudItem>
+                    </MudGrid>
+
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveStrategy" Disabled="!success || isSaving">
+                    @if (isSaving) { <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/> }
+                    Enregistrer la Stratégie
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private GamificationStrategyDto strategy = new();
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            strategy = await Http.GetFromJsonAsync<GamificationStrategyDto>("api/strategy") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Impossible de charger la configuration.", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveStrategy()
+    {
+        isSaving = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync("api/strategy", strategy);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Stratégie mise à jour avec succès !", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la sauvegarde.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

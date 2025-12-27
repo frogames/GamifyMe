@@ -92,7 +92,7 @@
                             <MudTooltip Text="Cliquez pour changer l'icône">
                                 <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                     <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForObjective" Style="@($"background-color: {newObjective.Color};")">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(newObjective.IconName)" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newObjective.Color ?? "#FFFFFF")};")" />
+                                        <GamifyIcon IconName="@newObjective.IconName" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newObjective.Color ?? "#FFFFFF")};")" />
                                     </MudPaper>
                                 </MudBadge>
                             </MudTooltip>
@@ -263,7 +263,7 @@
                                     <MudItem xs="4">
                                         <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
                                             <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
-                                                <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Size="Size.Small" Style="@($"color: {ColorHelper.GetContrastColor(context.Color ?? "#FFFFFF")};")" />
+                                                <GamifyIcon IconName="@context.IconName" Size="Size.Small" Style="@($"color: {ColorHelper.GetContrastColor(context.Color ?? "#FFFFFF")};")" />
                                             </MudAvatar>
                                             <div class="d-flex flex-column">
                                                 <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>

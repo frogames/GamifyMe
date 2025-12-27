@@ -5,6 +5,7 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
 @using System.Net.Http.Json
+@using GamifyMe.UI.Shared.Components
 
 @inject HttpClient Http
 @inject ISnackbar Snackbar
@@ -62,7 +63,7 @@
                                              }
                                              else
                                              {
-                                                 <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                                 <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
                                              }
                                         }
                                         @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
@@ -115,7 +116,7 @@
                                                  }
                                                  else
                                                  {
-                                                     <MudIcon Icon="@IconLibrary.GetIcon(user.FavoriteBadgeIcon)" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                                     <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
                                                  }
                                             }
                                             @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
@@ -169,7 +170,7 @@
                                         }
                                         else
                                         {
-                                            <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                            <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                                         }
                                         <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                                     </div>
@@ -217,7 +218,7 @@
                                         }
                                         else
                                         {
-                                            <MudIcon Icon="@IconLibrary.GetIcon(group.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                            <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
                                         }
                                         <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
                                     </div>

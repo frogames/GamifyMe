@@ -48,6 +48,8 @@ builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<BadgesService>();
 builder.Services.AddScoped<ContentImportService>();
+builder.Services.AddScoped<StrategyConfigurationService>();
+builder.Services.AddScoped<SystemHealthService>();
 
 // Hosted Services
 builder.Services.AddHostedService<InactiveAccountCleanupService>();

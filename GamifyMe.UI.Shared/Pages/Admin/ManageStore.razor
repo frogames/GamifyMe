@@ -75,7 +75,7 @@
                             <MudTooltip Text="Cliquez pour changer l'icône">
                                 <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Overlap="true" Bordered="true" Class="cursor-pointer">
                                     <MudPaper Class="d-flex justify-center align-center pa-4" Elevation="4" Width="100px" Height="100px" @onclick="OpenIconPickerForStore" Style="@($"background-color: {newStoreItem.Color};")">
-                                        <MudIcon Icon="@IconLibrary.GetIcon(newStoreItem.IconName)" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newStoreItem.Color ?? "#FFFFFF")};")" />
+                                        <GamifyIcon IconName="@newStoreItem.IconName" Style="@($"font-size: 3rem; color: {ColorHelper.GetContrastColor(newStoreItem.Color ?? "#FFFFFF")};")" />
                                     </MudPaper>
                                 </MudBadge>
                             </MudTooltip>
@@ -180,7 +180,7 @@
                                  <MudGrid Spacing="0" Class="align-center w-100">
                                      <MudItem xs="4">
                                          <div class="d-flex align-center" @onclick="@(() => StartEditStoreItem(context))" style="cursor: pointer;">
-                                             <MudIcon Icon="@IconLibrary.GetIcon(context.IconName)" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(context.Color) ? $"color:{context.Color};" : "")" />
+                                             <GamifyIcon IconName="@context.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(context.Color) ? $"color:{context.Color};" : "")" />
                                              <div class="d-flex flex-column">
                                                  <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Name</MudText>
                                              </div>

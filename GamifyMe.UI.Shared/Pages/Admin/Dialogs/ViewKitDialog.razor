@@ -1,5 +1,6 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -41,7 +42,15 @@
                                 <MudList T="string" Dense="true" DisablePadding="true">
                                     @foreach (var obj in _kit.Objectives)
                                     {
-                                        <MudListItem Text="@obj.Title" SecondaryText="@obj.Description" Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Primary" />
+                                        <MudListItem>
+                                            <div class="d-flex align-center">
+                                                <GamifyIcon IconName="@obj.IconName" Color="Color.Primary" Class="mr-3" />
+                                                <div>
+                                                    <MudText>@obj.Title</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@obj.Description</MudText>
+                                                </div>
+                                            </div>
+                                        </MudListItem>
                                         <MudDivider />
                                     }
                                 </MudList>
@@ -53,7 +62,15 @@
                                 <MudList T="string" Dense="true" DisablePadding="true">
                                     @foreach (var badge in _kit.Badges)
                                     {
-                                        <MudListItem Text="@badge.Name" SecondaryText="@badge.Description" Icon="@IconLibrary.GetIcon(badge.IconName)" IconColor="Color.Warning" />
+                                        <MudListItem>
+                                            <div class="d-flex align-center">
+                                                <GamifyIcon IconName="@badge.IconName" Color="Color.Warning" Class="mr-3" />
+                                                <div>
+                                                    <MudText>@badge.Name</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@badge.Description</MudText>
+                                                </div>
+                                            </div>
+                                        </MudListItem>
                                         <MudDivider />
                                     }
                                 </MudList>
@@ -65,7 +82,15 @@
                                 <MudList T="string" Dense="true" DisablePadding="true">
                                     @foreach (var item in _kit.StoreItems)
                                     {
-                                        <MudListItem Text="@($"{item.Name} ({item.Price} Crédits)")" SecondaryText="@item.Description" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="Color.Success" />
+                                        <MudListItem>
+                                            <div class="d-flex align-center">
+                                                <GamifyIcon IconName="@item.IconName" Color="Color.Success" Class="mr-3" />
+                                                <div>
+                                                    <MudText>@($"{item.Name} ({item.Price} Crédits)")</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Description</MudText>
+                                                </div>
+                                            </div>
+                                        </MudListItem>
                                         <MudDivider />
                                     }
                                 </MudList>
@@ -77,7 +102,15 @@
                                 <MudList T="string" Dense="true" DisablePadding="true">
                                     @foreach (var group in _kit.Groups)
                                     {
-                                        <MudListItem Text="@group.Name" SecondaryText="@group.Description" Icon="@IconLibrary.GetIcon(group.IconName)" IconColor="Color.Info" />
+                                        <MudListItem>
+                                            <div class="d-flex align-center">
+                                                <GamifyIcon IconName="@group.IconName" Color="Color.Info" Class="mr-3" />
+                                                <div>
+                                                    <MudText>@group.Name</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@group.Description</MudText>
+                                                </div>
+                                            </div>
+                                        </MudListItem>
                                         <MudDivider />
                                     }
                                 </MudList>

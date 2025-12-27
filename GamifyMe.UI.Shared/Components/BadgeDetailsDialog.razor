@@ -1,6 +1,7 @@
 @using MudBlazor
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
+@using GamifyMe.UI.Shared.Components
 
 @inject HttpClient Http
 @inject ISnackbar Snackbar
@@ -39,7 +40,7 @@
                     }
                     else
                     {
-                        <MudIcon Icon="@IconLibrary.GetIcon(Badge.IconName)" Style="@($"font-size: 5rem; color: {textColor};")" />
+                        <GamifyIcon IconName="@Badge.IconName" Style="@($"font-size: 5rem; color: {textColor};")" />
                     }
                 </div>
                 

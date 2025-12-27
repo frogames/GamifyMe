@@ -1,11 +1,12 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
+@using GamifyMe.UI.Shared.Components
 
 <MudCard Elevation="3" Class="inventory-card d-flex flex-column" @onclick="OnClick" Style="@($"background-color: {(string.IsNullOrEmpty(Item.Color) ? "var(--mud-palette-surface)" : Item.Color)};")">
     <div class="d-flex justify-center align-center pa-4"
          style="height: 120px;">
-        <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" 
+        <GamifyIcon IconName="@Item.IconName" 
                  Color="@(string.IsNullOrEmpty(Item.Color) ? (Item.IsActive ? Color.Success : Color.Default) : Color.Inherit)"
                  Style="@(!string.IsNullOrEmpty(Item.Color) ? $"color: {ColorHelper.GetContrastColor(Item.Color)}; font-size: 3rem;" : "font-size: 3rem;")" />
     </div>

@@ -17,10 +17,12 @@ namespace GamifyMe.Api.Controllers
     public class EstablishmentController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly SystemHealthService _healthService; // Inject Service
 
-        public EstablishmentController(DataContext context)
+        public EstablishmentController(DataContext context, SystemHealthService healthService)
         {
             _context = context;
+            _healthService = healthService;
         }
 
         private Guid GetCurrentEstablishmentId()
@@ -295,131 +297,10 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult<SystemHealthDto>> GetSystemHealth()
         {
             var establishmentId = GetCurrentEstablishmentId();
-            var establishment = await _context.Establishments.FindAsync(establishmentId);
-            if (establishment == null) return NotFound();
+            if (establishmentId == Guid.Empty) return Unauthorized();
 
-            if (!establishment.IsShopEnabled) return BadRequest("La boutique n'est pas activée pour cet établissement.");
-
-            // 1. Calculate Total Wealth Creation (Projected)
-            var cycleHours = establishment.CycleDurationMonths * 30 * 24;
-            
-            var objectives = await _context.Objectives
-                .Where(o => o.EstablishmentId == establishmentId && o.IsActive)
-                .ToListAsync();
-
-            long totalCurrencyCreation = 0;
-
-            foreach (var obj in objectives)
-            {
-                double occurrences = 1;
-                if (obj.FrequencyHours.GetValueOrDefault() > 0)
-                {
-                    occurrences = (double)cycleHours / obj.FrequencyHours.Value;
-                }
-                
-                double participationRate = 0.7; 
-                totalCurrencyCreation += (long)(obj.DocPointsReward * occurrences * participationRate);
-            }
-
-            // 2. Calculate Total Store Value
-            var storeItems = await _context.StoreItems
-                .Where(s => s.EstablishmentId == establishmentId && s.IsActive)
-                .ToListAsync();
-            
-            long totalStoreValue = storeItems.Sum(s => (long)s.Price);
-
-            // 3. Richest User
-            // Note: We need to pull data into memory for complex sum. For large scale, optimize this.
-            // 3. Richest User & Real Wealth Projection
-            var users = await _context.Users
-                .Where(u => u.EstablishmentId == establishmentId && u.Role == "User")
-                .Include(u => u.Wallets)
-                .Include(u => u.Inventory).ThenInclude(i => i.StoreItem)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var userWealthData = users.Select(u => new 
-            {
-                Name = u.FirstName + " " + u.Username,
-                CurrencyBalance = u.Wallets.Where(w => w.CurrencyCode != "XP").Sum(w => w.Balance),
-                InventoryValue = u.Inventory.Where(ui => ui.IsActive).Sum(ui => ui.StoreItem?.Price ?? 0),
-                TimeActive = (DateTime.UtcNow - u.CreatedAt).TotalDays < 1 ? 1 : (DateTime.UtcNow - u.CreatedAt).TotalDays
-            }).ToList();
-
-            var richestUser = userWealthData
-                .OrderByDescending(u => u.CurrencyBalance + u.InventoryValue)
-                .FirstOrDefault();
-
-            int richestWealth = richestUser != null ? (int)(richestUser.CurrencyBalance + richestUser.InventoryValue) : 0;
-            string richestName = richestUser?.Name ?? "Aucun joueur";
-
-            // Calculate Average Real Projected Wealth
-            double totalRealProjected = 0;
-            var cycleDays = establishment.CycleDurationMonths * 30;
-
-            foreach (var u in userWealthData)
-            {
-                var currentTotal = u.CurrencyBalance + u.InventoryValue;
-                var dailyRate = currentTotal / u.TimeActive;
-                totalRealProjected += dailyRate * cycleDays;
-            }
-
-            long averageRealProjectedWealth = userWealthData.Count > 0 ? (long)(totalRealProjected / userWealthData.Count) : 0;
-
-            // 4. Health Scores
-            // Theoretical Score
-            double ratioTheo = totalStoreValue > 0 ? (double)totalCurrencyCreation / totalStoreValue : 0;
-            int score = (int)(100 - (Math.Abs(1 - ratioTheo) * 50));
-            score = Math.Clamp(score, 0, 100);
-
-            // Real Score
-            double ratioReal = totalStoreValue > 0 ? (double)averageRealProjectedWealth / totalStoreValue : 0;
-            int realScore = (int)(100 - (Math.Abs(1 - ratioReal) * 50));
-            realScore = Math.Clamp(realScore, 0, 100);
-
-            // 4. Health Score
-
-
-            // 5. User Capacity
-            var totalCount = await _context.Users.CountAsync(u => u.EstablishmentId == establishmentId);
-            
-            // 6. Advice
-            var advice = new List<string>();
-            if (totalStoreValue == 0) advice.Add("Votre boutique est vide. Ajoutez des articles pour donner un but aux joueurs.");
-            else 
-            {
-                if (ratioTheo < 0.5) advice.Add("Théoriquement, les joueurs gagneront trop peu. Augmentez les récompenses.");
-                else if (ratioTheo > 1.5) advice.Add("Théoriquement, l'économie est inflationniste. Augmentez les prix.");
-                
-                if (ratioReal < 0.5) advice.Add("En pratique, les joueurs progressent lentement. Encouragez-les !");
-                else if (ratioReal > 1.5) advice.Add("En pratique, les joueurs sont très riches. Vérifiez s'ils n'exploitent pas une faille.");
-                
-                if (score > 80 && realScore > 80) advice.Add("L'économie semble équilibrée et les joueurs suivent le rythme !");
-            }
-            
-            if (establishment.MaxUsers > 0)
-            {
-                if (totalCount >= establishment.MaxUsers) 
-                    advice.Add("ATTENTION : Votre quota d'utilisateurs est atteint. Les nouvelles inscriptions sont bloquées. Pensez à supprimer les inactifs ou augmenter votre forfait.");
-                else if (totalCount >= establishment.MaxUsers * 0.9)
-                    advice.Add("Attention : Vous approchez de la limite d'utilisateurs. Pensez à faire du ménage.");
-            }
-
-            return Ok(new SystemHealthDto
-            {
-                TotalStoreValue = (int)totalStoreValue,
-                TotalWealthCreation = (int)totalCurrencyCreation,
-                TargetWealth = (int)totalCurrencyCreation,
-                AverageRealProjectedWealth = (int)averageRealProjectedWealth,
-                HealthScore = score,
-                RealHealthScore = realScore,
-                RichestUserName = richestName,
-                RichestUserWealth = richestWealth,
-                CycleDurationMonths = establishment.CycleDurationMonths,
-                Advice = advice,
-                UserCount = totalCount,
-                MaxUsers = establishment.MaxUsers
-            });
+            var data = await _healthService.CalculateHealthAsync(establishmentId);
+            return Ok(data);
         }
 
         [HttpPost("cycle-duration")]
@@ -427,12 +308,34 @@ namespace GamifyMe.Api.Controllers
         public async Task<ActionResult> UpdateCycleDuration([FromBody] int months)
         {
             var establishmentId = GetCurrentEstablishmentId();
-            var establishment = await _context.Establishments.FindAsync(establishmentId);
-            if (establishment == null) return NotFound();
+            if (establishmentId == Guid.Empty) return Unauthorized();
 
             if (months < 1) return BadRequest("La durée doit être d'au moins 1 mois.");
 
-            establishment.CycleDurationMonths = months;
+            // Update Establishment
+            var establishment = await _context.Establishments.FindAsync(establishmentId);
+            if (establishment != null)
+            {
+                establishment.CycleDurationMonths = months;
+            }
+
+            // Update Strategy if exists
+            var strategy = await _context.GamificationStrategies.FirstOrDefaultAsync(s => s.EstablishmentId == establishmentId);
+            if (strategy != null)
+            {
+                strategy.CycleDurationMonths = months;
+            }
+            else
+            {
+                // Create minimal strategy
+                strategy = new GamificationStrategy
+                {
+                    EstablishmentId = establishmentId,
+                    CycleDurationMonths = months
+                };
+                _context.GamificationStrategies.Add(strategy);
+            }
+
             await _context.SaveChangesAsync();
 
             return Ok();

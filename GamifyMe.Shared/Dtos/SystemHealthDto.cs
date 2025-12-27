@@ -19,5 +19,17 @@ namespace GamifyMe.Shared.Dtos
         public int MaxUsers { get; set; }
 
         public List<string> Advice { get; set; } = new();
+
+        // Nouveaux indicateurs détaillés
+        public double SocialEngagementScore { get; set; } // % participation (Moteur Social)
+        public double StatusInequalityScore { get; set; } // Variance XP Top 10% (Moteur Statut)
+        
+        public double PacingScore { get; set; } // % joueurs dans la bonne courbe
+        public int UsersFinishedTooEarlyCount { get; set; }
+
+        public double HoardingRate { get; set; } // % monnaie non dépensée
+        public double InflationRate { get; set; } // Ratio Création/Destruction (30j)
+
+        public List<string> FrictionPoints { get; set; } = new(); // Zones de drop-off
     }
 }

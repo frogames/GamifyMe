@@ -35,7 +35,7 @@
                      }
                      else
                      {
-                         <MudIcon Icon="@IconLibrary.GetIcon(PlayerDetails.GroupIcon)" Size="Size.Small" Style="@(!string.IsNullOrEmpty(PlayerDetails.GroupColor) ? $"color:{PlayerDetails.GroupColor};" : "")" Class="mr-2" />
+                         <GamifyIcon IconName="@PlayerDetails.GroupIcon" Size="Size.Small" Style="@(!string.IsNullOrEmpty(PlayerDetails.GroupColor) ? $"color:{PlayerDetails.GroupColor};" : "")" Class="mr-2" />
                      }
                      <MudText Typo="Typo.body2" Style="font-weight:bold;">@PlayerDetails.GroupName</MudText>
                 </div>
@@ -62,7 +62,7 @@
                     {
                         <div class="d-flex align-center justify-space-between pa-2" style="background-color: rgba(var(--mud-palette-warning-rgb), 0.1); border-radius: 8px;">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="@IconLibrary.GetIcon(streak.IconName)" Color="Color.Warning" Size="Size.Small" Class="mr-2" />
+                                <GamifyIcon IconName="@streak.IconName" Color="Color.Warning" Size="Size.Small" Class="mr-2" />
                                 <MudText Typo="Typo.body2">@streak.ObjectiveTitle</MudText>
                             </div>
                             <div class="d-flex align-center">
@@ -90,7 +90,7 @@
                          <MudTooltip Text="@badge.Description">
                             <div class="d-flex flex-column align-center">
                                 <div class="d-flex justify-center align-center rounded-circle" style="@($"background-color: {badge.Color}20; width: 48px; height: 48px;")">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(badge.IconName)" Style="@($"font-size: 1.5rem; color: {badge.Color};")" />
+                                    <GamifyIcon IconName="@badge.IconName" Style="@($"font-size: 1.5rem; color: {badge.Color};")" />
                                 </div>
                                 <MudText Typo="Typo.caption" align="Align.Center" style="max-width: 60px; font-size: 0.7rem; line-height: 1;">@badge.Name</MudText>
                             </div>

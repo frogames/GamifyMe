@@ -22,9 +22,15 @@
                             <MudPaper Elevation="0" 
                                       Class="d-flex flex-column align-center justify-center pa-2 hover-effect">
                                 
-                                <MudIcon Icon="@icon.Value" Size="Size.Large" Color="Color.Primary" />
+                                <GamifyIcon IconName="@icon.Key" 
+                                            Icon="@icon.Value"
+                                            Size="Size.Large" 
+                                            Color="Color.Primary" />
                                 <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1" Style="font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;">
                                     @icon.Key
+                                </MudText>
+                                <MudText Typo="Typo.caption" Style="font-size: 8px; color: gray;">
+                                    @IconLibrary.GetIconViewBox(icon.Key)
                                 </MudText>
 
                             </MudPaper>

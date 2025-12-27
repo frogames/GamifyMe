@@ -2,6 +2,7 @@
 @using GamifyMe.Shared.Models
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
+@using GamifyMe.UI.Shared.Components
 
 <MudDialog Class="custom-dialog-content" Style="background-color: transparent; box-shadow: none; overflow: visible;">
     <DialogContent>
@@ -21,7 +22,7 @@
         <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px; cursor: pointer;")" @onclick="Cancel">
             <div class="d-flex flex-column align-center mb-4">
                 <MudAvatar Color="@(string.IsNullOrEmpty(Objective.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Objective.Color) ? $"background-color:{Objective.Color}; width: 80px; height: 80px; filter: brightness(0.9);" : "width: 80px; height: 80px;")">
-                    <MudIcon Icon="@IconLibrary.GetIcon(Objective.IconName)" Size="Size.Large" Style="font-size: 3rem; color: white;" />
+                    <GamifyIcon IconName="@Objective.IconName" Size="Size.Large" Style="font-size: 3rem; color: white;" />
                 </MudAvatar>
                 <MudText Typo="Typo.h5" Align="Align.Center" Style="@($"color: {textColor}; font-weight: bold;")">@Objective.Title</MudText>
                 

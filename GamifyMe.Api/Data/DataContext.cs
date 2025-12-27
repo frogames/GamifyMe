@@ -20,6 +20,7 @@ namespace GamifyMe.Api.Data
         public DbSet<Objective> Objectives { get; set; }
         public DbSet<Badge> Badges { get; set; }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<GamificationStrategy> GamificationStrategies { get; set; }
         // public DbSet<GroupUser> GroupUsers { get; set; } // Removing if not exists, but let's check. 
         // Logic: Group.cs likely has Members. 
         // Let's stick to what we know exists or was there. 

@@ -1,6 +1,7 @@
 @using GamifyMe.Shared.Dtos
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
+@using GamifyMe.UI.Shared.Components
 @inject IDialogService DialogService
 
 <MudDialog>
@@ -8,7 +9,7 @@
         <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
             <div class="d-flex flex-column align-center mb-4">
                 <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="width: 80px; height: 80px;">
-                    <MudIcon Icon="@IconLibrary.GetIcon(Item.IconName)" Size="Size.Large" Style="font-size: 3rem;" />
+                    <GamifyIcon IconName="@Item.IconName" Size="Size.Large" Style="font-size: 3rem;" />
                 </MudAvatar>
                 <MudText Typo="Typo.h5" Align="Align.Center">@Item.ItemName</MudText>
                 

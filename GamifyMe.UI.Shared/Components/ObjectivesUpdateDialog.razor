@@ -12,8 +12,11 @@
             <MudList T="string" Dense="true" Class="mb-4">
                 @foreach (var obj in ReturnedObjectives)
                 {
-                    <MudListItem Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Success">
-                        @obj.Title
+                    <MudListItem>
+                        <div class="d-flex align-center">
+                            <GamifyIcon IconName="@obj.IconName" Color="Color.Success" Class="mr-3" />
+                            <MudText>@obj.Title</MudText>
+                        </div>
                     </MudListItem>
                 }
             </MudList>
@@ -25,8 +28,11 @@
             <MudList T="string" Dense="true">
                 @foreach (var obj in NewObjectives)
                 {
-                    <MudListItem Icon="@IconLibrary.GetIcon(obj.IconName)" IconColor="Color.Warning">
-                        @obj.Title
+                    <MudListItem>
+                        <div class="d-flex align-center">
+                            <GamifyIcon IconName="@obj.IconName" Color="Color.Warning" Class="mr-3" />
+                            <MudText>@obj.Title</MudText>
+                        </div>
                     </MudListItem>
                 }
             </MudList>

@@ -41,7 +41,7 @@
                                 }
 
                                 <MudAvatar Color="@(string.IsNullOrEmpty(item.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(item.Color) ? $"background-color:rgba(255,255,255,0.2); color:{ColorHelper.GetContrastColor(item.Color)};" : "")">
-                                    <MudIcon Icon="@IconLibrary.GetIcon(item.IconName)" Size="Size.Large" Style="@($"color:{(string.IsNullOrEmpty(item.Color) ? "white" : ColorHelper.GetContrastColor(item.Color))};")" />
+                                    <GamifyIcon IconName="@item.IconName" Size="Size.Large" Style="@($"color:{(string.IsNullOrEmpty(item.Color) ? "white" : ColorHelper.GetContrastColor(item.Color))};")" />
                                 </MudAvatar>
                                 
                                 <MudText Typo="Typo.body2" Align="Align.Center" Style="@($"font-weight:bold; color:{(string.IsNullOrEmpty(item.Color) ? "inherit" : ColorHelper.GetContrastColor(item.Color))}")">@item.ItemName</MudText>
