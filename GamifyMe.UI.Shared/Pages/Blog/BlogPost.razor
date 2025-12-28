@@ -1,0 +1,166 @@
+@page "/blog/{Slug}"
+@layout BlogLayout
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Services
+@using MudBlazor
+@inject BlogService BlogService
+@inject NavigationManager Navigation
+
+@if (post != null)
+{
+    <PageTitle>@post.Title - MeritoPass Blog</PageTitle>
+    <HeadContent>
+        <meta property="og:title" content="@post.Title" />
+        <meta property="og:description" content="@post.Summary" />
+        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+        {
+            <meta property="og:image" content="@post.CoverImageUrl" />
+        }
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="@Navigation.Uri" />
+        <meta name="twitter:card" content="summary_large_image" />
+    </HeadContent>
+
+    <div class="blog-post-container">
+        <div class="mb-4">
+             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Variant="Variant.Text" Color="Color.Primary" OnClick="GoBack">Retour aux articles</MudButton>
+        </div>
+
+        <article class="blog-article">
+            <header class="article-header">
+                <MudText Typo="Typo.h3" Class="mb-3" Style="font-weight: 800; color: #1a2b4c; line-height: 1.2;">@post.Title</MudText>
+                
+                <div class="article-meta">
+                    @if (post.PublishedAt.HasValue)
+                    {
+                        <span class="mr-4">Publié le @post.PublishedAt.Value.ToString("dd MMMM yyyy")</span>
+                    }
+                    <span>Par @post.Author</span>
+                </div>
+            </header>
+
+            @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+            {
+                <div class="article-cover">
+                    <img src="@post.CoverImageUrl" alt="@post.Title" />
+                </div>
+            }
+
+            <div class="article-content">
+                @((MarkupString)post.Content) 
+                @* Note: Assuming trusted content from Admin. Use Sanitizer if public input allowed later. *@
+            </div>
+            
+        </article>
+    </div>
+}
+else if (isLoading)
+{
+    <div class="d-flex justify-center mt-12">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column align-center mt-12">
+        <MudText Typo="Typo.h5" Color="Color.Error">Article introuvable</MudText>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="GoBack" Class="mt-4">Retour au blog</MudButton>
+    </div>
+}
+
+<style>
+    .blog-post-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .blog-article {
+        background: white;
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .article-meta {
+        color: #868e96;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+    }
+
+    .article-cover {
+        margin: -3rem -3rem 2rem -3rem;
+        height: 400px;
+        overflow: hidden;
+    }
+
+    .article-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #212529;
+    }
+
+    /* Basic typography for HTML content */
+    .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #1a2b4c; }
+    .article-content h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.75rem; color: #1a2b4c; }
+    .article-content p { margin-bottom: 1.5rem; }
+    .article-content ul, .article-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    .article-content li { margin-bottom: 0.5rem; }
+    .article-content blockquote { border-left: 4px solid var(--mud-palette-primary); padding-left: 1rem; margin-left: 0; font-style: italic; color: #495057; }
+    .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; }
+    
+    @@media (max-width: 768px) {
+        .blog-article { padding: 1.5rem; }
+        .article-cover { margin: -1.5rem -1.5rem 1.5rem -1.5rem; height: 250px; }
+    }
+</style>
+
+@code {
+    [Parameter] public string Slug { get; set; }
+
+    private BlogPostDto? post;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPost();
+    }
+
+    // React to Slug changes if parameters change in same route
+    protected override async Task OnParametersSetAsync()
+    {
+        // Simple check to avoid double load if initialized already did it for same slug
+        if (post?.Slug != Slug) 
+        {
+            await LoadPost();
+        }
+    }
+
+    private async Task LoadPost()
+    {
+        isLoading = true;
+        try
+        {
+            post = await BlogService.GetPostBySlugAsync(Slug);
+        }
+        catch
+        {
+            post = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/blog");
+    }
+}

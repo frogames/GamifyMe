@@ -50,6 +50,7 @@ builder.Services.AddScoped<BadgesService>();
 builder.Services.AddScoped<ContentImportService>();
 builder.Services.AddScoped<StrategyConfigurationService>();
 builder.Services.AddScoped<SystemHealthService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 // Hosted Services
 builder.Services.AddHostedService<InactiveAccountCleanupService>();

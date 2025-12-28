@@ -30,6 +30,7 @@ builder.Services.AddScoped<GamifyMe.UI.Shared.Services.TokenStorageService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
 builder.Services.AddScoped<GamifyMe.UI.Shared.Services.NotificationService>();
+builder.Services.AddScoped<GamifyMe.UI.Shared.Services.BlogService>();
 
 // 3. HttpClient pour le serveur
 builder.Services.AddScoped(sp => new HttpClient

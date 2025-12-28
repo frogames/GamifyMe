@@ -60,6 +60,7 @@ namespace GamifyMe.Web.Client
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.ThemeService>();
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.UserStateService>();
             builder.Services.AddScoped<GamifyMe.UI.Shared.Services.NotificationService>();
+            builder.Services.AddScoped<GamifyMe.UI.Shared.Services.BlogService>();
 
             var host = builder.Build();
 

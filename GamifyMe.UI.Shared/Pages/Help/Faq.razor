@@ -1,0 +1,64 @@
+@page "/faq"
+@using GamifyMe.Shared.Constants
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@inject NavigationManager Navigation
+
+<PageTitle>Foire Aux Questions - GamifyMe</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Primary" Class="mb-6">Foire Aux Questions</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mb-8">Retrouvez ici les réponses aux questions les plus fréquentes pour vous aider à progresser.</MudText>
+
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel Text="Comment gagner des Points d'Expérience (XP) ?"  Icon="@Icons.Material.Filled.TrendingUp">
+            Pour gagner des XP, vous devez valider des <b>Objectifs</b>. Chaque objectif accompli vous rapporte un montant d'XP défini. 
+            Accumuler des XP vous permet de monter en niveau et de débloquer de nouveaux badges et avantages.
+        </MudExpansionPanel>
+        
+        <MudExpansionPanel Text="Comment fonctionnent les séries (Streaks) ?" Icon="@Icons.Material.Filled.LocalFireDepartment">
+            Une série représente le nombre de jours (ou périodes) consécutifs où vous avez validé au moins un objectif.
+            Maintenir une série active peut vous rapporter des bonus d'XP et vous aider à débloquer des badges exclusifs. Attention, si vous manquez une période, votre série retombe à zéro !
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Comment fonctionne l'inventaire ?" Icon="@Icons.Material.Filled.Inventory">
+            L'inventaire regroupe tous les objets que vous avez achetés ou gagnés. Il est divisé en deux catégories :
+            <ul>
+                <li><b>Objets Physiques :</b> Des biens réels à récupérer auprès de votre établissement.</li>
+                <li><b>Objets Numériques :</b> Des personnalisations pour votre application (Sons de scan, Styles de QR code, Thèmes).</li>
+            </ul>
+            Vous pouvez activer ou désactiver vos objets numériques directement depuis la page Inventaire pour personnaliser votre expérience.
+        </MudExpansionPanel>
+        
+        <MudExpansionPanel Text="À quoi servent les Crédits ?" Icon="@Icons.Material.Filled.MonetizationOn">
+            Les Crédits sont la monnaie virtuelle de votre établissement. Vous les obtenez également en validant des objectifs.
+            Vous pouvez dépenser vos crédits dans la <b>Boutique</b> pour acheter des récompenses physiques ou digitales proposées par votre établissement.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Comment valider un objectif ?" Icon="@Icons.Material.Filled.QrCodeScanner">
+            Pour valider un objectif, rendez-vous physiquement auprès d'un coach ou d'un membre du staff de votre établissement.
+            Présentez-leur votre <b>QR Code unique</b> (accessible via le menu "Mon Pass") pour qu'ils le scannent et valident l'action.
+            <br/><br/>
+            <i>Note : Certains objectifs peuvent être validés automatiquement ou via d'autres méthodes selon la configuration de votre établissement.</i>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Comment obtenir des Badges ?" Icon="@Icons.Material.Filled.MilitaryTech">
+            Les badges sont des récompenses spéciales qui marquent des étapes importantes ou des accomplissements exceptionnels (ex: "Valider 10 objectifs en une semaine").
+            Certains badges se débloquent automatiquement, d'autres nécessitent une validation spécifique. Consultez la page "Badges" pour voir les conditions d'obtention.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="C'est quoi un Groupe ?" Icon="@Icons.Material.Filled.Groups">
+            Un Groupe est une équipe de joueurs. En rejoignant un groupe, vous pouvez participer à des classements collectifs.
+            Vos actions individuelles (XP gagnés) contribuent au score total de votre groupe. C'est idéal pour se motiver entre amis !
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+
+    <div class="mt-8 d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => Navigation.NavigateTo("/"))">Retour à l'accueil</MudButton>
+    </div>
+</MudContainer>
+
+@code {
+    
+}

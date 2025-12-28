@@ -1,0 +1,113 @@
+@page "/admin/blog"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Services
+@using MudBlazor
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject BlogService BlogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <MudText Typo="Typo.h4" Color="Color.Primary">Gestion du Blog</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreatePost">Nouvel Article</MudButton>
+    </div>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudTable Items="@posts" Hover="true" Elevation="4">
+            <HeaderContent>
+                <MudTh>Titre</MudTh>
+                <MudTh>Slug</MudTh>
+                <MudTh>Statut</MudTh>
+                <MudTh>Date Création</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Titre">@context.Title</MudTd>
+                <MudTd DataLabel="Slug">@context.Slug</MudTd>
+                <MudTd DataLabel="Statut">
+                    @if (context.IsPublished)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Publié</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Brouillon</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Date Création">@context.CreatedAt.ToShortDateString()</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditPost(context.Id))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeletePost(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Secondary" OnClick="@(() => ViewPost(context.Slug))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<BlogPostDto> posts = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
+        isLoading = true;
+        try
+        {
+            posts = await BlogService.GetAllPostsAdminAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void CreatePost()
+    {
+        Navigation.NavigateTo("/admin/blog/new");
+    }
+
+    private void EditPost(Guid id)
+    {
+        Navigation.NavigateTo($"/admin/blog/edit/{id}");
+    }
+
+    private void ViewPost(string slug)
+    {
+        // Opens in new tab ideally, but NavigateTo doesn't support target directly cleanly without JS
+        Navigation.NavigateTo($"/blog/{slug}"); 
+    }
+
+    private async Task DeletePost(BlogPostDto post)
+    {
+        var parameters = new DialogParameters { ["ContentText"] = $"Voulez-vous vraiment supprimer l'article \"{post.Title}\" ?" };
+        var dialog = DialogService.Show<MudMessageBox>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await BlogService.DeletePostAsync(post.Id);
+            Snackbar.Add("Article supprimé", Severity.Success);
+            await LoadPosts();
+        }
+    }
+}

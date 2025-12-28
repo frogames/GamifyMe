@@ -36,8 +36,8 @@ namespace GamifyMe.Api.Data
         
         public DbSet<ContentKit> ContentKits { get; set; }
         public DbSet<KitRating> KitRatings { get; set; }
-        // public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; } // Removed to avoid conflict
- // Kept from original, not explicitly removed by snippet
+        public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

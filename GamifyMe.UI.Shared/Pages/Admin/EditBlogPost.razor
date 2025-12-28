@@ -1,0 +1,172 @@
+@page "/admin/blog/new"
+@page "/admin/blog/edit/{Id:guid}"
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.UI.Shared.Services
+@using MudBlazor
+@attribute [Authorize(Roles = "SuperAdmin")]
+@inject BlogService BlogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-16">
+    <div class="d-flex align-center gap-4 mb-6">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" />
+        <MudText Typo="Typo.h4" Color="Color.Primary">@(IsEdit ? "Éditer l'article" : "Nouvel Article")</MudText>
+    </div>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudPaper Class="pa-4 mb-4" Elevation="3">
+                <MudTextField @bind-Value="model.Title" Label="Titre" Required="true" Variant="Variant.Outlined" Class="mb-4" />
+                
+                @if (IsEdit)
+                {
+                    <MudTextField @bind-Value="model.Slug" Label="Slug (URL)" Variant="Variant.Outlined" Class="mb-4" HelperText="Laissez vide pour générer automatiquement" />
+                }
+
+                <MudTextField @bind-Value="model.Summary" Label="Résumé (Méta description)" Lines="3" Variant="Variant.Outlined" Class="mb-4" />
+                
+                <MudTextField @bind-Value="model.CoverImageUrl" Label="URL Image de couverture" Variant="Variant.Outlined" Class="mb-4" />
+                
+                @if(!string.IsNullOrEmpty(model.CoverImageUrl))
+                {
+                    <MudImage Src="@model.CoverImageUrl" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded mb-4" />
+                }
+
+                <MudCheckBox @bind-Value="model.IsPublished" Label="Publier immédiatement" Color="Color.Success" />
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mb-4" Elevation="3">
+                <MudText Typo="Typo.h6" Class="mb-2">Contenu (HTML/Markdown)</MudText>
+                <MudTextField @bind-Value="model.Content" Label="Contenu" Lines="20" Variant="Variant.Outlined" Required="true" />
+            </MudPaper>
+
+            <div class="d-flex justify-end gap-2">
+                <MudButton OnClick="GoBack" Variant="Variant.Text">Annuler</MudButton>
+                <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success || isSaving)">
+                    @if (isSaving)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Enregistrement...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Enregistrer</MudText>
+                    }
+                </MudButton>
+            </div>
+        </MudForm>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private bool IsEdit => Id.HasValue;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private bool success;
+    private MudForm form;
+
+    // We use a shared model-like object or directly DTOs.
+    // Since Create and Update DTOs are slightly different, let's map to a local view model or handle separately.
+    private UpdateBlogPostDto model = new(); 
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            isLoading = true;
+            try
+            {
+                // We fetch the full details by fetching as admin or public? Admin fetch usually needed.
+                // Our BlogService has GetAllPostsAdminAsync but not GetPostAdminAsync.
+                // GetPostBySlugAsync returns public details.
+                // We might need to add GetPostByIdAsync to Admin API or just reuse public if it returns enough.
+                // Public DTO has Content, so it should be fine, unless draft posts are not returnable by public slug API if logic restricts it.
+                // Wait, GetPostBySlugAsync filters by IsPublished.
+                // WE NEED an endpoint to get a post by ID (even draft) for editing.
+                
+                // Oops, I forgot `GetPostById` in my API service plan. 
+                // However, I can fetch the list and find it locally for now (not efficient but works for low volume), 
+                // OR I can quickly add `GetPostById` to the service.
+                
+                // Let's rely on `GetAllPostsAdminAsync()` and filter client-side for now to avoid switching context back to backend.
+                var allPosts = await BlogService.GetAllPostsAdminAsync();
+                var existing = allPosts.FirstOrDefault(p => p.Id == Id.Value);
+
+                if (existing != null)
+                {
+                    model = new UpdateBlogPostDto
+                    {
+                        Title = existing.Title,
+                        Slug = existing.Slug,
+                        Content = existing.Content,
+                        Summary = existing.Summary,
+                        CoverImageUrl = existing.CoverImageUrl,
+                        IsPublished = existing.IsPublished
+                    };
+                }
+                else
+                {
+                    Snackbar.Add("Article introuvable", Severity.Error);
+                    Navigation.NavigateTo("/admin/blog");
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+    }
+
+    private async Task Save()
+    {
+        isSaving = true;
+        try
+        {
+            if (IsEdit)
+            {
+                await BlogService.UpdatePostAsync(Id.Value, model);
+                Snackbar.Add("Article mis à jour", Severity.Success);
+            }
+            else
+            {
+                var createDto = new CreateBlogPostDto
+                {
+                    Title = model.Title,
+                    Content = model.Content,
+                    Summary = model.Summary,
+                    CoverImageUrl = model.CoverImageUrl,
+                    IsPublished = model.IsPublished,
+                    Author = "Meritopass" // Default
+                };
+                await BlogService.CreatePostAsync(createDto);
+                Snackbar.Add("Article créé", Severity.Success);
+            }
+            Navigation.NavigateTo("/admin/blog");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de l'enregistrement: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/blog");
+    }
+}

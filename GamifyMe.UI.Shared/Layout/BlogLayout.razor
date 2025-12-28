@@ -1,0 +1,72 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<div class="blog-layout">
+    <header class="blog-header">
+        <div class="logo-container">
+            <a href="/blog" class="d-flex align-center" style="text-decoration: none; color: white;">
+                <img src="img/logo.png" alt="MeritoPass" class="d-none d-sm-block" style="height: 32px; width: auto;" />
+                <img src="img/logo_small.png" alt="MeritoPass" class="d-block d-sm-none" style="height: 32px; width: auto;" />
+                <span style="font-size:0.6em; vertical-align:top; opacity:0.8; margin-left: 4px; color: white; font-weight: normal;">BETA</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="blog-content">
+        @Body
+    </main>
+
+    <footer class="blog-footer">
+        <MudText Typo="Typo.caption">© @DateTime.Now.Year MeritoPass. All rights reserved.</MudText>
+    </footer>
+</div>
+
+<style>
+    .blog-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa; /* Light background */
+    }
+
+    .blog-header {
+        background: linear-gradient(135deg, #8E24AA 0%, #00ACC1 100%);
+        padding: 0.75rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .blog-logo {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .blog-content {
+        flex: 1;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .blog-footer {
+        text-align: center;
+        padding: 2rem;
+        background-color: #f1f3f5;
+        color: #868e96;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+</style>
