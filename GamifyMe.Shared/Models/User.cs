@@ -55,5 +55,9 @@ namespace GamifyMe.Shared.Models
         public bool HasCompletedOnboarding { get; set; } = false;
         public bool IsEmailConfirmed { get; set; } = false; // Par défaut, non confirmé
         public string? EmailConfirmationToken { get; set; }
+
+        public bool PrefShopEnabled { get; set; } = true;
+        public bool PrefGroupsEnabled { get; set; } = true;
+        public bool PrefChallengesEnabled { get; set; } = true;
     }
 }

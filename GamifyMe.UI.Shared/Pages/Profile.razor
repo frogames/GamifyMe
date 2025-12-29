@@ -145,8 +145,53 @@
 
             @* Zone de danger (Suppression) *@
             <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick="DeleteAccount">@Loc["DeleteAccount"]</MudButton>
+        </div>
 
+        @* 7. PARAMÈTRES (Modules) *@
+        <div class="mt-8">
+            <MudText Typo="Typo.h6" Class="mb-3">Paramètres d'Affichage</MudText>
+            <MudPaper Elevation="3" Class="pa-4">
+                <MudText Typo="Typo.body2" Class="mb-4 text-muted">Activez ou désactivez les fonctionnalités selon vos besoins.</MudText>
+                
+                @if (profile.EstablishmentHasShop)
+                {
+                    <div class="d-flex justify-space-between align-center mb-2">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Boutique & Inventaire</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Accès à la boutique virtuelle et à votre inventaire d'objets.</MudText>
+                        </div>
+                        <MudSwitch Value="@profile.PrefShopEnabled" ValueChanged="@((bool v) => UpdateModulePreference("Shop", v))" Color="Color.Primary" />
+                    </div>
+                    <MudDivider Class="my-2" />
+                }
+                
+                @if (profile.EstablishmentHasGroups)
+                {
+                    <div class="d-flex justify-space-between align-center mb-2">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Groupes & Classements</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Participation aux groupes et visibilité des classements.</MudText>
+                        </div>
+                        <MudSwitch Value="@profile.PrefGroupsEnabled" ValueChanged="@((bool v) => UpdateModulePreference("Groups", v))" Color="Color.Primary" />
+                    </div>
+                    <MudDivider Class="my-2" />
+                }
 
+                @if (profile.EstablishmentHasChallenges)
+                {
+                    <div class="d-flex justify-space-between align-center mb-2">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Défis (Challenges)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Affichage des objectifs liés aux défis spéciaux.</MudText>
+                        </div>
+                        <MudSwitch Value="@profile.PrefChallengesEnabled" ValueChanged="@((bool v) => UpdateModulePreference("Challenges", v))" Color="Color.Primary" />
+                    </div>
+                }
+                else 
+                {
+                    @* Just to show nothing or info if strict parity needed, but hiding is cleaner *@
+                }
+            </MudPaper>
         </div>
     }
 
@@ -322,6 +367,51 @@
             {
                 Console.WriteLine($"Erreur API : {ex.Message}");
             }
+        }
+    }
+
+    private async Task UpdateModulePreference(string module, bool isEnabled)
+    {
+        if (profile == null) return;
+
+        // Optimistic UI update
+        switch (module)
+        {
+            case "Shop": profile.PrefShopEnabled = isEnabled; break;
+            case "Groups": profile.PrefGroupsEnabled = isEnabled; break;
+            case "Challenges": profile.PrefChallengesEnabled = isEnabled; break;
+        }
+
+        var updateDto = new UpdateUserPreferencesDto
+        {
+            PrefShopEnabled = profile.PrefShopEnabled,
+            PrefGroupsEnabled = profile.PrefGroupsEnabled,
+            PrefChallengesEnabled = profile.PrefChallengesEnabled
+        };
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync("api/users/preferences", updateDto);
+            if (response.IsSuccessStatusCode)
+            {
+                var updatedProfile = await response.Content.ReadFromJsonAsync<UserProfileDetailsDto>();
+                if (updatedProfile != null)
+                {
+                    profile = updatedProfile;
+                    Snackbar.Add("Préférences mises à jour", Severity.Success);
+                    Navigation.NavigateTo("/profile", true); 
+                }
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la mise à jour des préférences", Severity.Error);
+                await LoadProfile();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+            await LoadProfile();
         }
     }
 }

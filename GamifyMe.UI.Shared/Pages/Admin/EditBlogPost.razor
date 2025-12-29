@@ -41,12 +41,50 @@
                 <MudCheckBox @bind-Value="model.IsPublished" Label="Publier immédiatement" Color="Color.Success" />
             </MudPaper>
 
-            <MudPaper Class="pa-4 mb-4" Elevation="3">
-                <MudText Typo="Typo.h6" Class="mb-2">Contenu (HTML/Markdown)</MudText>
-                <MudTextField @bind-Value="model.Content" Label="Contenu" Lines="20" Variant="Variant.Outlined" Required="true" />
-            </MudPaper>
+            <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                <MudTabPanel Text="Édition" Icon="@Icons.Material.Filled.Edit">
+                    <MudPaper Class="pa-4 mb-4" Elevation="0">
+                         <MudToolBar Dense="true" Class="gap-2 border-bottom mb-2">
+                            <MudIconButton Icon="@Icons.Material.Filled.FormatBold" OnClick='@(() => InsertTag("<b>", "</b>"))' Title="Gras" />
+                            <MudIconButton Icon="@Icons.Material.Filled.FormatItalic" OnClick='@(() => InsertTag("<i>", "</i>"))' Title="Italique" />
+                            <MudDivider Vertical="true" FlexItem="true" />
+                            <MudIconButton Icon="fas fa-heading" Size="Size.Small" OnClick='@(() => InsertTag("<h2>", "</h2>"))'>H2</MudIconButton>
+                            <MudIconButton Icon="fas fa-heading" Size="Size.Small" OnClick='@(() => InsertTag("<h3>", "</h3>"))'>H3</MudIconButton>
+                            <MudDivider Vertical="true" FlexItem="true" />
+                            <MudIconButton Icon="@Icons.Material.Filled.FormatListBulleted" OnClick='@(() => InsertTag("<ul>\n<li>", "</li>\n</ul>"))' Title="Liste à puces" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Link" OnClick='@(() => InsertTag("<a href=\"URL_ICI\">", "</a>"))' Title="Lien" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Image" OnClick='@(() => InsertTag("<img src=\"URL_IMAGE\" alt=\"Description\" />", ""))' Title="Image" />
+                        </MudToolBar>
 
-            <div class="d-flex justify-end gap-2">
+                        <MudTextField @bind-Value="model.Content" 
+                                      Label="Contenu HTML" 
+                                      Lines="20" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true" 
+                                      Id="content-editor"
+                                      Adornment="Adornment.None" />
+                    </MudPaper>
+                </MudTabPanel>
+                <MudTabPanel Text="Aperçu" Icon="@Icons.Material.Filled.Preview">
+                     <MudPaper Class="pa-6" Elevation="0" Style="min-height: 500px; background-color: white;">
+                        <div class="article-content">
+                            @((MarkupString)model.Content)
+                        </div>
+                    </MudPaper>
+                     <!-- Styles for preview mirroring the actual blog post styles -->
+                    <style>
+                        .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #1a2b4c; }
+                        .article-content h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.75rem; color: #1a2b4c; }
+                        .article-content p { margin-bottom: 1.5rem; }
+                        .article-content ul, .article-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+                        .article-content li { margin-bottom: 0.5rem; }
+                        .article-content blockquote { border-left: 4px solid var(--mud-palette-primary); padding-left: 1rem; margin-left: 0; font-style: italic; color: #495057; }
+                        .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; }
+                    </style>
+                </MudTabPanel>
+            </MudTabs>
+
+            <div class="d-flex justify-end gap-2 mt-4">
                 <MudButton OnClick="GoBack" Variant="Variant.Text">Annuler</MudButton>
                 <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success || isSaving)">
                     @if (isSaving)
@@ -66,6 +104,8 @@
 
 @code {
     [Parameter] public Guid? Id { get; set; }
+    
+    [Inject] private IJSRuntime JSRuntime { get; set; }
 
     private bool IsEdit => Id.HasValue;
     private bool isLoading = false;
@@ -73,9 +113,13 @@
     private bool success;
     private MudForm form;
 
-    // We use a shared model-like object or directly DTOs.
-    // Since Create and Update DTOs are slightly different, let's map to a local view model or handle separately.
     private UpdateBlogPostDto model = new(); 
+
+    private async Task InsertTag(string openId, string closeId)
+    {
+        await JSRuntime.InvokeVoidAsync("siteUtils.insertTextAtCursor", "content-editor", openId, closeId);
+        // Trigger state change just in case, though JS events should handle binding updates mostly
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,19 +128,6 @@
             isLoading = true;
             try
             {
-                // We fetch the full details by fetching as admin or public? Admin fetch usually needed.
-                // Our BlogService has GetAllPostsAdminAsync but not GetPostAdminAsync.
-                // GetPostBySlugAsync returns public details.
-                // We might need to add GetPostByIdAsync to Admin API or just reuse public if it returns enough.
-                // Public DTO has Content, so it should be fine, unless draft posts are not returnable by public slug API if logic restricts it.
-                // Wait, GetPostBySlugAsync filters by IsPublished.
-                // WE NEED an endpoint to get a post by ID (even draft) for editing.
-                
-                // Oops, I forgot `GetPostById` in my API service plan. 
-                // However, I can fetch the list and find it locally for now (not efficient but works for low volume), 
-                // OR I can quickly add `GetPostById` to the service.
-                
-                // Let's rely on `GetAllPostsAdminAsync()` and filter client-side for now to avoid switching context back to backend.
                 var allPosts = await BlogService.GetAllPostsAdminAsync();
                 var existing = allPosts.FirstOrDefault(p => p.Id == Id.Value);
 

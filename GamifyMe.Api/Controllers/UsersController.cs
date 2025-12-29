@@ -303,8 +303,14 @@ namespace GamifyMe.Api.Controllers
                 {
                     establishmentName = est.Name; // Update with fresh name too
                     currencyName = est.CurrencyName;
-                    isShopEnabled = est.IsShopEnabled;
-                    isGroupsEnabled = est.IsGroupsEnabled;
+                    
+                    // Respect User Preferences (Logic: Enabled only if Establishment Enabled AND User Enabled)
+                    var user = await _context.Users.FindAsync(userId); 
+                    bool userShopPref = user?.PrefShopEnabled ?? true;
+                    bool userGroupsPref = user?.PrefGroupsEnabled ?? true;
+
+                    isShopEnabled = est.IsShopEnabled && userShopPref;
+                    isGroupsEnabled = est.IsGroupsEnabled && userGroupsPref;
                 }
             }
             
@@ -480,8 +486,15 @@ namespace GamifyMe.Api.Controllers
                 Rank = rank,
                 CurrencyBalance = currentCurrency,
                 CurrencyName = user.Establishment?.CurrencyName ?? "Crédits",
-                IsShopEnabled = user.Establishment?.IsShopEnabled ?? true,
-                IsGroupsEnabled = user.Establishment?.IsGroupsEnabled ?? true,
+                IsShopEnabled = (user.Establishment?.IsShopEnabled ?? true) && user.PrefShopEnabled,
+                IsGroupsEnabled = (user.Establishment?.IsGroupsEnabled ?? true) && user.PrefGroupsEnabled,
+                IsChallengesEnabled = (user.Establishment?.IsChallengesEnabled ?? false) && user.PrefChallengesEnabled,
+                EstablishmentHasShop = user.Establishment?.IsShopEnabled ?? true,
+                EstablishmentHasGroups = user.Establishment?.IsGroupsEnabled ?? true,
+                EstablishmentHasChallenges = user.Establishment?.IsChallengesEnabled ?? false,
+                PrefShopEnabled = user.PrefShopEnabled,
+                PrefGroupsEnabled = user.PrefGroupsEnabled,
+                PrefChallengesEnabled = user.PrefChallengesEnabled,
                 GroupId = user.GroupId,
                 GroupName = user.Group?.Name,
                 GroupIcon = user.Group?.IconName,
@@ -794,6 +807,25 @@ namespace GamifyMe.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpPut("preferences")]
+        [Authorize]
+        public async Task<ActionResult<UserProfileDetailsDto>> UpdateUserPreferences(UpdateUserPreferencesDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            user.PrefShopEnabled = request.PrefShopEnabled;
+            user.PrefGroupsEnabled = request.PrefGroupsEnabled;
+            user.PrefChallengesEnabled = request.PrefChallengesEnabled;
+
+            await _context.SaveChangesAsync();
+
+            return await GetMyProfileDetails();
         }
 
         [HttpGet("updates")]

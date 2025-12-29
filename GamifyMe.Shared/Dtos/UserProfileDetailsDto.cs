@@ -48,5 +48,17 @@
         public List<BadgeDto> Badges { get; set; } = new();
 
         public bool HasCompletedOnboarding { get; set; }
+
+        // Préférences Utilisateur
+        public bool PrefShopEnabled { get; set; }
+        public bool PrefGroupsEnabled { get; set; }
+        public bool PrefChallengesEnabled { get; set; }
+        // Défis (Challenges)
+        public bool IsChallengesEnabled { get; set; } // Résultat combiné (Est. && Pref.) for UI logic if needed
+
+        // Capabilities (Establishment settings raw)
+        public bool EstablishmentHasShop { get; set; }
+        public bool EstablishmentHasGroups { get; set; }
+        public bool EstablishmentHasChallenges { get; set; }
     }
 }

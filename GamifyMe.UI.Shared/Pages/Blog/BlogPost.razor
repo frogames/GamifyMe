@@ -19,6 +19,12 @@
         <meta property="og:type" content="article" />
         <meta property="og:url" content="@Navigation.Uri" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@post.Title" />
+        <meta name="twitter:description" content="@post.Summary" />
+        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+        {
+            <meta name="twitter:image" content="@post.CoverImageUrl" />
+        }
     </HeadContent>
 
     <div class="blog-post-container">
