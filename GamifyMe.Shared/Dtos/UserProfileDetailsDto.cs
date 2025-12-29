@@ -60,5 +60,8 @@
         public bool EstablishmentHasShop { get; set; }
         public bool EstablishmentHasGroups { get; set; }
         public bool EstablishmentHasChallenges { get; set; }
+
+        public DateTime? TermsAcceptedAt { get; set; }
+        public string? TermsVersionAccepted { get; set; }
     }
 }

@@ -1,0 +1,41 @@
+@page "/legal/cgu"
+@layout GamifyMe.UI.Shared.Layout.LegalLayout
+@using MudBlazor
+
+<PageTitle>Conditions Générales d'Utilisation - MeritoPass</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-6">Conditions Générales d'Utilisation</MudText>
+
+<MudText Typo="Typo.body2" Class="mb-4">Dernière mise à jour : @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
+
+<MudText Typo="Typo.h6" Class="mt-4">1. Objet</MudText>
+<MudText Typo="Typo.body1" Class="mt-2">
+    Les présentes CGU régissent l'utilisation de la plateforme de gamification <strong>MeritoPass</strong>. 
+    L'accès à la plateforme implique l'acceptation sans réserve de ces conditions.
+</MudText>
+
+<MudText Typo="Typo.h6" Class="mt-6">2. Méthodes de Validation des Objectifs</MudText>
+<MudText Typo="Typo.body1" Class="mt-2">
+    MeritoPass met en œuvre plusieurs mécanismes technologiques pour valider la progression des utilisateurs. 
+    L'utilisateur s'engage à utiliser ces méthodes de manière loyale :
+</MudText>
+<MudList T="string">
+    <MudListItem Icon="@Icons.Material.Filled.Badge"><strong>Staff Scan :</strong> Validation par un membre du personnel via scan du Pass utilisateur.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.QrCode"><strong>QR Code (User Scan) :</strong> Scan de QR codes disposés physiquement dans l'établissement.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.CheckCircle"><strong>Auto-validation :</strong> Validation déclarative par l'utilisateur (confiance).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Group"><strong>Peer Duo :</strong> Validation mutuelle entre deux utilisateurs (binôme).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Groups"><strong>Peer Crowd :</strong> Validation participative nécessitant la signature de plusieurs pairs.</MudListItem>
+</MudList>
+
+<MudText Typo="Typo.h6" Class="mt-6">3. Économie Virtuelle</MudText>
+<MudAlert Severity="Severity.Info" Class="mt-2">
+    <strong>Valeur Nulle :</strong> L'Expérience (XP), les niveaux et la monnaie virtuelle ("Crédits", "DOC", etc.) acquis sur MeritoPass 
+    n'ont <strong>aucune valeur marchande</strong>. Ils ne peuvent être ni vendus, ni échangés contre de la monnaie légale.
+    Ils sont destinés exclusivement à l'usage interne au sein de l'établissement partenaire.
+</MudAlert>
+
+<MudText Typo="Typo.h6" Class="mt-6">4. Propriété Intellectuelle</MudText>
+<MudText Typo="Typo.body1" Class="mt-2">
+    La marque <strong>MeritoPass</strong>, le concept de gamification, les designs d'interface et les algorithmes de validation sont 
+    la propriété exclusive de l'éditeur. Toute reproduction ou ingénierie inverse est strictement interdite.
+</MudText>

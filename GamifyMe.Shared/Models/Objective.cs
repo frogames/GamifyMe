@@ -46,6 +46,8 @@
         public string? StreakExcludedMonths { get; set; } // Comma separated integers (1-12)
 
         public ValidationMethod AllowedValidationMethods { get; set; } = ValidationMethod.StaffScan;
+        
+        public int? RequiredPeerValidations { get; set; } // For PeerCrowd
     }
 
     [Flags]
@@ -53,7 +55,9 @@
     {
         StaffScan = 1,
         QrCode = 2,
-        Self = 4
+        Self = 4,
+        PeerDuo = 8,
+        PeerCrowd = 16
     }
 
     public enum ObjectiveCategory

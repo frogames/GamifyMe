@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Dark">
+        <MudText Typo="Typo.h6" Class="ml-2">MeritoPass - Documents Légaux</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/">Retour au site</MudButton>
+    </MudAppBar>
+    <MudMainContent Class="pa-4">
+        <MudContainer MaxWidth="MaxWidth.Medium">
+            <MudPaper Class="pa-8 mt-4" Elevation="3">
+                @Body
+            </MudPaper>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

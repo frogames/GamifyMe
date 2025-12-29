@@ -59,5 +59,8 @@ namespace GamifyMe.Shared.Models
         public bool PrefShopEnabled { get; set; } = true;
         public bool PrefGroupsEnabled { get; set; } = true;
         public bool PrefChallengesEnabled { get; set; } = true;
+
+        public DateTime? TermsAcceptedAt { get; set; }
+        public string? TermsVersionAccepted { get; set; }
     }
 }

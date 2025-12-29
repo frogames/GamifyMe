@@ -509,8 +509,25 @@ namespace GamifyMe.Api.Controllers
                 UnlockedBadgeCount = unlockedBadgeCount,
                 BadgeCompletionPercentage = badgeProgress,
                 Badges = allBadges,
-                HasCompletedOnboarding = user.HasCompletedOnboarding
+                HasCompletedOnboarding = user.HasCompletedOnboarding,
+                TermsAcceptedAt = user.TermsAcceptedAt,
+                TermsVersionAccepted = user.TermsVersionAccepted
             });
+        }
+
+        [HttpPost("accept-terms")]
+        [Authorize]
+        public async Task<ActionResult> AcceptTerms([FromBody] AcceptTermsDto request)
+        {
+            var userId = GetCurrentUserId();
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            user.TermsVersionAccepted = request.Version;
+            user.TermsAcceptedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         [HttpGet("inventory")]

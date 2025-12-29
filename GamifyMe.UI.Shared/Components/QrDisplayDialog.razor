@@ -1,0 +1,25 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+            <MudText Typo="Typo.h6" Class="mb-4">Votre QR Code</MudText>
+            <MudImage Src="@QrUrl" Alt="QR Code" Width="300" Height="300" Elevation="4" Class="mb-4 rounded" />
+            <MudText Typo="Typo.body2" Align="Align.Center">Faites scanner ce code par @TargetAudience</MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string QrData { get; set; }
+    [Parameter] public string TargetAudience { get; set; } = "un autre utilisateur";
+
+    private string QrUrl => $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={Uri.EscapeDataString(QrData)}&color=000000&bgcolor=FFFFFF";
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

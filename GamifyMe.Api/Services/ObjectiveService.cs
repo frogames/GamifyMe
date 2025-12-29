@@ -28,6 +28,13 @@ namespace GamifyMe.Api.Services
                 .Select(v => new { v.ObjectiveId, ValidatedAt = v.Date })
                 .ToListAsync();
             
+            // 1b. Get Peer Signature Counts for this user (as Performer)
+            var peerSignatureCounts = await _context.PeerObjectiveSignatures
+                .Where(s => s.PerformerUserId == userId)
+                .GroupBy(s => s.ObjectiveId)
+                .Select(g => new { ObjectiveId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.ObjectiveId, x => x.Count);
+            
             // Group by ObjectiveId and take the latest validation
             var lastValidationDates = userValidations
                 .GroupBy(v => v.ObjectiveId)
@@ -218,9 +225,16 @@ namespace GamifyMe.Api.Services
                     .ToListAsync();
                 singleBadgeList.AddRange(depBadges);
 
-                var dto = MapToDto(currentOnboardingObjective, false, singleBadgeList);
-                dto.ActiveMultiplier = totalMultiplier;
-                dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
+                int sigCount = peerSignatureCounts.ContainsKey(currentOnboardingObjective.Id) ? peerSignatureCounts[currentOnboardingObjective.Id] : 0;
+                bool isCompleted = lastValidationDates.ContainsKey(currentOnboardingObjective.Id);
+
+                var dto = MapToDto(currentOnboardingObjective, isCompleted, singleBadgeList, sigCount); 
+                
+                dto.ChainPosition = GetChainPosition(currentOnboardingObjective, onboardingObjectives);
+                dto.ChainLength = onboardingObjectives.Count;
+                
+                ApplyBonuses(dto, totalMultiplier, bonusLabels);
+                
                 return new List<ObjectiveDto> { dto };
             }
 
@@ -236,16 +250,17 @@ namespace GamifyMe.Api.Services
 
             foreach (var obj in standardObjectives)
             {
-                // Check prerequisites (Locking logic)
-                bool isLocked = false;
+                // Prerequisite Check
                 if (obj.Prerequisites != null && obj.Prerequisites.Any())
                 {
-                    // Check if ALL prerequisites are validated (at least once)
-                    if (!obj.Prerequisites.All(p => lastValidationDates.ContainsKey(p.Id)))
-                        isLocked = true;
+                    bool allMet = obj.Prerequisites.All(p => lastValidationDates.ContainsKey(p.Id));
+                    if (!allMet) continue;
                 }
-                if (isLocked) continue;
 
+                bool isCompleted = lastValidationDates.ContainsKey(obj.Id);
+                int sigCount = peerSignatureCounts.ContainsKey(obj.Id) ? peerSignatureCounts[obj.Id] : 0;
+                
+                var dto = MapToDto(obj, isCompleted, null, sigCount);
                 // Check completion / cooldown
                 bool hasValidated = lastValidationDates.TryGetValue(obj.Id, out var lastValidatedAt);
                 bool isAlreadyCompleted = false;
@@ -439,28 +454,28 @@ namespace GamifyMe.Api.Services
                     }
                 }
 
-                var dto = MapToDto(obj, isAlreadyCompleted);
-                dto.NextAvailableDate = nextAvailableDate;
-                dto.ActiveMultiplier = totalMultiplier;
-                dto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
-                dto.ValidationCount = validationCount;
-                dto.CurrentStreak = currentStreak;
-                dto.StreakExpirationDate = streakExpiration;
+                var objDto = MapToDto(obj, isAlreadyCompleted);
+                objDto.NextAvailableDate = nextAvailableDate;
+                objDto.ActiveMultiplier = totalMultiplier;
+                objDto.BonusLabel = bonusLabels.Any() ? string.Join(", ", bonusLabels) : null;
+                objDto.ValidationCount = validationCount;
+                objDto.CurrentStreak = currentStreak;
+                objDto.StreakExpirationDate = streakExpiration;
 
                 if (obj.LifespanHours.HasValue)
                 {
                     var startTime = obj.DisplayStartDate ?? obj.CreatedAt;
-                    dto.ExpirationDate = startTime.AddHours(obj.LifespanHours.Value);
+                    objDto.ExpirationDate = startTime.AddHours(obj.LifespanHours.Value);
                 }
                 
                 if (chainLen > 1)
                 {
                     // Title modification removed
-                    dto.ChainPosition = chainPos;
-                    dto.ChainLength = chainLen;
+                    objDto.ChainPosition = chainPos;
+                    objDto.ChainLength = chainLen;
                 }
 
-                objectiveDtos.Add(dto);
+                objectiveDtos.Add(objDto);
             }
 
             // Preload Unlocked Badges for these objectives
@@ -599,7 +614,8 @@ namespace GamifyMe.Api.Services
 
                 StreakExcludedDays = request.StreakExcludedDays,
                 StreakExcludedMonths = request.StreakExcludedMonths,
-                AllowedValidationMethods = request.AllowedValidationMethods
+                AllowedValidationMethods = request.AllowedValidationMethods,
+                RequiredPeerValidations = request.RequiredPeerValidations
             };
 
             _context.Objectives.Add(objective);
@@ -649,7 +665,10 @@ namespace GamifyMe.Api.Services
             objective.StreakFrequency = request.StreakFrequency;
             objective.StreakExcludedDays = request.StreakExcludedDays;
             objective.StreakExcludedMonths = request.StreakExcludedMonths;
+            objective.StreakExcludedDays = request.StreakExcludedDays;
+            objective.StreakExcludedMonths = request.StreakExcludedMonths;
             objective.AllowedValidationMethods = request.AllowedValidationMethods;
+            objective.RequiredPeerValidations = request.RequiredPeerValidations;
 
             await _context.SaveChangesAsync();
             return true;
@@ -704,7 +723,7 @@ namespace GamifyMe.Api.Services
             return true;
         }
 
-        private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted, List<BadgeSimpleDto>? unlockedBadges = null)
+        private static ObjectiveDto MapToDto(Objective obj, bool isAlreadyCompleted, List<BadgeSimpleDto>? unlockedBadges = null, int currentPeerSignatures = 0)
         {
             return new ObjectiveDto
             {
@@ -736,7 +755,9 @@ namespace GamifyMe.Api.Services
                 StreakFrequency = obj.StreakFrequency,
                 StreakExcludedDays = obj.StreakExcludedDays,
                 StreakExcludedMonths = obj.StreakExcludedMonths,
-                AllowedValidationMethods = obj.AllowedValidationMethods
+                AllowedValidationMethods = obj.AllowedValidationMethods,
+                RequiredPeerValidations = obj.RequiredPeerValidations,
+                CurrentPeerSignatures = currentPeerSignatures
             };
         }
 
@@ -766,10 +787,136 @@ namespace GamifyMe.Api.Services
                         return new ValidationResponseDto { Success = false, Message = "QR Code invalide pour cet objectif." };
                     }
                 }
+                else if (methodUsed.Value == ValidationMethod.PeerDuo)
+                {
+                    // Payload format: PEER_DUO|ObjId|PartnerId
+                    if (string.IsNullOrEmpty(qrContent) || !qrContent.StartsWith("PEER_DUO|"))
+                        return new ValidationResponseDto { Success = false, Message = "QR Code invalide (Format Duo incorrect)." };
+
+                    var parts = qrContent.Split('|');
+                    if (parts.Length != 3 || parts[1] != objectiveId.ToString())
+                        return new ValidationResponseDto { Success = false, Message = "QR Code invalide pour cet objectif." };
+
+                    var partnerIdStr = parts[2];
+                    if (!Guid.TryParse(partnerIdStr, out var partnerId))
+                        return new ValidationResponseDto { Success = false, Message = "Partenaire invalide." };
+
+                    if (partnerId == userId)
+                        return new ValidationResponseDto { Success = false, Message = "Vous ne pouvez pas valider votre propre code." };
+
+                    // Verify accessibility for the partner (scanner)
+                    // Note: 'userId' here is the Scanner. 'partnerId' is the Code Owner.
+                    // The 'ValidatedById' parameter normally stores 'Staff' ID. Here it could store 'Partner' ID.
+                    // But in ValidateObjectiveAsync, 'userId' is the one GETTING the validation.
+                    // Wait, logic check:
+                    // Duo: A generates code (PartnerId=A). B scans (UserId=B).
+                    // Goal: Both A and B get validated.
+                    // So when B scans, we validate for B (primary) AND for A (secondary).
+                    
+                    // Check if A exists
+                    var partnerUser = await _context.Users.FindAsync(partnerId);
+                    if (partnerUser == null)
+                        return new ValidationResponseDto { Success = false, Message = "Partenaire introuvable." };
+
+                    // Secondary Validation: Validate for PARTNER (A)
+                    // We must ensure we don't cause infinite recursion loop if we called ValidateObjectiveAsync again carelessly.
+                    // But we can check if they are already validated.
+                    var partnerValidation = await _context.Validations.FirstOrDefaultAsync(v => v.UserId == partnerId && v.ObjectiveId == objectiveId);
+                    if (partnerValidation == null)
+                    {
+                         var valPartner = new Validation
+                         {
+                             Id = Guid.NewGuid(),
+                             EstablishmentId = user.EstablishmentId, // Assuming same establishment
+                             ObjectiveId = objectiveId,
+                             UserId = partnerId, // A gets validated
+                             ValidatedById = userId, // Validated BY Scanner (B)
+                             Date = DateTime.UtcNow
+                         };
+                         _context.Validations.Add(valPartner);
+                         // Note: We don't return success/rewards for Partner HERE on the Scanner's screen,
+                         // but Partner will see it in their logs.
+                    }
+                }
+                else if (methodUsed.Value == ValidationMethod.PeerCrowd)
+                {
+                    // Payload format: PEER_CROWD|ObjId|PerformerId
+                    // Scenario: 'userId' is the WITNESS (Scanner). 'PerformerId' is the one needing validation.
+                    // CRITICAL: Scanner does NOT get validation here. Only Performer gets a signature.
+                    
+                    if (string.IsNullOrEmpty(qrContent) || !qrContent.StartsWith("PEER_CROWD|"))
+                        return new ValidationResponseDto { Success = false, Message = "QR Code invalide (Format Crowd incorrect)." };
+
+                    var parts = qrContent.Split('|');
+                    if (parts.Length != 3 || parts[1] != objectiveId.ToString())
+                         return new ValidationResponseDto { Success = false, Message = "QR Code invalide pour cet objectif." };
+
+                    var performerIdStr = parts[2];
+                    if (!Guid.TryParse(performerIdStr, out var performerId))
+                        return new ValidationResponseDto { Success = false, Message = "Utilisateur invalide." };
+                    
+                    if (performerId == userId)
+                        return new ValidationResponseDto { Success = false, Message = "Vous ne pouvez pas signer votre propre objectif." };
+
+                    // Check if User (Witness) already signed for this Performer/Objective
+                    var existingSignature = await _context.PeerObjectiveSignatures
+                        .FirstOrDefaultAsync(s => s.ObjectiveId == objectiveId && s.PerformerUserId == performerId && s.WitnessUserId == userId);
+                    
+                    if (existingSignature != null)
+                        return new ValidationResponseDto { Success = false, Message = "Vous avez déjà signé pour cet objectif." };
+
+                    // Create Signature
+                    var signature = new PeerObjectiveSignature
+                    {
+                        Id = Guid.NewGuid(),
+                        EstablishmentId = user.EstablishmentId,
+                        ObjectiveId = objectiveId,
+                        PerformerUserId = performerId,
+                        WitnessUserId = userId,
+                        SignedAt = DateTime.UtcNow
+                    };
+                    _context.PeerObjectiveSignatures.Add(signature);
+                    
+                    // We need to save changes NOW to count correctly
+                    await _context.SaveChangesAsync();
+
+                    // Check Threshold
+                    int signatureCount = await _context.PeerObjectiveSignatures
+                        .CountAsync(s => s.ObjectiveId == objectiveId && s.PerformerUserId == performerId);
+                    
+                    int required = objective.RequiredPeerValidations ?? 1; // Default to 1 if null, though should be set
+
+                    if (signatureCount >= required)
+                    {
+                        // Validate for PERFORMER
+                        var existingVal = await _context.Validations.FirstOrDefaultAsync(v => v.UserId == performerId && v.ObjectiveId == objectiveId);
+                        if (existingVal == null)
+                        {
+                            var valPerformer = new Validation
+                            {
+                                Id = Guid.NewGuid(),
+                                EstablishmentId = user.EstablishmentId,
+                                ObjectiveId = objectiveId,
+                                UserId = performerId,
+                                ValidatedById = null, // System / Peers
+                                Date = DateTime.UtcNow
+                            };
+                            _context.Validations.Add(valPerformer);
+                            await _context.SaveChangesAsync(); // Commit validation
+                            return new ValidationResponseDto { Success = true, Message = $"Signature ajoutée ! L'objectif est maintenant validé pour le joueur (Total: {signatureCount}/{required})." };
+                        }
+                         return new ValidationResponseDto { Success = true, Message = $"Signature ajoutée ! (Objectif déjà validé pour le joueur)." };
+                    }
+                    else
+                    {
+                         return new ValidationResponseDto { Success = true, Message = $"Signature ajoutée ! (Progression : {signatureCount}/{required})" };
+                    }
+                }
             }
 
             // 3. Accessibility & Rules Check
-            if (!force)
+            if (!force && methodUsed != ValidationMethod.PeerCrowd) // Crowd witnesses don't need accessibility checks for THEMSELVES to sign? 
+            // Actually, maybe they should? Assuming a witness is just anyone. Let's keep it open for witnesses.
             {
                 // Accessibility
                 var activeObjectives = await GetActiveObjectivesAsync(userId, user.EstablishmentId);
@@ -790,6 +937,7 @@ namespace GamifyMe.Api.Services
                 {
                     return new ValidationResponseDto { Success = false, Message = "Objectif unique déjà validé." };
                 }
+
 
                 // Frequency
                 if (!objective.IsUnique && objective.FrequencyHours.HasValue)
@@ -911,6 +1059,38 @@ namespace GamifyMe.Api.Services
                 UserNewLevel = user.Level,
                 UserNewBalance = user.CurrencyBalance
             };
+        }
+
+
+        private static int GetChainPosition(Objective current, List<Objective> chain)
+        {
+            if (current == null || chain == null) return 0;
+            
+            // Assuming linear chain or simple depth calculation
+            // If the chain list is the full set of onboarding steps, we can try to find depth.
+            // Simplified approach: Find how many prerequisites it has within the chain.
+            int depth = 1;
+            var cursor = current;
+            var safeGuard = 0;
+            
+            while(cursor.Prerequisites != null && cursor.Prerequisites.Any(p => chain.Any(c => c.Id == p.Id)) && safeGuard < 50)
+            {
+                var parentId = cursor.Prerequisites.First(p => chain.Any(c => c.Id == p.Id)).Id;
+                cursor = chain.FirstOrDefault(c => c.Id == parentId);
+                if (cursor == null) break;
+                depth++;
+                safeGuard++;
+            }
+            return depth;
+        }
+
+        private static void ApplyBonuses(ObjectiveDto dto, double multiplier, List<string> labels)
+        {
+            dto.ActiveMultiplier = multiplier;
+            if (labels != null && labels.Any())
+            {
+                dto.BonusLabel = string.Join(", ", labels);
+            }
         }
     }
 }

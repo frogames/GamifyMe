@@ -138,7 +138,8 @@ namespace GamifyMe.Api.Controllers
              var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
              var establishmentId = Guid.Parse(User.FindFirstValue("EstablishmentId")!);
 
-             var result = await _objectiveService.ValidateObjectiveAsync(userId, id, validatedById: userId, methodUsed: ValidationMethod.QrCode, qrContent: request.Content, establishmentId: establishmentId);
+             var method = request.Method ?? ValidationMethod.QrCode;
+             var result = await _objectiveService.ValidateObjectiveAsync(userId, id, validatedById: userId, methodUsed: method, qrContent: request.Content, establishmentId: establishmentId);
              
              if (result.Success)
              {

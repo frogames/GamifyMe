@@ -1,0 +1,51 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div id="@EditorId" class="quill-editor" style="height: 300px; background-color: white; color: black;"></div>
+
+@code {
+    [Parameter] public string Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+
+    private string EditorId = "quill-editor-" + Guid.NewGuid().ToString();
+    private DotNetObjectReference<RichTextEditor>? _objRef;
+    private bool _initializing = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("quillInterop.init", EditorId, Value, Placeholder, _objRef);
+            _initializing = false;
+        }
+    }
+
+    // Called from JS when content changes
+    [JSInvokable]
+    public async Task OnContentChanged(string html)
+    {
+        if (Value != html)
+        {
+            Value = html;
+            await ValueChanged.InvokeAsync(html);
+        }
+    }
+
+    // If parent updates Value programmatically
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_initializing && _objRef != null)
+        {
+            // We need to be careful not to create a loop. 
+            // The JS "setContent" check logic handles checking if content differs before setting.
+            await JSRuntime.InvokeVoidAsync("quillInterop.setContent", EditorId, Value);
+        }
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+}

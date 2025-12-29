@@ -40,6 +40,9 @@ namespace GamifyMe.Shared.Dtos
         public int? ChainLength { get; set; }
         public DateTime? ExpirationDate { get; set; }
 
+        public ValidationMethod AllowedValidationMethods { get; set; }
+        public int? RequiredPeerValidations { get; set; }
+        public int CurrentPeerSignatures { get; set; }
 
 
         public double ActiveMultiplier { get; set; } = 1.0;
@@ -58,6 +61,6 @@ namespace GamifyMe.Shared.Dtos
         public string? StreakExcludedDays { get; set; }
         public string? StreakExcludedMonths { get; set; }
 
-        public ValidationMethod AllowedValidationMethods { get; set; }
+
     }
 }

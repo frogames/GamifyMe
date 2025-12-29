@@ -126,6 +126,29 @@
                                                 @obj.EventDate.Value.ToString("g")
                                             </MudText>
                                         }
+
+                                        <div class="d-flex align-center mt-1 gap-2">
+                                            @if (obj.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan))
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Title="Validation par Staff" Style="@($"font-size: 1rem; {iconStyle}")" />
+                                            }
+                                            @if (obj.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode))
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Title="Validation par QR Code" Style="@($"font-size: 1rem; {iconStyle}")" />
+                                            }
+                                            @if (obj.AllowedValidationMethods.HasFlag(ValidationMethod.Self))
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Title="Auto-validation" Style="@($"font-size: 1rem; {iconStyle}")" />
+                                            }
+                                            @if (obj.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo))
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Small" Title="Validation Duo" Style="@($"font-size: 1rem; {iconStyle}")" />
+                                            }
+                                            @if (obj.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd))
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Title="Validation Foule" Style="@($"font-size: 1rem; {iconStyle}")" />
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>

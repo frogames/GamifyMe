@@ -7,7 +7,9 @@
 @using MudBlazor
 @using GamifyMe.UI.Shared.Helpers
 @using GamifyMe.UI.Shared.Themes
+
 @using Microsoft.Extensions.Localization
+@using GamifyMe.Shared.Constants
 
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
@@ -15,6 +17,7 @@
 @inject IJSRuntime JS
 @inject GamifyMe.UI.Shared.Services.ThemeService ThemeService
 @inject GamifyMe.UI.Shared.Services.UserStateService UserStateService
+@inject IDialogService DialogService
 @inject IStringLocalizer<GamifyMe.UI.Shared.Resources.App> Loc
 @implements IDisposable
 
@@ -247,6 +250,12 @@
                     {
                         StartCountdown();
                     }
+
+                    // Check Legal Consent
+                    if (userStats.TermsVersionAccepted != LegalConstants.CurrentTermsVersion)
+                    {
+                        await ShowTermsConsentDialog();
+                    }
                 }
             }
             else
@@ -288,6 +297,26 @@
         {
             _timeLeft = diff;
             InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ShowTermsConsentDialog()
+    {
+        var options = new MudBlazor.DialogOptions { 
+            BackdropClick = false, 
+            CloseOnEscapeKey = false,
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var dialog = DialogService.Show<TermsConsentDialog>("", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool accepted && accepted)
+        {
+             // Accepted. Refresh stats to update local state logic if needed
+             await LoadUserStats();
         }
     }
 }

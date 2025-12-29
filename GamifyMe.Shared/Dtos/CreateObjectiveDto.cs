@@ -52,6 +52,7 @@ namespace GamifyMe.Shared.Dtos
         public string? StreakExcludedDays { get; set; }
         public string? StreakExcludedMonths { get; set; }
 
-        public ValidationMethod AllowedValidationMethods { get; set; } = ValidationMethod.StaffScan;
+        public ValidationMethod AllowedValidationMethods { get; set; }
+        public int? RequiredPeerValidations { get; set; }
     }
 }

@@ -44,27 +44,10 @@
             <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
                 <MudTabPanel Text="Édition" Icon="@Icons.Material.Filled.Edit">
                     <MudPaper Class="pa-4 mb-4" Elevation="0">
-                         <MudToolBar Dense="true" Class="gap-2 border-bottom mb-2">
-                            <MudIconButton Icon="@Icons.Material.Filled.FormatBold" OnClick='@(() => InsertTag("<b>", "</b>"))' Title="Gras" />
-                            <MudIconButton Icon="@Icons.Material.Filled.FormatItalic" OnClick='@(() => InsertTag("<i>", "</i>"))' Title="Italique" />
-                            <MudDivider Vertical="true" FlexItem="true" />
-                            <MudIconButton Icon="fas fa-heading" Size="Size.Small" OnClick='@(() => InsertTag("<h2>", "</h2>"))'>H2</MudIconButton>
-                            <MudIconButton Icon="fas fa-heading" Size="Size.Small" OnClick='@(() => InsertTag("<h3>", "</h3>"))'>H3</MudIconButton>
-                            <MudDivider Vertical="true" FlexItem="true" />
-                            <MudIconButton Icon="@Icons.Material.Filled.FormatListBulleted" OnClick='@(() => InsertTag("<ul>\n<li>", "</li>\n</ul>"))' Title="Liste à puces" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Link" OnClick='@(() => InsertTag("<a href=\"URL_ICI\">", "</a>"))' Title="Lien" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Image" OnClick='@(() => InsertTag("<img src=\"URL_IMAGE\" alt=\"Description\" />", ""))' Title="Image" />
-                        </MudToolBar>
-
-                        <MudTextField @bind-Value="model.Content" 
-                                      Label="Contenu HTML" 
-                                      Lines="20" 
-                                      Variant="Variant.Outlined" 
-                                      Required="true" 
-                                      Id="content-editor"
-                                      Adornment="Adornment.None" />
+                        <RichTextEditor @bind-Value="model.Content" Placeholder="Écrivez votre article ici..." />
                     </MudPaper>
                 </MudTabPanel>
+                
                 <MudTabPanel Text="Aperçu" Icon="@Icons.Material.Filled.Preview">
                      <MudPaper Class="pa-6" Elevation="0" Style="min-height: 500px; background-color: white;">
                         <div class="article-content">

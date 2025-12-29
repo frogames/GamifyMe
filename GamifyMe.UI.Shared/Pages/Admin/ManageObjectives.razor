@@ -55,11 +55,28 @@
                             <MudCheckBox T="bool" Value="@HasValidationMethod(ValidationMethod.Self)" ValueChanged="@((v) => ToggleValidationMethod(ValidationMethod.Self, v))" Label="Auto-validation" Color="Color.Warning" Dense="true" />
                         </div>
 
+                        <div class="d-flex align-center ml-4">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Medium" Class="mr-1" Color="Color.Info" />
+                            <MudCheckBox T="bool" Value="@HasValidationMethod(ValidationMethod.PeerDuo)" ValueChanged="@((v) => ToggleValidationMethod(ValidationMethod.PeerDuo, v))" Label="Duo (Entraide)" Color="Color.Info" Dense="true" />
+                        </div>
+
+                        <div class="d-flex align-center ml-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Medium" Class="mr-1" Color="Color.Success" />
+                            <MudCheckBox T="bool" Value="@HasValidationMethod(ValidationMethod.PeerCrowd)" ValueChanged="@((v) => ToggleValidationMethod(ValidationMethod.PeerCrowd, v))" Label="Foule (Crowd)" Color="Color.Success" Dense="true" />
+                        </div>
+
                         @if (editingObjectiveId != null && HasValidationMethod(ValidationMethod.QrCode))
                         {
                              <MudButton StartIcon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="DownloadQrCode" Class="ml-auto">Télécharger QR</MudButton>
                         }
                     </div>
+
+                    @if (HasValidationMethod(ValidationMethod.PeerCrowd))
+                    {
+                        <div class="mb-3">
+                             <MudTextField T="int?" Label="Nombre de signatures requises (Foule)" @bind-Value="newObjective.RequiredPeerValidations" HelperText="Combien de personnes doivent scanner le QR code ?" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" />
+                        </div>
+                    }
 
                     <MudTextField T="string" Label="Titre" @bind-Value="newObjective.Title" For="@(() => newObjective.Title)" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" Required="true" />
                     <MudTextField T="string" Label="Description" @bind-Value="newObjective.Description" For="@(() => newObjective.Description)" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" Class="mb-3" />
@@ -537,10 +554,10 @@
             StreakTerminalHours = objective.StreakTerminalHours,
             StreakFrequency = objective.StreakFrequency,
 
-            StreakExcludedDays = objective.StreakExcludedDays,
             StreakExcludedMonths = objective.StreakExcludedMonths,
             Color = objective.Color,
-            AllowedValidationMethods = objective.AllowedValidationMethods
+            AllowedValidationMethods = objective.AllowedValidationMethods,
+            RequiredPeerValidations = objective.RequiredPeerValidations
         };
         
         selectedPrerequisiteId = newObjective.PrerequisiteObjectiveIds?.FirstOrDefault();
@@ -713,6 +730,8 @@
         if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan)) methods.Add("Scan Staff");
         if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode)) methods.Add("QR Code");
         if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.Self)) methods.Add("Auto-validation");
+        if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo)) methods.Add("Validation Duo (Pair)");
+        if (newObjective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd)) methods.Add($"Validation Foule ({newObjective.RequiredPeerValidations ?? 1} signatures)");
         
         if (methods.Any())
             sb.Append(string.Join(" OU ", methods) + ".");

@@ -3,6 +3,9 @@
 @using GamifyMe.UI.Shared.Helpers
 @using MudBlazor
 @using GamifyMe.UI.Shared.Components
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudDialog Class="custom-dialog-content" Style="background-color: transparent; box-shadow: none; overflow: visible;">
     <DialogContent>
@@ -71,46 +74,46 @@
 
             <div class="d-flex flex-column gap-2">
                 <div class="d-flex align-center flex-wrap">
-                    @* Icons First *@
-                    <div class="d-flex align-center mr-2">
+                    @* Validation Methods Instructions *@
+                    <div class="d-flex flex-column gap-2 mb-2">
+                         <MudText Typo="Typo.subtitle2" Style="@($"color: {textColor}; font-weight: bold;")">Comment valider :</MudText>
+                         
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan))
-                        {
-                            <MudTooltip Text="Validation par un membre du staff (Scan)">
-                                <img src="img/validation_icon_staff_scan.png" style="height: 32px; width: auto; margin-right: 4px;" alt="Staff Scan" />
-                            </MudTooltip>
-                        }
-                        @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode))
-                        {
-                            <MudTooltip Text="Validation par scan de QR Code">
-                                <img src="img/validation_icon_user_scan.png" style="height: 32px; width: auto; margin-right: 4px;" alt="QR Code" />
-                            </MudTooltip>
-                        }
-                        @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.Self))
-                        {
-                            <MudTooltip Text="Auto-validation par l'utilisateur">
-                                <img src="img/validation_icon_user_auto.png" style="height: 32px; width: auto; margin-right: 4px;" alt="Auto Validation" />
-                            </MudTooltip>
-                        }
+                         {
+                             <div class="d-flex align-center">
+                                 <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Présentez votre profil à un membre du staff.</MudText>
+                             </div>
+                         }
+                         @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode))
+                         {
+                             <div class="d-flex align-center">
+                                 <MudIcon Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Scannez le QR Code de l'objectif sur place.</MudText>
+                             </div>
+                         }
+                         @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.Self))
+                         {
+                             <div class="d-flex align-center">
+                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Validez vous-même via le bouton ci-bas.</MudText>
+                             </div>
+                         }
+                         @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo))
+                         {
+                             <div class="d-flex align-center">
+                                 <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Faites scanner votre QR (Duo) par un partenaire.</MudText>
+                             </div>
+                         }
+                         @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd))
+                         {
+                             <div class="d-flex align-center">
+                                 <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Récoltez @(Objective.RequiredPeerValidations ?? 1) signatures d'autres joueurs.</MudText>
+                             </div>
+                         }
                     </div>
-
-                    @* Dynamic Text Second *@
-                    @{
-                        var validationParts = new List<string>();
-                        if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan)) 
-                            validationParts.Add("Présentez votre Pass à un membre du Staff pour faire valider cet objectif");
-                        
-                        if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode)) 
-                            validationParts.Add("scannez vous-même le QR code de l'objectif");
-
-                        if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.Self)) 
-                            validationParts.Add("validez vous-même l'objectif en utilisant le bouton ci-dessous");
-                    }
-                     <MudText Typo="Typo.body2" Style="@($"color: {textColor}; font-style: italic;")">
-                        @if (validationParts.Any())
-                        {
-                            @string.Join(", ou ", validationParts)
-                        }
-                    </MudText>
                 </div>
                 @if (Objective.EventDate.HasValue)
                 {
@@ -201,6 +204,33 @@
                         Scanner le Code
                      </MudButton>
                 }
+
+                @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo) && !Objective.IsAlreadyCompleted)
+                {
+                     <MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.QrCode2" FullWidth="true" Class="mt-2" OnClick="@(() => GeneratePeerQr(ValidationMethod.PeerDuo))" Disabled="isValidating">
+                        Générer QR (Duo)
+                     </MudButton>
+                }
+
+                @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd) && !Objective.IsAlreadyCompleted)
+                {
+                     var required = Objective.RequiredPeerValidations ?? 1;
+                     var current = Objective.CurrentPeerSignatures;
+                     var progress = Math.Min(100, (double)current / required * 100);
+
+                     <div class="mt-4 mb-2 pa-3" style="background: rgba(255,255,255,0.1); border-radius: 8px;">
+                        <div class="d-flex justify-space-between align-center mb-1">
+                             <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Signatures : <strong>@current / @required</strong></MudText>
+                             <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@((int)progress)%</MudText>
+                        </div>
+                        <MudProgressLinear Color="Color.Success" Value="@progress" Class="my-2" Rounded="true" Size="Size.Large" Stripe="true" />
+                        <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.7);">Faites scanner votre QR code par @(required - current) autres personnes.</MudText>
+                     </div>
+
+                     <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Groups" FullWidth="true" Class="mt-2" OnClick="@(() => GeneratePeerQr(ValidationMethod.PeerCrowd))" Disabled="isValidating">
+                        Générer QR (Foule)
+                     </MudButton>
+                }
             </div>
 
             <style>
@@ -282,6 +312,12 @@
              try
              {
                  var request = new QrValidationRequestDto { Content = code };
+                 
+                 // Auto-detect Method based on payload prefix
+                 if (code.StartsWith("PEER_DUO|")) request.Method = ValidationMethod.PeerDuo;
+                 else if (code.StartsWith("PEER_CROWD|")) request.Method = ValidationMethod.PeerCrowd;
+                 else request.Method = ValidationMethod.QrCode;
+
                  var response = await Http.PostAsJsonAsync($"api/objectives/{Objective.Id}/validate-qr", request);
                  
                  if (response.IsSuccessStatusCode)
@@ -311,6 +347,28 @@
                  isValidating = false;
              }
         }
+    }
+
+    private async Task GeneratePeerQr(ValidationMethod method)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        
+        if (string.IsNullOrEmpty(userId)) return;
+
+        string prefix = method == ValidationMethod.PeerDuo ? "PEER_DUO" : "PEER_CROWD";
+        string payload = $"{prefix}|{Objective.Id}|{userId}";
+        string audience = method == ValidationMethod.PeerDuo ? "votre partenaire" : "un témoin";
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        var parameters = new DialogParameters<QrDisplayDialog>
+        {
+            { x => x.QrData, payload },
+            { x => x.TargetAudience, audience }
+        };
+        
+        DialogService.Show<QrDisplayDialog>("Validation par les Pairs", parameters, options);
     }
 
     private async Task HandleSuccess(ValidationResponseDto? result)

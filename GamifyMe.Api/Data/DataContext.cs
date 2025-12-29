@@ -38,6 +38,7 @@ namespace GamifyMe.Api.Data
         public DbSet<KitRating> KitRatings { get; set; }
         public DbSet<ObjectiveObjective> ObjectiveObjective { get; set; }
         public DbSet<BlogPost> BlogPosts { get; set; }
+        public DbSet<PeerObjectiveSignature> PeerObjectiveSignatures { get; set; }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

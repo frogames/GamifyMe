@@ -1,0 +1,58 @@
+@using MudBlazor
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Constants
+@inject HttpClient Http
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Class="pa-4">
+            <MudText Typo="Typo.h5" GutterBottom="true" Align="Align.Center">Mise à jour des Conditions</MudText>
+            
+            <MudText Typo="Typo.body1" Class="mt-2 mb-4">
+                Nous avons mis à jour nos documents légaux pour préparer le lancement public de MeritoPass. 
+                Pour continuer à utiliser le service, vous devez accepter les nouvelles conditions.
+            </MudText>
+
+            <MudList T="string" Dense="true" Class="mb-4">
+                <MudListItem Icon="@Icons.Material.Filled.Description" Href="/legal/cgu" Target="_blank">Conditions Générales d'Utilisation (CGU)</MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.PrivacyTip" Href="/legal/confidentialite" Target="_blank">Politique de Confidentialité</MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.Info" Href="/legal/mentions" Target="_blank">Mentions Légales</MudListItem>
+            </MudList>
+
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                L'hébergement des données est assuré par OVH Cloud (France) et l'application par Hostinger.
+            </MudAlert>
+            
+            <MudCheckBox @bind-Value="accepted" Label="Je déclare avoir lu et accepté les CGU et la Politique de Confidentialité." Color="Color.Primary" />
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!accepted)" FullWidth="true" Class="ma-4">
+            Accepter et Continuer
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private bool accepted = false;
+
+    private async Task Submit()
+    {
+        if (!accepted) return;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/users/accept-terms", new AcceptTermsDto { Version = LegalConstants.CurrentTermsVersion });
+            if (response.IsSuccessStatusCode)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
