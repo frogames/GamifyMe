@@ -8,34 +8,62 @@
 
 <MudText Typo="Typo.body2" Class="mb-4">Dernière mise à jour : @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
 
-<MudText Typo="Typo.h6" Class="mt-4">1. Objet</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    Les présentes CGU régissent l'utilisation de la plateforme de gamification <strong>MeritoPass</strong>. 
-    L'accès à la plateforme implique l'acceptation sans réserve de ces conditions.
+<MudText Typo="Typo.h5" Class="mb-4">1. Objet</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Les présentes CGU régissent l'utilisation de la plateforme de gamification <strong>MeritoPass</strong>. L'accès à la plateforme et la création d'un compte impliquent l'acceptation sans réserve de ces conditions par l'utilisateur.
 </MudText>
 
-<MudText Typo="Typo.h6" Class="mt-6">2. Méthodes de Validation des Objectifs</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    MeritoPass met en œuvre plusieurs mécanismes technologiques pour valider la progression des utilisateurs. 
-    L'utilisateur s'engage à utiliser ces méthodes de manière loyale :
+<MudText Typo="Typo.h5" Class="mb-4">2. Méthodes de Validation des Objectifs</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    MeritoPass met en œuvre plusieurs mécanismes technologiques pour valider la progression. L'utilisateur s'engage à utiliser ces méthodes de manière loyale :
 </MudText>
-<MudList T="string">
-    <MudListItem Icon="@Icons.Material.Filled.Badge"><strong>Staff Scan :</strong> Validation par un membre du personnel via scan du Pass utilisateur.</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.QrCode"><strong>QR Code (User Scan) :</strong> Scan de QR codes disposés physiquement dans l'établissement.</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.CheckCircle"><strong>Auto-validation :</strong> Validation déclarative par l'utilisateur (confiance).</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.Group"><strong>Peer Duo :</strong> Validation mutuelle entre deux utilisateurs (binôme).</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.Groups"><strong>Peer Crowd :</strong> Validation participative nécessitant la signature de plusieurs pairs.</MudListItem>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.Badge"><b>Staff Scan</b> : Validation physique par un membre du personnel.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.QrCode"><b>QR Code (User Scan)</b> : Scan de codes physiques par l'utilisateur.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.VerifiedUser"><b>Auto-validation</b> : Validation déclarative basée sur la confiance.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Group"><b>Peer Duo & Peer Crowd</b> : Validations basées sur la coopération entre pairs.</MudListItem>
 </MudList>
-
-<MudText Typo="Typo.h6" Class="mt-6">3. Économie Virtuelle</MudText>
-<MudAlert Severity="Severity.Info" Class="mt-2">
-    <strong>Valeur Nulle :</strong> L'Expérience (XP), les niveaux et la monnaie virtuelle ("Crédits", "DOC", etc.) acquis sur MeritoPass 
-    n'ont <strong>aucune valeur marchande</strong>. Ils ne peuvent être ni vendus, ni échangés contre de la monnaie légale.
-    Ils sont destinés exclusivement à l'usage interne au sein de l'établissement partenaire.
+<MudAlert Severity="Severity.Warning" Class="mb-4">
+    <b>Clause d'Anti-Fraude</b> : Toute tentative de falsification de scan (utilisation de copies de QR codes, contournement GPS ou scripts) est strictement interdite. L'éditeur se réserve le droit d'invalider toute progression suspecte sans préavis.
 </MudAlert>
 
-<MudText Typo="Typo.h6" Class="mt-6">4. Propriété Intellectuelle</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    La marque <strong>MeritoPass</strong>, le concept de gamification, les designs d'interface et les algorithmes de validation sont 
-    la propriété exclusive de l'éditeur. Toute reproduction ou ingénierie inverse est strictement interdite.
+<MudText Typo="Typo.h5" Class="mb-4">3. Économie Virtuelle</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    <b>Valeur Nulle</b> : L'Expérience (XP), les niveaux et la monnaie virtuelle ("Crédits", "DOC", etc.) n'ont aucune valeur marchande. Ils ne sont ni vendables, ni échangeables contre de la monnaie légale.
+</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    <b>Réinitialisation (Cycles)</b> : L'administrateur de l'établissement se réserve le droit de réinitialiser tout ou partie de la progression à la fin d'un cycle défini (trimestre, année scolaire). Aucun dédommagement ne pourra être réclamé suite à cette remise à zéro.
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mb-4">4. Propriété Intellectuelle</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    La marque MeritoPass, le concept, les designs et les algorithmes sont la propriété exclusive de Christophe CANON. Toute ingénierie inverse ou reproduction est interdite.
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mb-4">5. Accès et Sécurité du Compte</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    <b>Identifiants</b> : L'utilisateur est responsable de la confidentialité de ses identifiants. Toute action effectuée depuis son compte est réputée avoir été effectuée par lui-même.
+</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    <b>Âge</b> : Si l'utilisateur est mineur, il déclare avoir reçu l'autorisation de ses représentants légaux pour utiliser la plateforme.
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mb-4">6. Suspension et Résiliation</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    En cas de non-respect des présentes CGU ou de comportement inapproprié sur la plateforme, l'éditeur ou l'administrateur de l'établissement peut suspendre ou clôturer le compte de l'utilisateur de plein droit, entraînant la perte définitive de toute progression et monnaie virtuelle accumulée.
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mb-4">7. Limitation de Responsabilité</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    L'éditeur ne peut être tenu responsable :
+</MudText>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.BugReport">Des bugs techniques empêchant la validation d'un objectif.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.WifiOff">De la non-disponibilité temporaire du service.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Gavel">D'un litige entre l'utilisateur et l'établissement concernant l'attribution des récompenses physiques.</MudListItem>
+</MudList>
+
+<MudText Typo="Typo.h5" Class="mb-4">8. Droit Applicable</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Les présentes CGU sont soumises au droit français. En cas de litige, les tribunaux du ressort de la ville d'Alès seront compétents.
 </MudText>

@@ -6,33 +6,109 @@
 
 <MudText Typo="Typo.h4" Class="mb-6">Politique de Confidentialité</MudText>
 
-<MudText Typo="Typo.h6" Class="mt-4">1. Protection des Données (RGPD)</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    MeritoPass accorde une importance capitale à la protection de vos données personnelles. 
-    Nous nous engageons à respecter le Règlement Général sur la Protection des Données (RGPD).
+<MudText Typo="Typo.h5" Class="mb-4">1. Préambule</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    La présente Politique de Confidentialité a pour but d'informer les utilisateurs de <strong>MeritoPass</strong> sur la manière dont leurs données personnelles sont collectées et traitées. Elle complète les Mentions Légales et les Conditions Générales d'Utilisation.
 </MudText>
 
-<MudText Typo="Typo.h6" Class="mt-6">2. Localisation des Données</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    Vos données personnelles ne sont pas transférées hors de l'Union Européenne.
-    Elles sont stockées de manière sécurisée sur les serveurs de notre prestataire <strong>OVH Cloud</strong>, situés en <strong>France/Europe</strong>.
+<MudText Typo="Typo.h5" Class="mb-4">2. Base Légale du Traitement</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    Le traitement de vos données personnelles par MeritoPass repose sur :
 </MudText>
-
-<MudText Typo="Typo.h6" Class="mt-6">3. Données Collectées</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    Le service collecte uniquement les données nécessaires à son fonctionnement :
-</MudText>
-<MudList T="string">
-    <MudListItem Icon="@Icons.Material.Filled.Person"><strong>Identité :</strong> Nom, Prénom, Email, Rôle.</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.History"><strong>Progression :</strong> Historique des validations, XP, Niveaux, Badges.</MudListItem>
-    <MudListItem Icon="@Icons.Material.Filled.Security"><strong>Technique :</strong> Logs de connexion et consentements (CGU).</MudListItem>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.Gavel"><b>L’exécution d’un contrat :</b> La fourniture du service de gamification et de suivi de progression.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Shield"><b>L’intérêt légitime :</b> Assurer la sécurité de la plateforme et prévenir la fraude aux validations (scans).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Check"><b>Le consentement :</b> Notamment lors de l'acceptation des CGU lors de la première connexion.</MudListItem>
 </MudList>
 
-<MudText Typo="Typo.h6" Class="mt-6">4. Vos Droits</MudText>
-<MudText Typo="Typo.body1" Class="mt-2">
-    Conformément à la réglementation, vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos données.
-    <br /><br />
-    Pour exercer ces droits, veuillez contacter le Directeur de la Publication :<br />
-    <strong>Christophe CANON</strong><br />
-    Adresse : 5 rue des pâquerettes, 30100 Alès, France.
+<MudText Typo="Typo.h5" Class="mb-4">3. Localisation et Sécurité des Données</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    Vos données sont stockées exclusivement au sein de l'Union Européenne :
+</MudText>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.Storage"><b>Base de données :</b> OVH Cloud (Serveurs situés en France).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.Lock"><b>Sécurité :</b> Nous utilisons des protocoles de chiffrement (HTTPS/SSL) pour tous les transferts de données et les mots de passe sont hachés via des algorithmes sécurisés.</MudListItem>
+</MudList>
+
+<MudText Typo="Typo.h5" Class="mb-4">4. Détail des Données Collectées et Finalités</MudText>
+<MudTable Items="@(new List<string>())" Hover="true" Breakpoint="Breakpoint.None" Class="mb-4">
+    <HeaderContent>
+        <MudTh>Données</MudTh>
+        <MudTh>Finalité</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <!-- Rows handled statically below for simplicity without a backing model list for just this static content -->
+    </RowTemplate>
+</MudTable>
+<!-- Using simple MudSimpleTable or HTML table might be easier for static content, but sticking to MudTable structure or custom layout -->
+<div class="mud-table mud-simple-table mud-table-hover mud-table-bordered mud-table-striped mb-4">
+    <div class="mud-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th><b>Données</b></th>
+                    <th><b>Finalité</b></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>Identité (Nom, Email)</b></td>
+                    <td>Création de compte, authentification et communication.</td>
+                </tr>
+                <tr>
+                    <td><b>Données de Progression</b></td>
+                    <td>Calcul des XP, niveaux, badges et gestion du store virtuel.</td>
+                </tr>
+                <tr>
+                    <td><b>Logs de Validation</b></td>
+                    <td>Traçabilité des scans et lutte contre la triche.</td>
+                </tr>
+                <tr>
+                    <td><b>Données Techniques</b></td>
+                    <td>Horodatage des connexions et adresse IP (sécurité uniquement).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<MudText Typo="Typo.h5" Class="mb-4">5. Durée de Conservation des Données</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    Conformément au principe de limitation de la conservation :
+</MudText>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.Person"><b>Comptes actifs :</b> Les données sont conservées pendant toute la durée de l'utilisation du service par l'établissement.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.HourglassEmpty"><b>Inactivité :</b> En cas d'inactivité prolongée, les comptes et données associées sont supprimés après <b>12 mois</b> (ou à la demande de l'administrateur de l'établissement à la fin d'un cycle scolaire/professionnel).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.History"><b>Logs techniques :</b> Conservés pendant une durée maximale de <b>6 mois</b>.</MudListItem>
+</MudList>
+
+<MudText Typo="Typo.h5" Class="mb-4">6. Destinataires des Données</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    Les données collectées sont strictement destinées à :
+</MudText>
+<MudList T="string" Dense="true" Class="mb-4" Ordered="true">
+    <MudListItem>1. <b>L'Éditeur du service :</b> Christophe CANON.</MudListItem>
+    <MudListItem>2. <b>L'Administrateur de l'établissement :</b> Qui a accès aux statistiques de progression de ses propres utilisateurs.</MudListItem>
+</MudList>
+<MudAlert Severity="Severity.Success" Class="mb-4">
+    <b>Aucune donnée n'est vendue, louée ou cédée à des tiers à des fins commerciales.</b>
+</MudAlert>
+
+<MudText Typo="Typo.h5" Class="mb-4">7. Vos Droits</MudText>
+<MudText Typo="Typo.body1" Class="mb-2">
+    Vous disposez des droits suivants :
+</MudText>
+<MudList T="string" Dense="true" Class="mb-4">
+    <MudListItem Icon="@Icons.Material.Filled.ChevronRight">Droit d’accès et de rectification.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.ChevronRight">Droit à l’effacement (« droit à l’oubli »).</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.ChevronRight">Droit à la limitation du traitement.</MudListItem>
+    <MudListItem Icon="@Icons.Material.Filled.ChevronRight">Droit à la portabilité de vos données.</MudListItem>
+</MudList>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Pour exercer ces droits, vous pouvez contacter Christophe CANON à l'adresse suivante : <b>[votre-email@domaine.com]</b> ou par courrier au <b>5 rue des pâquerettes, 30100 Alès</b>.
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mb-4">8. Cookies</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    MeritoPass utilise uniquement des <b>cookies techniques et strictement nécessaires</b> à votre connexion et à la sécurisation de votre session. Aucun cookie de traçage publicitaire n'est utilisé.
 </MudText>
