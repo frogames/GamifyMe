@@ -31,6 +31,8 @@ namespace GamifyMe.Api.Services
             var newObjectiveEntities = new Dictionary<Guid, Objective>(); // Start tracking entities for relationship linking
             var storeItemMap = new Dictionary<Guid, Guid>();
             var groupMap = new Dictionary<Guid, Guid>(); 
+            var badgeMap = new Dictionary<Guid, Guid>();
+            var badgePairs = new List<(Badge New, Badge Source)>(); 
 
             // 2. Clone Objectives
             foreach (var srcObj in sourceObjectives)
@@ -163,6 +165,15 @@ namespace GamifyMe.Api.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
+                badgeMap[srcBadge.Id] = newBadge.Id;
+                badgePairs.Add((newBadge, srcBadge));
+
+                // Remap Objective Prerequisite (Can be done immediately as Objectives are already cloned)
+                if (srcBadge.PrerequisiteObjectiveId.HasValue && objectiveMap.ContainsKey(srcBadge.PrerequisiteObjectiveId.Value))
+                {
+                    newBadge.PrerequisiteObjectiveId = objectiveMap[srcBadge.PrerequisiteObjectiveId.Value];
+                }
+
                 // Remap Reward Item
                 if (srcBadge.RewardStoreItemId.HasValue && storeItemMap.ContainsKey(srcBadge.RewardStoreItemId.Value))
                 {
@@ -173,6 +184,17 @@ namespace GamifyMe.Api.Services
                 newBadge.CriteriaValue = RemapCriteriaValue(srcBadge.CriteriaType, srcBadge.CriteriaValue, objectiveMap, storeItemMap);
 
                 _context.Badges.Add(newBadge);
+            }
+
+
+
+            // 5.1 Link Prerequisite Badges (Second pass needed because of potential forward references)
+            foreach (var (newBadge, srcBadge) in badgePairs)
+            {
+                if (srcBadge.PrerequisiteBadgeId.HasValue && badgeMap.ContainsKey(srcBadge.PrerequisiteBadgeId.Value))
+                {
+                    newBadge.PrerequisiteBadgeId = badgeMap[srcBadge.PrerequisiteBadgeId.Value];
+                }
             }
 
             await _context.SaveChangesAsync();

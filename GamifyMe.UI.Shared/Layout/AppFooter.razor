@@ -1,8 +1,23 @@
 @using MudBlazor
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.Shared.Dtos
+@using GamifyMe.Shared.Models
+@using System.Net.Http.Json
+
+@inject IDialogService DialogService
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 @if (!IsAppMode)
 {
-    <MudPaper Elevation="0" Class="py-4 mt-8" Style="background-color: var(--mud-palette-surface); border-top: 1px solid var(--mud-palette-divider);">
+    <MudPaper Elevation="0" Class="py-4 mt-8 pt-8" Style="background-color: var(--mud-palette-surface); border-top: 1px solid var(--mud-palette-divider); position: relative;">
+        
+        @* Global Scanner FAB *@
+        <div style="position: absolute; top: -28px; left: 50%; transform: translateX(-50%); z-index: 10;">
+            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" OnClick="OpenScanner" Style="border: 4px solid var(--mud-palette-background);" />
+        </div>
+
         <MudContainer MaxWidth="MaxWidth.Large">
             <div class="d-flex flex-wrap justify-space-between align-center gap-4">
                 
@@ -27,4 +42,102 @@
 
 @code {
     [Parameter] public bool IsAppMode { get; set; }
+
+    private async Task OpenScanner()
+    {
+        var options = new DialogOptions { FullScreen = true, CloseButton = true };
+        var dialog = DialogService.Show<UserScanDialog>("Scanner un code", options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled && result.Data is string code)
+        {
+             await ProcessScanResult(code);
+        }
+    }
+
+    private async Task ProcessScanResult(string code)
+    {
+        try
+        {
+            // Detect payload type
+            // Format expected: PREFIX|ObjectiveId|UserId (for Peer) or just ObjectiveId (for standard QR? Actually standard likely just ID or URL)
+            
+            Guid objectiveId = Guid.Empty;
+            ValidationMethod method = ValidationMethod.QrCode;
+            
+            if (code.StartsWith("PEER_DUO|"))
+            {
+                var parts = code.Split('|');
+                if (parts.Length >= 2 && Guid.TryParse(parts[1], out var id))
+                {
+                    objectiveId = id;
+                    method = ValidationMethod.PeerDuo;
+                }
+            }
+            else if (code.StartsWith("PEER_CROWD|"))
+            {
+                var parts = code.Split('|');
+                if (parts.Length >= 2 && Guid.TryParse(parts[1], out var id))
+                {
+                    objectiveId = id;
+                    method = ValidationMethod.PeerCrowd;
+                }
+            }
+            else
+            {
+                // Try parse plain GUID
+                if (Guid.TryParse(code, out var id))
+                {
+                    objectiveId = id;
+                    method = ValidationMethod.QrCode;
+                }
+            }
+
+            if (objectiveId != Guid.Empty)
+            {
+                var request = new QrValidationRequestDto { Content = code, Method = method };
+                var response = await Http.PostAsJsonAsync($"api/objectives/{objectiveId}/validate-qr", request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resDto = await response.Content.ReadFromJsonAsync<ValidationResponseDto>();
+                    await HandleSuccess(resDto);
+                }
+                else
+                {
+                    var error = await response.Content.ReadFromJsonAsync<ValidationResponseDto>();
+                    Snackbar.Add(error?.Message ?? "QR Code invalide ou erreur.", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Format de QR Code non reconnu.", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de traitement: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task HandleSuccess(ValidationResponseDto? result)
+    {
+        if (result == null) return;
+        
+        // Play sound
+        if (!string.IsNullOrEmpty(result.ScanSoundUrl))
+        {
+             try { await JSRuntime.InvokeVoidAsync("eval", $"new Audio('{result.ScanSoundUrl}').play()"); } catch {}
+        }
+
+        // Show Rewarding Dialog
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = false, NoHeader = true };
+        var parameters = new DialogParameters<ValidationSuccessDialog>
+        {
+            { x => x.Response, result },
+            { x => x.CurrencyName, "Crédits" } // Default currency name, could be fetched but ok for now
+        };
+        
+        await DialogService.Show<ValidationSuccessDialog>("Félicitations", parameters, options).Result;
+    }
 }

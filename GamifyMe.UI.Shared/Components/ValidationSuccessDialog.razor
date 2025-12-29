@@ -2,63 +2,161 @@
 @using GamifyMe.Shared.Models
 @using MudBlazor
 
-<MudDialog Class="custom-dialog-content" Style="@($"background-color: {BackgroundColor}; color: {TextColor}; border-radius: 16px;")">
+<MudDialog Class="reward-dialog" Style="background: transparent; box-shadow: none;">
     <DialogContent>
-        <div class="d-flex flex-column align-center pa-2">
-            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Warning" Style="font-size: 4rem; margin-bottom: 16px;" />
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Félicitations !</MudText>
+        <style>
+            .reward-card {
+                background: linear-gradient(135deg, #2c3e50 0%, #000000 100%); /* Elegant Dark Gradient */
+                background-image: radial-gradient(circle at 50% 0%, #4a148c 0%, #1a237e 60%, #000000 100%); /* Deep rich purple-blue glow */
+                color: white;
+                border-radius: 24px;
+                overflow: hidden;
+                position: relative;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+            }
             
-            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">@Response.Message</MudText>
+            .reward-icon-container {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 24px;
+                margin-bottom: 24px;
+            }
+            
+            .pulse-halo {
+                position: absolute;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0) 70%);
+                animation: pulse-animation 2s infinite ease-out;
+                width: 140px;
+                height: 140px;
+                z-index: 0;
+            }
+            
+            @@keyframes pulse-animation {
+                0% { transform: scale(0.8); opacity: 0.8; }
+                100% { transform: scale(1.6); opacity: 0; }
+            }
 
+            .glass-stat-box {
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(8px);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                padding: 12px 24px;
+                min-width: 100px;
+            }
+
+            .glass-list-item {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: transform 0.2s;
+            }
+            
+            .glass-list-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .reward-btn {
+                background: linear-gradient(90deg, #FFD700 0%, #FFA000 100%);
+                color: #000;
+                font-weight: 800;
+                letter-spacing: 1px;
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            }
+            
+            .confetti-decoration {
+                 /* Placeholder for potential confetti logic or simpler decorations */
+            }
+        </style>
+
+        <div class="reward-card d-flex flex-column align-center pa-4 px-6" style="min-width: 320px; max-width: 450px;">
+            
+            <!-- Animated Icon -->
+            <div class="reward-icon-container">
+                <div class="pulse-halo"></div>
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Style="font-size: 6rem; color: #FFD700; z-index: 1; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));" />
+            </div>
+
+            <!-- Title -->
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-2" Style="font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #fff;">
+                Félicitations !
+            </MudText>
+            
+            <!-- Message -->
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-6" Style="font-weight: 500; opacity: 0.9; color: #e0e0e0;">
+                @Response.Message
+            </MudText>
+
+            <!-- Rewards (XP & Currency) -->
             @if (Response.RewardXp > 0 || Response.RewardCurrency > 0)
             {
-                <div class="d-flex justify-center flex-wrap gap-2 mb-4">
+                <div class="d-flex justify-center flex-wrap gap-4 mb-6 w-100">
                      @if (Response.RewardXp > 0)
                      {
-                        <MudChip T="string" Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Variant="Variant.Filled">
-                            +@Response.RewardXp XP
-                        </MudChip>
+                        <div class="glass-stat-box d-flex flex-column align-center">
+                             <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Medium" Class="mb-1" />
+                             <MudText Typo="Typo.h5" Style="font-weight: 900; color: #FFD700; line-height: 1;">+@Response.RewardXp</MudText>
+                             <MudText Typo="Typo.caption" Style="text-transform: uppercase; opacity: 0.7;">XP</MudText>
+                        </div>
                      }
                      @if (Response.RewardCurrency > 0)
                      {
-                        <MudChip T="string" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Variant="Variant.Filled">
-                            +@Response.RewardCurrency @CurrencyName
-                        </MudChip>
+                        <div class="glass-stat-box d-flex flex-column align-center">
+                             <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Info" Size="Size.Medium" Class="mb-1" />
+                             <MudText Typo="Typo.h5" Style="font-weight: 900; color: #4fc3f7; line-height: 1;">+@Response.RewardCurrency</MudText>
+                             <MudText Typo="Typo.caption" Style="text-transform: uppercase; opacity: 0.7;">@CurrencyName</MudText>
+                        </div>
                      }
                 </div>
             }
 
-            @if (Response.NewAvailableBadges != null && Response.NewAvailableBadges.Any())
+            <!-- Unlocks (Badges & Objectives) -->
+            @if ((Response.NewAvailableBadges != null && Response.NewAvailableBadges.Any()) || (Response.NewAvailableObjectives != null && Response.NewAvailableObjectives.Any()))
             {
-                <MudDivider Class="mb-2 w-100" />
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Nouveaux Badges Débloqués !</MudText>
-                <div class="d-flex flex-column gap-2 w-100 mb-2">
-                    @foreach (var badge in Response.NewAvailableBadges)
+                <div class="w-100 mt-2 mb-4">
+                    @if (Response.NewAvailableBadges != null && Response.NewAvailableBadges.Any())
                     {
-                        <div class="d-flex align-center pa-2" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
-                            <MudIcon Icon="@(!string.IsNullOrEmpty(badge.IconName) ? badge.IconName : Icons.Material.Filled.MilitaryTech)" Class="mr-2" Size="Size.Medium" Color="Color.Warning" />
-                            <MudText Typo="Typo.body2" Style="font-weight: bold;">@badge.Name</MudText>
-                        </div>
+                        <MudText Typo="Typo.overline" Align="Align.Center" Class="mb-2 d-block" Style="color: rgba(255,255,255,0.6);">Badges Débloqués</MudText>
+                        @foreach (var badge in Response.NewAvailableBadges)
+                        {
+                            <div class="glass-list-item d-flex align-center">
+                                <MudIcon Icon="@(!string.IsNullOrEmpty(badge.IconName) ? badge.IconName : Icons.Material.Filled.MilitaryTech)" Class="mr-3" Size="Size.Medium" Color="Color.Warning" />
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold; line-height: 1.2; color: #fff;">@badge.Name</MudText>
+                                    <MudText Typo="Typo.caption" Style="opacity: 0.7; color: #e0e0e0;">Nouveau badge acquis !</MudText>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    @if (Response.NewAvailableObjectives != null && Response.NewAvailableObjectives.Any())
+                    {
+                         <MudText Typo="Typo.overline" Align="Align.Center" Class="mt-3 mb-2 d-block" Style="color: rgba(255,255,255,0.6);">Nouvelles opportunités</MudText>
+                         @foreach (var obj in Response.NewAvailableObjectives)
+                        {
+                            <div class="glass-list-item d-flex align-center">
+                                <MudIcon Icon="@(!string.IsNullOrEmpty(obj.IconName) ? obj.IconName : Icons.Material.Filled.Star)" Class="mr-3" Size="Size.Medium" Color="Color.Info" />
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold; line-height: 1.2; color: #fff;">@obj.Title</MudText>
+                                    <MudText Typo="Typo.caption" Style="opacity: 0.7; color: #e0e0e0;">Débloqué !</MudText>
+                                </div>
+                            </div>
+                        }
                     }
                 </div>
             }
 
-             @if (Response.NewAvailableObjectives != null && Response.NewAvailableObjectives.Any())
-            {
-                <MudDivider Class="mb-2 w-100" />
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">Nouveaux Objectifs Disponibles !</MudText>
-                 <div class="d-flex flex-column gap-2 w-100 mb-2">
-                    @foreach (var obj in Response.NewAvailableObjectives)
-                    {
-                        <div class="d-flex align-center pa-2" style="background-color: rgba(255,255,255,0.1); border-radius: 8px;">
-                            <MudIcon Icon="@(!string.IsNullOrEmpty(obj.IconName) ? obj.IconName : Icons.Material.Filled.Star)" Class="mr-2" Size="Size.Medium" Color="Color.Info" />
-                            <MudText Typo="Typo.body2" Style="font-weight: bold;">@obj.Title</MudText>
-                        </div>
-                    }
-                </div>
-            }
-
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" FullWidth="true" OnClick="Close" Class="mt-4">Génial !</MudButton>
+            <!-- Action Button -->
+            <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" OnClick="Close" Class="mt-auto py-3 rounded-lg reward-btn">
+                Génial !
+            </MudButton>
         </div>
     </DialogContent>
 </MudDialog>
@@ -67,9 +165,6 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public ValidationResponseDto Response { get; set; }
     [Parameter] public string CurrencyName { get; set; } = "Crédits";
-
-    private string BackgroundColor => "#1e1e2d"; // Dark themed modal by default, or could be passed
-    private string TextColor => "#ffffff";
 
     private void Close() => MudDialog.Close(DialogResult.Ok(true));
 }

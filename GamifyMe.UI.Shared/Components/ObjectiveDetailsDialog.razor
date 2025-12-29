@@ -20,9 +20,10 @@
             var style = !string.IsNullOrEmpty(Objective.Color) ? $"background-color: {bgColor}; color: {textColor};" : "";
             var iconColor = textColor == "white" ? Color.Surface : Color.Default;
             var iconStyle = textColor == "white" ? "color: white;" : "";
+            var containerStyle = $"border-radius: 8px; {style} min-width: 300px; cursor: pointer;";
         }
 
-        <div class="pa-4" style="@($"border-radius: 8px; {style} min-width: 300px; cursor: pointer;")" @onclick="Cancel">
+        <div class="pa-4" style="@containerStyle" @onclick="Cancel">
             <div class="d-flex flex-column align-center mb-4">
                 <MudAvatar Color="@(string.IsNullOrEmpty(Objective.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Large" Class="mb-2" Style="@(!string.IsNullOrEmpty(Objective.Color) ? $"background-color:{Objective.Color}; width: 80px; height: 80px; filter: brightness(0.9);" : "width: 80px; height: 80px;")">
                     <GamifyIcon IconName="@Objective.IconName" Size="Size.Large" Style="font-size: 3rem; color: white;" />
@@ -74,46 +75,62 @@
 
             <div class="d-flex flex-column gap-2">
                 <div class="d-flex align-center flex-wrap">
-                    @* Validation Methods Instructions *@
-                    <div class="d-flex flex-column gap-2 mb-2">
-                         <MudText Typo="Typo.subtitle2" Style="@($"color: {textColor}; font-weight: bold;")">Comment valider :</MudText>
-                         
+                <div class="d-flex flex-column gap-2">
+                     <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                         <MudText Typo="Typo.subtitle2" Style="@($"color: {textColor}; font-weight: bold;")">Comment valider cet objectif :</MudText>
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan))
-                         {
-                             <div class="d-flex align-center">
-                                 <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Présentez votre profil à un membre du staff.</MudText>
-                             </div>
-                         }
+                         { <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Style="@iconStyle" Title="Staff Scan" /> }
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode))
-                         {
-                             <div class="d-flex align-center">
-                                 <MudIcon Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Scannez le QR Code de l'objectif sur place.</MudText>
-                             </div>
-                         }
+                         { <MudIcon Icon="@Icons.Material.Filled.QrCode" Size="Size.Small" Style="@iconStyle" Title="QR Code" /> }
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.Self))
-                         {
-                             <div class="d-flex align-center">
-                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Validez vous-même via le bouton ci-bas.</MudText>
-                             </div>
-                         }
+                         { <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Style="@iconStyle" Title="Auto-validation" /> }
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo))
-                         {
-                             <div class="d-flex align-center">
-                                 <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Faites scanner votre QR (Duo) par un partenaire.</MudText>
-                             </div>
-                         }
+                         { <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Small" Style="@iconStyle" Title="Duo" /> }
                          @if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd))
-                         {
-                             <div class="d-flex align-center">
-                                 <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Class="mr-2" Style="@iconStyle" />
-                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Récoltez @(Objective.RequiredPeerValidations ?? 1) signatures d'autres joueurs.</MudText>
-                             </div>
+                         { <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Style="@iconStyle" Title="Foule" /> }
+                     </div>
+
+                     <div class="d-flex flex-column gap-1">
+                         @{
+                             var activeMethods = new List<(string Icon, string Text, string Title)>();
+                             
+                             if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.StaffScan))
+                             {
+                                 activeMethods.Add((Icons.Material.Filled.Badge, "Présentez votre profil à un membre du staff.", "Staff Scan"));
+                             }
+                             if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.QrCode))
+                             {
+                                 activeMethods.Add((Icons.Material.Filled.QrCode, "Scannez le QR Code de l'objectif sur place.", "QR Code"));
+                             }
+                             if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.Self))
+                             {
+                                 activeMethods.Add((Icons.Material.Filled.CheckCircle, "Validez vous-même via le bouton ci-bas.", "Auto-validation"));
+                             }
+                             if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerDuo))
+                             {
+                                 activeMethods.Add((Icons.Material.Filled.Group, "Présentez le QR Code Duo à un autre joueur.", "Duo"));
+                             }
+                             if (Objective.AllowedValidationMethods.HasFlag(ValidationMethod.PeerCrowd))
+                             {
+                                 activeMethods.Add((Icons.Material.Filled.Groups, "Présentez le QR Code Foule pour récolter les signatures.", "Foule"));
+                             }
                          }
-                    </div>
+
+                         @for (var i = 0; i < activeMethods.Count; i++)
+                         {
+                             var m = activeMethods[i];
+                             <div class="d-flex align-top">
+                                 <MudIcon Icon="@m.Icon" Size="Size.Small" Class="mr-2 mt-1" Style="@($"min-width: 20px; {iconStyle}")" Title="@m.Title" />
+                                 <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">@m.Text</MudText>
+                             </div>
+                             
+                             @if (i < activeMethods.Count - 1)
+                             {
+                                 <div class="d-flex justify-center my-1"><MudText Typo="Typo.caption" Style="@($"color: {textColor}; opacity: 0.7; font-weight: bold;")">OU</MudText></div>
+                             }
+                         }
+                     </div>
+            </div>
                 </div>
                 @if (Objective.EventDate.HasValue)
                 {
@@ -223,7 +240,7 @@
                              <MudText Typo="Typo.body2" Style="@($"color: {textColor};")">Signatures : <strong>@current / @required</strong></MudText>
                              <MudText Typo="Typo.caption" Style="@($"color: {textColor};")">@((int)progress)%</MudText>
                         </div>
-                        <MudProgressLinear Color="Color.Success" Value="@progress" Class="my-2" Rounded="true" Size="Size.Large" Stripe="true" />
+                        <MudProgressLinear Color="Color.Success" Value="@progress" Class="my-2" Rounded="true" Size="Size.Large" Striped="true" />
                         <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.7);">Faites scanner votre QR code par @(required - current) autres personnes.</MudText>
                      </div>
 
