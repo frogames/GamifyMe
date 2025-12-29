@@ -50,10 +50,7 @@
         <MudNavLink Href="my-qrcode" Icon="@Icons.Material.Filled.QrCode2">@Loc["MyPass"]</MudNavLink>
         
         <div class="d-flex align-center justify-space-between">
-            @if (UserStats?.IsChallengesEnabled ?? true)
-            {
-               <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment" Class="flex-grow-1">@Loc["Objectives"]</MudNavLink>
-            }
+            <MudNavLink Href="objectives" Icon="@Icons.Material.Filled.Assignment" Class="flex-grow-1">@Loc["Objectives"]</MudNavLink>
             @if (NotificationService.NewObjectivesCount > 0 && (UserStats?.IsChallengesEnabled ?? true))
             {
                 <div class="notification-badge mr-3">@NotificationService.NewObjectivesCount</div>
@@ -96,10 +93,7 @@
             <MudNavLink Href="admin/system-health" Icon="@Icons.Material.Filled.MonitorHeart">Santé Système</MudNavLink>
         }
         
-        @if (UserStats?.EstablishmentHasChallenges ?? true)
-        {
-            <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">@Loc["Objectives"]</MudNavLink>
-        }
+        <MudNavLink Href="admin/objectives" Icon="@Icons.Material.Filled.Assignment">@Loc["Objectives"]</MudNavLink>
         
         @if (UserStats?.EstablishmentHasShop ?? true)
         {

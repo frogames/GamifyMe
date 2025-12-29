@@ -264,58 +264,71 @@
                     </div>
                 }
 
-                <div class="d-flex flex-column">
-                    @foreach (var context in _dropZoneItems)
-                    {
-                        <MudPaper @key="context.Id" Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
-                            <MudCheckBox T="bool" Value="@selectedIds.Contains(context.Id)" ValueChanged="@((v) => ToggleSelect(context.Id, v))" Color="Color.Primary" Class="mr-2" />
-                            
-                            <div class="d-flex flex-column mr-2">
-                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveUp(context))" Disabled="@(_dropZoneItems.IndexOf(context) == 0)" />
-                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveDown(context))" Disabled="@(_dropZoneItems.IndexOf(context) == _dropZoneItems.Count - 1)" />
-                            </div>
-
-                            <div style="width: 100%;">
-                                <MudGrid Spacing="0" Class="align-center w-100">
-                                    <MudItem xs="4">
-                                        <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
-                                            <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
-                                                <GamifyIcon IconName="@context.IconName" Size="Size.Small" Style="@($"color: {ColorHelper.GetContrastColor(context.Color ?? "#FFFFFF")};")" />
-                                            </MudAvatar>
-                                            <div class="d-flex flex-column">
-                                                <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Category</MudText>
-                                            </div>
-                                            @if (context.Category == ObjectiveCategory.Onboarding)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
-                                            }
-                                            @if (!context.IsActive)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="ml-2">Inactif</MudChip>
-                                            }
-                                        </div>
-                                    </MudItem>
-                                    <MudItem xs="2">
-                                        <MudText Typo="Typo.body2">@context.Location</MudText>
-                                    </MudItem>
-                                    <MudItem xs="3">
-                                         @if (context.EventDate.HasValue)
-                                        {
-                                            <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
+                @foreach (var categoryGroup in _dropZoneItems.GroupBy(x => x.Category).OrderBy(g => g.Key))
+                {
+                    <div class="mb-6">
+                        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-2 border-b-2 pb-1">@categoryGroup.Key</MudText>
+                        
+                        <div class="d-flex flex-column">
+                            @foreach (var context in categoryGroup)
+                            {
+                                <MudPaper @key="context.Id" Class="d-flex align-center pa-2 mb-2 custom-hover-row" Elevation="0" Style="@($"border-bottom: 1px solid var(--mud-palette-table-lines); {(context.IsActive ? "" : "opacity: 0.5; background-color: rgba(0,0,0,0.05);")}")">
+                                    <MudCheckBox T="bool" Value="@selectedIds.Contains(context.Id)" ValueChanged="@((v) => ToggleSelect(context.Id, v))" Color="Color.Primary" Class="mr-2" />
+                                    
+                                    <div class="d-flex flex-column mr-2">
+                                        @{
+                                            var list = categoryGroup.ToList();
+                                            var index = list.IndexOf(context);
+                                            var isFirst = index == 0;
+                                            var isLast = index == list.Count - 1;
                                         }
-                                    </MudItem>
-                                    <MudItem xs="3">
-                                        <div class="d-flex gap-1">
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward @CurrencyName</MudChip>
-                                        </div>
-                                    </MudItem>
-                                </MudGrid>
-                            </div>
-                        </MudPaper>
-                    }
-                </div>
+                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveUp(context))" Disabled="@isFirst" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveDown(context))" Disabled="@isLast" />
+                                    </div>
+
+                                    <div style="width: 100%;">
+                                        <MudGrid Spacing="0" Class="align-center w-100">
+                                            <MudItem xs="4">
+                                                <div class="d-flex align-center" @onclick="@(() => StartEditObjective(context))" style="cursor: pointer;">
+                                                    <MudAvatar Color="@(string.IsNullOrEmpty(context.Color) ? Color.Primary : Color.Default)" Variant="Variant.Filled" Size="Size.Small" Class="mr-2" Style="@(!string.IsNullOrEmpty(context.Color) ? $"background-color:{context.Color};" : "")">
+                                                        <GamifyIcon IconName="@context.IconName" Size="Size.Small" Style="@($"color: {ColorHelper.GetContrastColor(context.Color ?? "#FFFFFF")};")" />
+                                                    </MudAvatar>
+                                                    <div class="d-flex flex-column">
+                                                        <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Title</MudText>
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Category</MudText>
+                                                    </div>
+                                                    @if (context.Category == ObjectiveCategory.Onboarding)
+                                                    {
+                                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.School" Class="ml-2">Onboarding</MudChip>
+                                                    }
+                                                    @if (!context.IsActive)
+                                                    {
+                                                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="ml-2">Inactif</MudChip>
+                                                    }
+                                                </div>
+                                            </MudItem>
+                                            <MudItem xs="2">
+                                                <MudText Typo="Typo.body2">@context.Location</MudText>
+                                            </MudItem>
+                                            <MudItem xs="3">
+                                                 @if (context.EventDate.HasValue)
+                                                {
+                                                    <div class="mb-1"><MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Event" Color="Color.Primary">@context.EventDate.Value.ToString("dd/MM/yyyy HH:mm")</MudChip></div>
+                                                }
+                                            </MudItem>
+                                            <MudItem xs="3">
+                                                <div class="d-flex gap-1">
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.XpReward XP</MudChip>
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.DocPointsReward @CurrencyName</MudChip>
+                                                </div>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </div>
+                                </MudPaper>
+                            }
+                        </div>
+                    </div>
+                }
             </MudCardContent>
         </MudCard>
     }
@@ -393,30 +406,73 @@
 
     private async Task MoveUp(ObjectiveDto item)
     {
-        var index = _dropZoneItems.IndexOf(item);
+        // Find the sub-list for this category
+        var categoryList = _dropZoneItems.Where(x => x.Category == item.Category).OrderBy(x => x.SortOrder).ToList();
+        var index = categoryList.IndexOf(item);
+        
         if (index > 0)
         {
-            _dropZoneItems.RemoveAt(index);
-            _dropZoneItems.Insert(index - 1, item);
+            var other = categoryList[index - 1];
+            // Swap SortOrders locally to reflect in UI immediately (if we re-sort by SortOrder)
+            // But we are using _dropZoneItems which is the master list.
+            
+            // Swap locally
+            var tempOrder = item.SortOrder;
+            item.SortOrder = other.SortOrder;
+            other.SortOrder = tempOrder;
+            
+            // Re-sort the master list to reflect changes
+            _dropZoneItems = _dropZoneItems.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
+            
+            // Save
             await SaveOrder();
         }
     }
 
     private async Task MoveDown(ObjectiveDto item)
     {
-        var index = _dropZoneItems.IndexOf(item);
-        if (index < _dropZoneItems.Count - 1)
+        // Find the sub-list for this category
+        var categoryList = _dropZoneItems.Where(x => x.Category == item.Category).OrderBy(x => x.SortOrder).ToList();
+        var index = categoryList.IndexOf(item);
+        
+        if (index < categoryList.Count - 1)
         {
-            _dropZoneItems.RemoveAt(index);
-            _dropZoneItems.Insert(index + 1, item);
+            var other = categoryList[index + 1];
+            
+            // Swap locally
+            var tempOrder = item.SortOrder;
+            item.SortOrder = other.SortOrder;
+            other.SortOrder = tempOrder;
+            
+             // Re-sort the master list to reflect changes
+            _dropZoneItems = _dropZoneItems.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
+
             await SaveOrder();
         }
     }
 
     private async Task SaveOrder()
     {
-        var orderedIds = _dropZoneItems.Select(x => x.Id).ToList();
-        var reorderDto = new ReorderRequestDto { OrderedIds = orderedIds };
+        // We construct a full ordered list where we respect Category grouping first, then the local SortOrder
+        // Actually, the simplest way to persist "visual order" is to send the IDs in the order they appear in the list.
+        // Our controller will assign SortOrder = Index.
+        // So we need to make sure _dropZoneItems is correctly sorted before sending.
+        // The View iterates: groupBy(Category).orderBy(Key) -> then items inside are implicitely standard list order.
+        
+        // Let's rebuilding the flat sorted list based on the visual grouping
+        var flatSortedIds = new List<Guid>();
+        
+        var groups = _dropZoneItems.GroupBy(x => x.Category).OrderBy(g => g.Key);
+        foreach (var group in groups)
+        {
+            // Inside the group, we rely on the SortOrder we just swapped or existing order
+            foreach (var item in group.OrderBy(x => x.SortOrder))
+            {
+                flatSortedIds.Add(item.Id);
+            }
+        }
+        
+        var reorderDto = new ReorderRequestDto { OrderedIds = flatSortedIds };
         
         try 
         {
