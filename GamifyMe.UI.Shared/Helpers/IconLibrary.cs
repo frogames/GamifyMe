@@ -165,6 +165,7 @@ namespace GamifyMe.UI.Shared.Helpers
             if (string.IsNullOrEmpty(iconName)) return Icons.Material.Filled.HelpOutline;
 
             // Si c'est une ancienne icône FontAwesome (commence par "fas "), on renvoie une icône par défaut ou on gère le cas
+            if (iconName == "fas fa-shopping-bag") return Icons.Material.Filled.ShoppingBag;
             if (iconName.StartsWith("fas ") || iconName.StartsWith("fa ")) return Icons.Material.Filled.Star;
 
             return IconsMap.ContainsKey(iconName) ? IconsMap[iconName] : Icons.Material.Filled.HelpOutline;

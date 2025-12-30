@@ -60,33 +60,33 @@
                     @foreach (var kit in _kits)
                     {
                         <MudItem xs="12" sm="6" lg="4">
-                            <MudCard Class="h-100 d-flex flex-column" Style="@($"border-top: 5px solid var(--mud-palette-{GetCategoryColor(kit.Category).ToString().ToLower()});")">
+                            <MudCard Class="h-100 d-flex flex-column" Style="@($"background-color: var(--mud-palette-{GetCategoryColor(kit.Category).ToString().ToLower()}); color: white; position: relative;")">
+                                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(kit.Category)" Variant="Variant.Filled" Style="position: absolute; top: 10px; left: 10px; z-index: 5;">@kit.Category</MudChip>
                                 @if (!string.IsNullOrEmpty(kit.ImageUrl))
                                 {
                                     <MudCardMedia Image="@kit.ImageUrl" Height="140" />
                                 }
                                 <MudCardContent Class="flex-grow-1">
                                     <div class="d-flex justify-space-between align-start mb-2">
-                                        <MudText Typo="Typo.h6">@kit.Name</MudText>
-                                        <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(kit.Category)">@kit.Category</MudChip>
+                                        <MudText Typo="Typo.h6" Style="color: white;">@kit.Name</MudText>
                                     </div>
                                     
-                                    <MudRating SelectedValue="@((int)Math.Round(kit.AverageRating))" ReadOnly="true" Size="Size.Small" />
-                                    <MudText Typo="Typo.caption" Class="ml-1">(@kit.UsageCount utilisations)</MudText>
+                                    <MudRating SelectedValue="@((int)Math.Round(kit.AverageRating))" ReadOnly="true" Size="Size.Small" Style="filter: brightness(0) invert(1);" /> 
+                                    <MudText Typo="Typo.caption" Class="ml-1" Style="color: rgba(255,255,255, 0.8);">(@kit.UsageCount utilisations)</MudText>
 
-                                    <MudText Typo="Typo.body2" Class="mt-2 text-truncate-3">@kit.Description</MudText>
+                                    <MudText Typo="Typo.body2" Class="mt-2 text-truncate-3" Style="color: rgba(255,255,255, 0.9);">@kit.Description</MudText>
                                     
                                     <div class="d-flex gap-2 mt-3 flex-wrap">
-                                        @if(kit.HasObjectives) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Objectifs</MudChip> }
-                                        @if(kit.HasBadges) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Badges</MudChip> }
-                                        @if(kit.HasGroups) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Groupes</MudChip> }
-                                        @if(kit.HasStoreItems) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Boutique</MudChip> }
+                                        @if(kit.HasObjectives) { <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Surface">Objectifs</MudChip> }
+                                        @if(kit.HasBadges) { <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Surface">Badges</MudChip> }
+                                        @if(kit.HasGroups) { <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Surface">Groupes</MudChip> }
+                                        @if(kit.HasStoreItems) { <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Surface">Boutique</MudChip> }
                                     </div>
                                 </MudCardContent>
                                 <MudCardActions>
-                                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenKitDetails(kit))">Détails</MudButton>
+                                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Info" Color="Color.Surface" OnClick="@(() => OpenKitDetails(kit))" Class="mr-2">Détails</MudButton>
                                     <MudSpacer />
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => ImportKit(kit))">Importer</MudButton>
+                                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Download" Color="Color.Surface" OnClick="@(() => ImportKit(kit))">Importer</MudButton>
                                 </MudCardActions>
                             </MudCard>
                         </MudItem>

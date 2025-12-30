@@ -172,6 +172,12 @@
         try
         {
             _kit = await Http.GetFromJsonAsync<ContentKitDto>($"api/kits/{KitId}");
+            if (_kit != null)
+            {
+                _kit.Objectives = _kit.Objectives.OrderBy(x => x.SortOrder).ToList();
+                _kit.Badges = _kit.Badges.OrderBy(x => x.SortOrder).ToList();
+                _kit.StoreItems = _kit.StoreItems.OrderBy(x => x.SortOrder).ToList();
+            }
         }
         catch (Exception ex)
         {
