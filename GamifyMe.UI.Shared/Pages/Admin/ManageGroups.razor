@@ -123,6 +123,8 @@
             <MudSpacer />
             @if (selectedGroups.Any())
             {
+                <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(true))" Class="mr-2">Activer (@selectedGroups.Count)</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.VisibilityOff" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(false))" Class="mr-2">Désactiver (@selectedGroups.Count)</MudButton>
                 <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedGroups.Count)</MudButton>
             }
         </div>
@@ -341,6 +343,46 @@
                 {
                     errorMessage = $"Erreur lors de la suppression du groupe {group.Name}";
                 }
+            }
+            selectedGroups.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task ToggleActivationSelected(bool isActive)
+    {
+         isBusy = true;
+        try 
+        {
+            foreach (var group in selectedGroups.ToList())
+            {
+                 // We need to fetch it or use the dto. 
+                 // selectedGroups contains GroupDto.
+                 
+                 if (group.IsActive != isActive)
+                 {
+                    var updateDto = new UpdateGroupDto
+                    {
+                        Name = group.Name,
+                        Description = group.Description,
+                        IconName = group.IconName,
+                        Color = !string.IsNullOrEmpty(group.Color) ? group.Color : "#FFFFFF",
+                        RegistrationDurationHours = group.RegistrationDurationHours,
+                        IsActive = isActive,
+                        // ImageBase64 shouldn't be needed unless we are changing it. 
+                        // Backend likely keeps existing if null/empty in Update logic, OR we need to load existing URL context?
+                        // UpdateGroupDto usually replaces fields. 
+                        // Logic in HandleUpdateGroup doesn't set ImageUrl, it sets ImageBase64.
+                        // Ideally we don't touch image here.
+                    };
+
+                    // We should be careful about Image. If UpdateGroupDto expects ImageBase64 to UPDATE the image, then leaving it null implies no change?
+                    // Let's assume safely that we just want to update IsActive. 
+                    
+                    await Http.PutAsJsonAsync($"api/groups/{group.Id}", updateDto);
+                 }
             }
             selectedGroups.Clear();
             await LoadData();

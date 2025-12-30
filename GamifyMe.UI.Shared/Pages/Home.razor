@@ -19,27 +19,36 @@
 <PageTitle>@Loc["Home"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mb-2">@Loc["Welcome"] @firstName</MudText>
+    <div class="d-flex align-center mb-2">
+        <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mr-4">@Loc["Welcome"] @firstName</MudText>
+        @if (preferredBadge != null)
+        {
+            <MudChip T="string" Size="Size.Large" Variant="Variant.Filled" Icon="@GamifyMe.UI.Shared.Helpers.IconLibrary.GetIcon(preferredBadge.IconName)" Style="@($"background-color: {preferredBadge.Color}; color: white; transform: scale(1.2); margin-left: 8px;")">@preferredBadge.Name</MudChip>
+        }
+    </div>
 
 
     <!-- STATISTICS SECTION -->
     <MudGrid Class="mb-8" Spacing="4">
         <!-- Active Streaks -->
-        <MudItem xs="12" sm="6">
-            <MudPaper Class="pa-6 d-flex flex-row align-center justify-space-between h-100" Elevation="4" Style="background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%); color: white;">
-                <div class="d-flex flex-column">
-                    <MudText Typo="Typo.h6" Style="font-weight: 700;">Séries en cours</MudText>
-                    <MudText Typo="Typo.body2">Maintenez la flamme !</MudText>
-                </div>
-                <div class="d-flex flex-column align-center">
-                    <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="font-size: 3rem;" />
-                    <MudText Typo="Typo.h4" Style="font-weight: 900;">@(UserStats?.ActiveStreakCount ?? 0)</MudText>
-                </div>
-            </MudPaper>
-        </MudItem>
+        @if (hasStreaksEnabled)
+        {
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="pa-6 d-flex flex-row align-center justify-space-between h-100" Elevation="4" Style="background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%); color: white;">
+                    <div class="d-flex flex-column">
+                        <MudText Typo="Typo.h6" Style="font-weight: 700;">Séries en cours</MudText>
+                        <MudText Typo="Typo.body2">Maintenez la flamme !</MudText>
+                    </div>
+                    <div class="d-flex flex-column align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h4" Style="font-weight: 900;">@(UserStats?.ActiveStreakCount ?? 0)</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        }
 
         <!-- Badges Progress -->
-        <MudItem xs="12" sm="6">
+        <MudItem xs="12" sm="@(hasStreaksEnabled ? 6 : 12)">
             <MudPaper Class="pa-6 d-flex flex-row align-center justify-space-between h-100" Elevation="4" Style="background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); color: white;">
                 <div class="d-flex flex-column">
                     <MudText Typo="Typo.h6" Style="font-weight: 700;">Progression Badges</MudText>
@@ -56,6 +65,18 @@
             </MudPaper>
         </MudItem>
     </MudGrid>
+
+    <!-- XP & LEVEL PROGRESS -->
+    <MudCard Elevation="3" Class="mb-8 pa-4">
+        <div class="d-flex justify-space-between align-end mb-2">
+            <MudText Typo="Typo.h6" Color="Color.Warning"><b>@Loc["Level", UserStats?.Level ?? 1]</b></MudText>
+            <MudText Typo="Typo.caption">@UserStats?.CurrentXp / @UserStats?.XpForNextLevel XP</MudText>
+        </div>
+        <MudProgressLinear Color="Color.Warning" Value="@(UserStats?.ProgressPercentage ?? 0)" Size="Size.Large" Rounded="true" Striped="true" Class="my-2" />
+        <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-1 text-muted">
+            @Loc["XpForNextLevel", ((UserStats?.XpForNextLevel ?? 0) - (UserStats?.CurrentXp ?? 0))]
+        </MudText>
+    </MudCard>
 
     <MudGrid Class="mb-8" Spacing="2">
         <!-- Mon Pass Card (#1) -->
@@ -89,8 +110,8 @@
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/badges"))">
                  <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Color="Color.Warning" Class="mb-2 home-card-icon" />
-                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Mes Badges</MudText>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@(UserStats?.UnlockedBadgeCount ?? 0) badges débloqués</MudText>
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Badges</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@(UserStats?.Badges?.Count ?? 0) badges disponibles</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -117,7 +138,7 @@
                     <MudCardContent Class="d-flex flex-column align-center home-card-content">
                         <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Info" Class="mb-2 home-card-icon" />
                         <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">@Loc["Inventory"]</MudText>
-                        <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">@inventoryCount @Loc["OwnedItems"]</MudText>
+
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -164,8 +185,8 @@
             <MudCard Elevation="3" Class="cursor-pointer hover-effect h-100" @onclick="@(() => Navigation.NavigateTo("/profile"))">
                  <MudCardContent Class="d-flex flex-column align-center home-card-content">
                     <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Info" Class="mb-2 home-card-icon" />
-                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Mon Profil</MudText>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1 d-none d-sm-block">Voir mes stats</MudText>
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight:bold; line-height: 1.2;">Profil</MudText>
+
                 </MudCardContent>
         </MudCard>
         </MudItem>
@@ -217,6 +238,8 @@
 
 @code {
     private string firstName = "";
+    private bool hasStreaksEnabled = false;
+    private BadgeDto? preferredBadge => UserStats?.Badges?.FirstOrDefault(b => b.IsFavorite);
 
     [CascadingParameter]
     public UserProfileDetailsDto? UserStats { get; set; }
@@ -259,6 +282,28 @@
                 await Http.PostAsync("api/users/complete-onboarding", null);
                 UserStats.HasCompletedOnboarding = true; // Update local state
             }
+        }
+
+        // Check for streaks existence
+        await CheckStreaksAvailability();
+    }
+    
+    private async Task CheckStreaksAvailability()
+    {
+        try 
+        {
+             // We only care if there is AT LEAST ONE objective with IsStreakEnabled = true
+             // We can use the active objectives endpoint.
+             // Since we don't need the full details, maybe a lighter endpoint would be better but reusing existing is safer.
+             var objectives = await Http.GetFromJsonAsync<List<ObjectiveDto>>("api/objectives/active");
+             if (objectives != null)
+             {
+                 hasStreaksEnabled = objectives.Any(o => o.IsStreakEnabled);
+             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking streaks: {ex.Message}");
         }
     }
     

@@ -244,6 +244,8 @@
             @if (selectedIds.Any())
             {
                 <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(true))" Class="mr-2">Activer (@selectedIds.Count)</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.VisibilityOff" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(false))" Class="mr-2">Désactiver (@selectedIds.Count)</MudButton>
                 <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
             }
         </div>
@@ -519,6 +521,10 @@
         {
             badgesList.RemoveAt(index);
             badgesList.Insert(index - 1, item);
+            
+            // Re-assign SortOrders
+            for (int i = 0; i < badgesList.Count; i++) badgesList[i].SortOrder = i;
+
             await SaveOrder();
         }
     }
@@ -530,6 +536,10 @@
         {
             badgesList.RemoveAt(index);
             badgesList.Insert(index + 1, item);
+
+            // Re-assign SortOrders
+            for (int i = 0; i < badgesList.Count; i++) badgesList[i].SortOrder = i;
+
             await SaveOrder();
         }
     }
@@ -568,6 +578,46 @@
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = $"Erreur lors de la suppression d'un badge";
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isBusy = false; }
+    }
+
+    private async Task ToggleActivationSelected(bool isActive)
+    {
+        isBusy = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var badge = badgesList.FirstOrDefault(b => b.Id == id);
+                if (badge != null && badge.IsActive != isActive)
+                {
+                    var updateDto = new CreateBadgeDto
+                    {
+                        Name = badge.Name,
+                        Category = badge.Category,
+                        Description = badge.Description,
+                        IconName = badge.IconName,
+                        ImageUrl = badge.ImageUrl,
+                        Color = badge.Color,
+                        CriteriaType = badge.CriteriaType,
+                        CriteriaValue = badge.CriteriaValue,
+                        CriteriaThreshold = badge.CriteriaThreshold,
+                        XpReward = badge.XpReward,
+                        DocPointsReward = badge.DocPointsReward,
+                        RewardStoreItemId = badge.RewardStoreItemId,
+                        IsActive = isActive,
+                        SortOrder = badge.SortOrder,
+                        PrerequisiteBadgeId = badge.PrerequisiteBadgeId,
+                        PrerequisiteObjectiveId = badge.PrerequisiteObjectiveId
+                    };
+                    
+                    await Http.PutAsJsonAsync($"api/badges/{id}", updateDto);
                 }
             }
             selectedIds.Clear();

@@ -259,6 +259,8 @@
                         @if (selectedIds.Any())
                         {
                             <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(true))" Class="mr-2">Activer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.VisibilityOff" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(false))" Class="mr-2">Désactiver (@selectedIds.Count)</MudButton>
                             <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
                         }
                     </div>
@@ -412,19 +414,19 @@
         
         if (index > 0)
         {
-            var other = categoryList[index - 1];
-            // Swap SortOrders locally to reflect in UI immediately (if we re-sort by SortOrder)
-            // But we are using _dropZoneItems which is the master list.
+            categoryList.RemoveAt(index);
+            categoryList.Insert(index - 1, item);
             
-            // Swap locally
-            var tempOrder = item.SortOrder;
-            item.SortOrder = other.SortOrder;
-            other.SortOrder = tempOrder;
-            
-            // Re-sort the master list to reflect changes
+            // Re-assign SortOrders to be contiguous
+            for (int i = 0; i < categoryList.Count; i++)
+            {
+                categoryList[i].SortOrder = i;
+            }
+
+            // Update the master list sort orders
+            // (The master list objects are references, so they are updated, but we need to re-sort the master list view)
             _dropZoneItems = _dropZoneItems.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
             
-            // Save
             await SaveOrder();
         }
     }
@@ -437,14 +439,16 @@
         
         if (index < categoryList.Count - 1)
         {
-            var other = categoryList[index + 1];
+            categoryList.RemoveAt(index);
+            categoryList.Insert(index + 1, item);
             
-            // Swap locally
-            var tempOrder = item.SortOrder;
-            item.SortOrder = other.SortOrder;
-            other.SortOrder = tempOrder;
+             // Re-assign SortOrders to be contiguous
+            for (int i = 0; i < categoryList.Count; i++)
+            {
+                categoryList[i].SortOrder = i;
+            }
             
-             // Re-sort the master list to reflect changes
+            // Re-sort the master list view
             _dropZoneItems = _dropZoneItems.OrderBy(o => o.Category).ThenBy(o => o.SortOrder).ToList();
 
             await SaveOrder();
@@ -523,6 +527,61 @@
                 if (item != null)
                 {
                     await DuplicateObjectiveInternal(item);
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageObjective = ex.Message; }
+        finally { isBusyObjective = false; }
+    }
+
+    private async Task ToggleActivationSelected(bool isActive)
+    {
+        isBusyObjective = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var item = allObjectivesFullList.FirstOrDefault(o => o.Id == id);
+                if (item != null && item.IsActive != isActive)
+                {
+                    // We need to convert ObjectiveDto to CreateObjectiveDto (or similar update DTO) 
+                    // relying on StartEdit logic mapping or manual mapping.
+                    // Since the API expects CreateObjectiveDto for PUT, we map it.
+                    // However, to be safe and avoid mapping errors, we should check if there is a simpler way or ensure mapping is correct.
+                    // Using the existing mapping logic in StartEdit as reference.
+                    
+                    var updateDto = new CreateObjectiveDto
+                    {
+                        Title = item.Title,
+                        Description = item.Description,
+                        IconName = item.IconName,
+                        Location = item.Location,
+                        EventDate = item.EventDate,
+                        EndDate = item.EndDate,
+                        XpReward = item.XpReward,
+                        DocPointsReward = item.DocPointsReward,
+                        IsUnique = item.IsUnique,
+                        FrequencyHours = item.FrequencyHours,
+                        IsActive = isActive, // Only change
+                        DisplayStartDate = item.DisplayStartDate,
+                        DisplayEndDate = item.DisplayEndDate,
+                        PrerequisiteObjectiveIds = item.PrerequisiteObjectiveIds != null ? new List<Guid>(item.PrerequisiteObjectiveIds) : new List<Guid>(),
+                        LifespanHours = item.LifespanHours,
+                        Category = item.Category,
+                        SortOrder = item.SortOrder,
+                        IsStreakEnabled = item.IsStreakEnabled,
+                        StreakTerminalHours = item.StreakTerminalHours,
+                        StreakFrequency = item.StreakFrequency,
+                        StreakExcludedDays = item.StreakExcludedDays,
+                        StreakExcludedMonths = item.StreakExcludedMonths,
+                        Color = item.Color,
+                        AllowedValidationMethods = item.AllowedValidationMethods,
+                        RequiredPeerValidations = item.RequiredPeerValidations
+                    };
+                    
+                    await Http.PutAsJsonAsync($"api/objectives/{item.Id}", updateDto);
                 }
             }
             selectedIds.Clear();

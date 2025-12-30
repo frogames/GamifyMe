@@ -159,6 +159,8 @@
                         @if (selectedIds.Any())
                         {
                             <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Filled" OnClick="DuplicateSelected" Class="mr-2">Dupliquer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(true))" Class="mr-2">Activer (@selectedIds.Count)</MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.VisibilityOff" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => ToggleActivationSelected(false))" Class="mr-2">Désactiver (@selectedIds.Count)</MudButton>
                             <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteSelected">Supprimer (@selectedIds.Count)</MudButton>
                         }
                     </div>
@@ -503,6 +505,10 @@
         {
             _dropZoneItems.RemoveAt(index);
             _dropZoneItems.Insert(index - 1, item);
+            
+            // Re-assign SortOrders
+            for (int i = 0; i < _dropZoneItems.Count; i++) _dropZoneItems[i].SortOrder = i;
+
             await SaveOrder();
         }
     }
@@ -514,6 +520,10 @@
         {
             _dropZoneItems.RemoveAt(index);
             _dropZoneItems.Insert(index + 1, item);
+
+            // Re-assign SortOrders
+            for (int i = 0; i < _dropZoneItems.Count; i++) _dropZoneItems[i].SortOrder = i;
+
             await SaveOrder();
         }
     }
@@ -552,6 +562,53 @@
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessageStore = $"Erreur lors de la suppression de l'ID {id}";
+                }
+            }
+            selectedIds.Clear();
+            await LoadData();
+        }
+        catch (Exception ex) { errorMessageStore = ex.Message; }
+        finally { isBusyStore = false; }
+    }
+
+    private async Task ToggleActivationSelected(bool isActive)
+    {
+        isBusyStore = true;
+        try 
+        {
+            foreach (var id in selectedIds.ToList())
+            {
+                var item = allStoreItemsList.FirstOrDefault(o => o.Id == id);
+                if (item != null && item.IsActive != isActive)
+                {
+                    // Update object directly since we use StoreItemDto
+                    item.IsActive = isActive; 
+                    // However, we should send a clean object or copy to the API to be safe, 
+                    // though item is already a DTO.
+                    // Let's create a new object to avoid side effects if API fails (though we want to reflect change?)
+                    // It's safer to clone like Duplicate logic does but simpler.
+                    
+                    var updateDto = new StoreItemDto
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Price = item.Price,
+                        IconName = item.IconName,
+                        ItemType = item.ItemType,
+                        DigitalActionCode = item.DigitalActionCode,
+                        Stock = item.Stock,
+                        IsActive = isActive,
+                        StartDate = item.StartDate,
+                        EndDate = item.EndDate,
+                        DigitalAssetUrl = item.DigitalAssetUrl,
+                        IsUnique = item.IsUnique,
+                        ImageUrl = item.ImageUrl,
+                        Color = !string.IsNullOrEmpty(item.Color) ? item.Color : "#FFFFFF",
+                        SortOrder = item.SortOrder
+                    };
+
+                    await Http.PutAsJsonAsync($"api/store/{item.Id}", updateDto);
                 }
             }
             selectedIds.Clear();
