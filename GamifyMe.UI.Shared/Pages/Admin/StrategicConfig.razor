@@ -75,6 +75,18 @@
                         </MudItem>
                     </MudGrid>
 
+                    <MudDivider Class="my-6"/>
+
+                    <!-- 4. Domaine d'Activité -->
+                    <MudText Typo="Typo.h6">4. Domaine d'Activité</MudText>
+                     <MudText Typo="Typo.caption" Class="mb-2 d-block">Quel est votre secteur ? Cela nous aidera à vous proposer du contenu adapté.</MudText>
+                    <MudSelect T="KitCategory" Label="Domaine d'Activité" @bind-Value="strategy.ActivityDomain" Variant="Variant.Outlined">
+                        @foreach (var domain in Enum.GetValues<KitCategory>())
+                        {
+                            <MudSelectItem Value="@domain">@domain</MudSelectItem>
+                        }
+                    </MudSelect>
+
                 </MudForm>
             </MudCardContent>
             <MudCardActions>

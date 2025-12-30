@@ -18,6 +18,8 @@ namespace GamifyMe.Shared.Models
         public CycleType CycleType { get; set; } = CycleType.Infinite;
         public int CycleDurationMonths { get; set; } = 12;
 
+        public KitCategory ActivityDomain { get; set; } = KitCategory.Autre;
+
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }
 }

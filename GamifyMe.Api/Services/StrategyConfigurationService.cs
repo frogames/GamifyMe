@@ -41,7 +41,8 @@ namespace GamifyMe.Api.Services
                 EngagementEngine = strategy.EngagementEngine,
                 FeedbackFrequency = strategy.FeedbackFrequency,
                 CycleType = strategy.CycleType,
-                CycleDurationMonths = strategy.CycleDurationMonths
+                CycleDurationMonths = strategy.CycleDurationMonths,
+                ActivityDomain = strategy.ActivityDomain
             };
         }
 
@@ -63,6 +64,7 @@ namespace GamifyMe.Api.Services
             strategy.FeedbackFrequency = dto.FeedbackFrequency;
             strategy.CycleType = dto.CycleType;
             strategy.CycleDurationMonths = dto.CycleDurationMonths;
+            strategy.ActivityDomain = dto.ActivityDomain;
             strategy.LastUpdated = DateTime.UtcNow;
 
             // Also sync with Establishment settings if necessary

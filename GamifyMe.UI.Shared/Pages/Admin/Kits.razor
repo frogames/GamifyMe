@@ -126,6 +126,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        try 
+        {
+            var strategy = await Http.GetFromJsonAsync<GamificationStrategyDto>("api/strategy");
+            if (strategy != null && strategy.ActivityDomain != KitCategory.Autre)
+            {
+                 _filter.Category = strategy.ActivityDomain;
+            }
+        } 
+        catch (Exception ex) 
+        { 
+            // Silent catch, fallback to default filter (All)
+            Console.WriteLine($"Error fetching strategy for kit filter: {ex.Message}");
+        }
+
         await LoadKits();
     }
 
