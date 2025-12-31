@@ -1,0 +1,47 @@
+@using GamifyMe.UI.Shared.Components.Dialogs
+@using GamifyMe.Shared.Dtos
+@using MudBlazor
+
+<CelebrationDialog Title="Import Réussi !">
+    <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-6">Le kit de contenu a été importé avec succès dans votre établissement.</MudText>
+
+    <div class="d-flex flex-column gap-2 mb-4 w-100" style="max-width: 400px;">
+        @if (Result.ObjectivesCount > 0)
+        {
+            <div class="d-flex align-center pa-3 rounded" style="background-color: var(--mud-palette-background-grey);">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Class="mr-3" />
+                <MudText><b>@Result.ObjectivesCount</b> objectifs ajoutés</MudText>
+            </div>
+        }
+        @if (Result.BadgesCount > 0)
+        {
+             <div class="d-flex align-center pa-3 rounded" style="background-color: var(--mud-palette-background-grey);">
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Class="mr-3" />
+                <MudText><b>@Result.BadgesCount</b> badges ajoutés</MudText>
+            </div>
+        }
+        @if (Result.GroupsCount > 0)
+        {
+             <div class="d-flex align-center pa-3 rounded" style="background-color: var(--mud-palette-background-grey);">
+                <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Secondary" Class="mr-3" />
+                <MudText><b>@Result.GroupsCount</b> groupes créés</MudText>
+            </div>
+        }
+        @if (Result.StoreItemsCount > 0)
+        {
+             <div class="d-flex align-center pa-3 rounded" style="background-color: var(--mud-palette-background-grey);">
+                <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Tertiary" Class="mr-3" />
+                <MudText><b>@Result.StoreItemsCount</b> articles en boutique</MudText>
+            </div>
+        }
+    </div>
+
+    <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled" FullWidth="true" Class="mt-4">Parfait !</MudButton>
+</CelebrationDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public KitImportResultDto Result { get; set; } = new();
+
+    void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

@@ -266,7 +266,7 @@ namespace GamifyMe.Api.Controllers
 
         [HttpPost("{id}/import")]
         [Authorize(Roles = "SuperAdmin,Admin,Editeur")]
-        public async Task<IActionResult> ImportKit(Guid id, [FromServices] ContentImportService importService)
+        public async Task<ActionResult<KitImportResultDto>> ImportKit(Guid id, [FromServices] ContentImportService importService)
         {
             var targetId = GetCurrentEstablishmentId();
             if (targetId == Guid.Empty) return Unauthorized();
@@ -277,13 +277,13 @@ namespace GamifyMe.Api.Controllers
             try 
             {
                 // We delegate to the existing import service, but using the TemplateEstablishmentId from the Kit
-                await importService.ImportKitAsync(kit.TemplateEstablishmentId, targetId);
+                var result = await importService.ImportKitAsync(kit.TemplateEstablishmentId, targetId);
                 
                 // Increment Usage
                 kit.UsageCount++;
                 await _context.SaveChangesAsync();
 
-                return Ok("Kit importé avec succès.");
+                return Ok(result);
             } 
             catch (Exception ex) 
             {

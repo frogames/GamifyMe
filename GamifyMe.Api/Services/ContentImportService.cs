@@ -3,6 +3,8 @@ using GamifyMe.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
+using GamifyMe.Shared.Dtos;
+
 namespace GamifyMe.Api.Services
 {
     public class ContentImportService
@@ -14,7 +16,7 @@ namespace GamifyMe.Api.Services
             _context = context;
         }
 
-        public async Task ImportKitAsync(Guid sourceEstablishmentId, Guid targetEstablishmentId)
+        public async Task<KitImportResultDto> ImportKitAsync(Guid sourceEstablishmentId, Guid targetEstablishmentId)
         {
             // 1. Load Source Data
             var sourceObjectives = await _context.Objectives
@@ -204,6 +206,15 @@ namespace GamifyMe.Api.Services
             }
 
             await _context.SaveChangesAsync();
+
+            return new KitImportResultDto
+            {
+                ObjectivesCount = sourceObjectives.Count,
+                StoreItemsCount = sourceStoreItems.Count,
+                GroupsCount = sourceGroups.Count,
+                BadgesCount = sourceBadges.Count,
+                Message = "Import réussi"
+            };
         }
 
         private string? RemapCriteriaValue(BadgeCriteriaType type, string? originalValue, Dictionary<Guid, Guid> objMap, Dictionary<Guid, Guid> itemMap)

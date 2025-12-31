@@ -1,0 +1,109 @@
+@page "/superadmin/test-celebrations"
+@using GamifyMe.UI.Shared.Components.Dialogs
+@using GamifyMe.UI.Shared.Components
+@using GamifyMe.Shared.Dtos
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Test des Célébrations</MudText>
+    <MudText Class="mb-8">Générer les différentes boîtes de dialogue de célébration.</MudText>
+
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-4">Génériques</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenGenericCelebration" Class="mb-2">Célébration Générique</MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-4">Validation d'Objectif</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OpenValidationSuccess" Class="mb-2">Objectif Validé + XP</MudButton>
+                 <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="OpenValidationWithBadge" Class="mb-2">Objectif + Badge</MudButton>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-4">Admin</MudText>
+                 <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="OpenKitImportMock" Class="mb-2">Import Kit (Mock)</MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void OpenGenericCelebration()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Bienvenue !" },
+            { "ChildContent", (RenderFragment)(builder => {
+                builder.AddContent(0, "Ceci est un test de la fenêtre de célébration générique.");
+            })}
+        };
+        var options = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+        DialogService.Show<CelebrationDialog>("", parameters, options);
+    }
+
+    private void OpenValidationSuccess()
+    {
+        var response = new ValidationResponseDto
+        {
+            Success = true,
+            Message = "Vous avez validé l'objectif 'Séance de Sport' !",
+            RewardXp = 150,
+            RewardCurrency = 50
+        };
+
+        var parameters = new DialogParameters { { "Response", response } };
+        var options = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+        DialogService.Show<ValidationSuccessDialog>("", parameters, options);
+    }
+
+    private void OpenValidationWithBadge()
+    {
+        var response = new ValidationResponseDto
+        {
+            Success = true,
+            Message = "Incroyable performance !",
+            RewardXp = 500,
+            NewAvailableBadges = new List<BadgeDto> 
+            { 
+                new BadgeDto { Name = "Sportif d'Élite", Description = "Atteindre niveau 5", IconName = "EmojiEvents", Color = "#FFD700" } 
+            }
+        };
+
+        var parameters = new DialogParameters { { "Response", response } };
+        var options = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+        DialogService.Show<ValidationSuccessDialog>("", parameters, options);
+    }
+    
+    private void OpenBadgeUnlockMock()
+    {
+         var badges = new List<BadgeDto>
+         {
+             new BadgeDto { Name = "Badge Test 1", Description = "Badge obtenu pour test", IconName = "Star", Color = "#FF5722", XpReward = 100 },
+             new BadgeDto { Name = "Badge Test 2", Description = "Un autre badge test", IconName = "Rocket", Color = "#2196F3" }
+         };
+         var parameters = new DialogParameters { { "Badges", badges } };
+         var options = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+         DialogService.Show<BadgeUnlockDialog>("", parameters, options);
+    }
+
+    private void OpenKitImportMock()
+    {
+        var result = new KitImportResultDto
+        {
+            ObjectivesCount = 12,
+            BadgesCount = 5,
+            GroupsCount = 2,
+            StoreItemsCount = 3,
+            Message = "Import réussi"
+        };
+        var parameters = new DialogParameters { { "Result", result } };
+        var options = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+        DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.KitImportSuccessDialog>("", parameters, options);
+    }
+}

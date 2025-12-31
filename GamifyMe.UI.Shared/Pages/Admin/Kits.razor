@@ -245,7 +245,11 @@
                var response = await Http.PostAsync($"api/kits/{kit.Id}/import", null);
                if (response.IsSuccessStatusCode)
                {
-                   Snackbar.Add("Kit importé avec succès !", Severity.Success);
+                   var result = await response.Content.ReadFromJsonAsync<KitImportResultDto>();
+                   
+                   var dialogOptions = new DialogOptions { NoHeader = true, BackgroundClass = "celebration-backdrop" };
+                   var parameters = new DialogParameters { ["Result"] = result };
+                   DialogService.Show<GamifyMe.UI.Shared.Pages.Admin.Dialogs.KitImportSuccessDialog>("", parameters, dialogOptions);
                }
                else
                {

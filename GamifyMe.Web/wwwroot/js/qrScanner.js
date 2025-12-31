@@ -29,6 +29,18 @@ function stopScanner(scannerId) {
     });
 }
 
+
+let qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+    let minEdgePercentage = 0.9; // 90%
+    let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+    let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+    return {
+        width: qrboxSize,
+        height: qrboxSize
+    };
+}
+
+
 // Logique de scan (inchangée mais améliorée)
 function _runScannerLogic(scannerId, dotnetHelper) {
     try {
@@ -42,7 +54,7 @@ function _runScannerLogic(scannerId, dotnetHelper) {
         // Si besoin on peut descendre à 5
         const config = {
             fps: 5,
-            qrbox: { width: 250, height: 250 },
+            qrbox: qrboxFunction,
             // options expérimentales pour décharger le décodage si la lib/UA le supporte
             experimentalFeatures: {
                 useBarCodeDetectorIfSupported: true,
