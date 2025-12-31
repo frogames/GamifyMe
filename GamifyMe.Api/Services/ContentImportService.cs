@@ -26,6 +26,11 @@ namespace GamifyMe.Api.Services
             var sourceGroups = await _context.Groups.Where(g => g.EstablishmentId == sourceEstablishmentId).AsNoTracking().ToListAsync();
             var sourceBadges = await _context.Badges.Where(b => b.EstablishmentId == sourceEstablishmentId).AsNoTracking().ToListAsync();
 
+            // 1.5 Calculate SortOrder Offsets
+            var objOffset = (await _context.Objectives.Where(o => o.EstablishmentId == targetEstablishmentId).MaxAsync(o => (int?)o.SortOrder) ?? -1) + 1;
+            var itemOffset = (await _context.StoreItems.Where(s => s.EstablishmentId == targetEstablishmentId).MaxAsync(s => (int?)s.SortOrder) ?? -1) + 1;
+            var badgeOffset = (await _context.Badges.Where(b => b.EstablishmentId == targetEstablishmentId).MaxAsync(b => (int?)b.SortOrder) ?? -1) + 1;
+
             // ID Mappings: OldId -> NewId
             var objectiveMap = new Dictionary<Guid, Guid>();
             var newObjectiveEntities = new Dictionary<Guid, Objective>(); // Start tracking entities for relationship linking
@@ -60,7 +65,7 @@ namespace GamifyMe.Api.Services
                     IsActive = false, 
                     LifespanHours = srcObj.LifespanHours,
                     Category = srcObj.Category,
-                    SortOrder = srcObj.SortOrder,
+                    SortOrder = srcObj.SortOrder + objOffset,
                     CreatedAt = DateTime.UtcNow,
                     IsStreakEnabled = srcObj.IsStreakEnabled,
                     StreakTerminalHours = srcObj.StreakTerminalHours,
@@ -110,7 +115,7 @@ namespace GamifyMe.Api.Services
                     Color = srcItem.Color,
                     StartDate = srcItem.StartDate,
                     EndDate = srcItem.EndDate,
-                    SortOrder = srcItem.SortOrder,
+                    SortOrder = srcItem.SortOrder + itemOffset,
                     DigitalActionCode = srcItem.DigitalActionCode,
                     DigitalAssetUrl = srcItem.DigitalAssetUrl,
                     IsUnique = srcItem.IsUnique,
@@ -162,6 +167,7 @@ namespace GamifyMe.Api.Services
                     XpReward = srcBadge.XpReward,
                     DocPointsReward = srcBadge.DocPointsReward,
                     // RewardStoreItem needs remapping
+                    SortOrder = srcBadge.SortOrder + badgeOffset,
                     CreatedAt = DateTime.UtcNow
                 };
 
