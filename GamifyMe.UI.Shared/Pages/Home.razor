@@ -20,7 +20,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <div class="d-flex align-center mb-2">
-        <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="mr-4">@Loc["Welcome"] @firstName</MudText>
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="mr-4">@Loc["Welcome"] @firstName</MudText>
         @if (preferredBadge != null)
         {
             <MudChip T="string" Size="Size.Large" Variant="Variant.Filled" Icon="@GamifyMe.UI.Shared.Helpers.IconLibrary.GetIcon(preferredBadge.IconName)" Style="@($"background-color: {preferredBadge.Color}; color: white; transform: scale(1.2); margin-left: 8px;")">@preferredBadge.Name</MudChip>

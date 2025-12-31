@@ -115,7 +115,7 @@
                                             {
                                                 <div class="d-flex align-center flex-grow-0" style="width: auto;">
                                                     <MudProgressLinear Value="@((double)((obj.ChainPosition ?? 1) - 1))" Max="@((double)(obj.ChainLength ?? 1))" Rounded="true" Style="@($"height: 15px; width: 100px; border-radius: 8px; --mud-palette-primary: {textColor};")" Color="Color.Primary" Class="mr-2" />
-                                                    <MudText Typo="Typo.caption" Style="@($"color: {textColor}; white-space: nowrap; font-weight: bold;")">@obj.ChainPosition / @obj.ChainLength</MudText>
+                                                    <MudText Typo="Typo.caption" Style="@($"color: {textColor}; white-space: nowrap; font-weight: bold;")">@((obj.ChainPosition ?? 1) - 1) / @obj.ChainLength</MudText>
                                                 </div>
                                             }
                                         </div>

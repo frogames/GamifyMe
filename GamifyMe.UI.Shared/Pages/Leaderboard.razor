@@ -24,216 +24,283 @@
          <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-block mb-4" />
     }
 
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" KeepPanelsAlive="true">
-        <MudTabPanel Text="Joueurs" Icon="@Icons.Material.Filled.Person">
-            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4" Centered="true" Color="Color.Secondary">
-                <MudTabPanel Text="XP" Icon="@Icons.Material.Filled.EmojiEvents">
-                    @if (isLoadingUsersXp)
-                    {
-                        <div class="d-flex justify-center pa-4">
-                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                        </div>
-                    }
-                    else
-                    {
-                        @if (currentUser != null && usersXpLeaderboard.Any(u => u.Username == currentUser.Username))
-                        {
-                             var rank = usersXpLeaderboard.First(u => u.Username == currentUser.Username);
-                             <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
-                        }
+    <!-- Custom Tabs Replacement -->
+    <div class="d-flex flex-column align-center gap-4">
+        
+        <!-- Main Category Toggle (Players vs Groups) -->
+        <MudButtonGroup OverrideStyles="false" Class="gap-0" Style="border-radius: 20px; overflow: hidden; border: 1px solid var(--mud-palette-primary);">
+            <MudButton Variant="@(_selectedCategory == "Players" ? Variant.Filled : Variant.Text)" 
+                       Color="Color.Primary" 
+                       OnClick="@(() => SetCategory("Players"))"
+                       Class="px-8 py-2"
+                       Style="@(_selectedCategory == "Players" ? "font-weight: bold;" : "font-weight: normal;")">
+                JOUEURS
+            </MudButton>
+             <MudButton Variant="@(_selectedCategory == "Groups" ? Variant.Filled : Variant.Text)" 
+                       Color="Color.Primary" 
+                        OnClick="@(() => SetCategory("Groups"))"
+                       Class="px-8 py-2"
+                       Style="@(_selectedCategory == "Groups" ? "font-weight: bold;" : "font-weight: normal;")">
+                GROUPES
+            </MudButton>
+        </MudButtonGroup>
 
-                        <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersXpLeaderboard.Count joueurs classés</MudText>
-                        <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
-                            <HeaderContent>
-                                <MudTh>Rang</MudTh>
-                                <MudTh>Joueur</MudTh>
-                                <MudTh>XP</MudTh>
-                            </HeaderContent>
-                            <RowTemplate Context="user">
-                                <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                                <MudTd DataLabel="Joueur"> 
-                                    <div class="d-flex align-center">
-                                        @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                        {
-                                             @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                             {
-                                                 <MudAvatar Size="Size.Small" Class="mr-2">
-                                                     <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
-                                                 </MudAvatar>
-                                             }
-                                             else
-                                             {
-                                                 <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
-                                             }
-                                        }
-                                        @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
-                            </RowTemplate>
-                            <PagerContent>
-                                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
-                            </PagerContent>
-                        </MudTable>
-                    }
-                </MudTabPanel>
+        <!-- Sub Category Toggle -->
+        @if (_selectedCategory == "Players")
+        {
+            <MudButtonGroup OverrideStyles="false" Class="gap-0 mt-2" Style="border-radius: 20px; overflow: hidden; border: 1px solid var(--mud-palette-primary);">
+                <MudButton Variant="@(_selectedSubCategory == "XP" ? Variant.Filled : Variant.Text)" 
+                           Color="Color.Primary" 
+                           OnClick="@(() => SetSubCategory("XP"))"
+                           Class="px-6 py-1"
+                           Size="Size.Small"
+                           Style="@(_selectedSubCategory == "XP" ? "font-weight: bold;" : "font-weight: normal;")">
+                    XP
+                </MudButton>
+                 @if (currentUser?.IsShopEnabled == true)
+                 {
+                    <MudButton Variant="@(_selectedSubCategory == "Currency" ? Variant.Filled : Variant.Text)" 
+                               Color="Color.Primary" 
+                               OnClick="@(() => SetSubCategory("Currency"))"
+                               Class="px-6 py-1"
+                               Size="Size.Small"
+                               Style="@(_selectedSubCategory == "Currency" ? "font-weight: bold;" : "font-weight: normal;")">
+                        @(currentUser?.CurrencyName ?? "CRÉDITS")
+                    </MudButton>
+                 }
+            </MudButtonGroup>
+        }
+        else
+        {
+             <MudButtonGroup OverrideStyles="false" Class="gap-0 mt-2" Style="border-radius: 20px; overflow: hidden; border: 1px solid var(--mud-palette-primary);">
+                <MudButton Variant="@(_selectedSubCategory == "XP" ? Variant.Filled : Variant.Text)" 
+                           Color="Color.Primary" 
+                           OnClick="@(() => SetSubCategory("XP"))"
+                           Class="px-6 py-1"
+                           Size="Size.Small"
+                           Style="@(_selectedSubCategory == "XP" ? "font-weight: bold;" : "font-weight: normal;")">
+                    XP
+                </MudButton>
+                <MudButton Variant="@(_selectedSubCategory == "Members" ? Variant.Filled : Variant.Text)" 
+                           Color="Color.Primary" 
+                           OnClick="@(() => SetSubCategory("Members"))"
+                           Class="px-6 py-1"
+                           Size="Size.Small"
+                           Style="@(_selectedSubCategory == "Members" ? "font-weight: bold;" : "font-weight: normal;")">
+                    MEMBRES
+                </MudButton>
+            </MudButtonGroup>
+        }
 
-                @if (currentUser?.IsShopEnabled == true)
+    </div>
+
+    <MudPaper Class="mt-6 pa-0" Elevation="2" Style="overflow: hidden; border-radius: 8px;">
+        @if (_selectedCategory == "Players")
+        {
+            @if (_selectedSubCategory == "XP")
+            {
+                 @if (isLoadingUsersXp)
                 {
-                    <MudTabPanel Text="@(currentUser?.CurrencyName ?? "Or")" Icon="@Icons.Material.Filled.AttachMoney">
-                        @if (isLoadingUsersCurrency)
-                        {
-                            <div class="d-flex justify-center pa-4">
-                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                            </div>
-                        }
-                        else
-                        {
-                            @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
-                            {
-                                 var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
-                                 <MudAlert Severity="Severity.Info" Class="mb-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency @(currentUser?.CurrencyName ?? "Crédits"))</MudAlert>
-                            }
-
-                            <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
-                            <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row">
-                                <HeaderContent>
-                                    <MudTh>Rang</MudTh>
-                                    <MudTh>Joueur</MudTh>
-                                    <MudTh>@(currentUser?.CurrencyName ?? "Crédits")</MudTh>
-                                </HeaderContent>
-                                <RowTemplate Context="user">
-                                    <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
-                                    <MudTd DataLabel="Joueur">
-                                        <div class="d-flex align-center">
-                                            @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                            {
-                                                 @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
-                                                 {
-                                                     <MudAvatar Size="Size.Small" Class="mr-2">
-                                                         <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
-                                                     </MudAvatar>
-                                                 }
-                                                 else
-                                                 {
-                                                     <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
-                                                 }
-                                            }
-                                            @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
-                                        </div>
-                                    </MudTd>
-                                    <MudTd DataLabel="@(currentUser?.CurrencyName ?? "Crédits")">@user.TotalCurrency</MudTd>
-                                </RowTemplate>
-                                <PagerContent>
-                                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
-                                </PagerContent>
-                            </MudTable>
-                        }
-                    </MudTabPanel>
+                    <div class="d-flex justify-center pa-4">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
                 }
-            </MudTabs>
-        </MudTabPanel>
-
-        <MudTabPanel Text="Groupes" Icon="@Icons.Material.Filled.Groups">
-            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4" Centered="true" Color="Color.Secondary">
-                <MudTabPanel Text="XP" Icon="@Icons.Material.Filled.BarChart">
-                    @if (isLoadingGroupsXp)
+                else
+                {
+                    @if (currentUser != null && usersXpLeaderboard.Any(u => u.Username == currentUser.Username))
                     {
-                        <div class="d-flex justify-center pa-4">
-                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                        </div>
+                         var rank = usersXpLeaderboard.First(u => u.Username == currentUser.Username);
+                         <MudAlert Severity="Severity.Info" Class="ma-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
                     }
-                    else
-                    {
-                        @if (currentUser != null && currentUser.GroupId.HasValue && groupsXpLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
-                        {
-                             var rank = groupsXpLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
-                             <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
-                        }
 
-                        <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@groupsXpLeaderboard.Count groupes classés</MudText>
-                        <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
-                            <HeaderContent>
-                                <MudTh>Rang</MudTh>
-                                <MudTh>Groupe</MudTh>
-                                <MudTh>XP</MudTh>
-                            </HeaderContent>
-                            <RowTemplate Context="group">
-                                <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
-                                <MudTd DataLabel="Groupe">
-                                    <div class="d-flex align-center">
-                                        @if (!string.IsNullOrEmpty(group.ImageUrl))
-                                        {
+                    <MudText Typo="Typo.caption" Class="d-block mt-2 mb-2 pr-4" Align="Align.End">@usersXpLeaderboard.Count joueurs classés</MudText>
+                    <MudTable Items="@usersXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Rang</MudTh>
+                            <MudTh>Joueur</MudTh>
+                            <MudTh>XP</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="user">
+                            <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
+                            <MudTd DataLabel="Joueur"> 
+                                <div class="d-flex align-center">
+                                    @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                    {
+                                         @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                         {
                                              <MudAvatar Size="Size.Small" Class="mr-2">
-                                                 <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                                 <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
                                              </MudAvatar>
-                                        }
-                                        else
-                                        {
-                                            <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
-                                        }
-                                        <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
-                            </RowTemplate>
-                            <PagerContent>
-                                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
-                            </PagerContent>
-                        </MudTable>
-                    }
-                </MudTabPanel>
-
-                <MudTabPanel Text="Membres" Icon="@Icons.Material.Filled.GroupAdd">
-                    @if (isLoadingGroupsMembers)
+                                         }
+                                         else
+                                         {
+                                             <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                         }
+                                    }
+                                    @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="XP Total">@user.TotalXp</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            }
+            else if (_selectedSubCategory == "Currency")
+            {
+                 @if (isLoadingUsersCurrency)
+                {
+                    <div class="d-flex justify-center pa-4">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                }
+                else
+                {
+                    @if (currentUser != null && usersCurrencyLeaderboard.Any(u => u.Username == currentUser.Username))
                     {
-                        <div class="d-flex justify-center pa-4">
-                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                        </div>
+                         var rank = usersCurrencyLeaderboard.First(u => u.Username == currentUser.Username);
+                         <MudAlert Severity="Severity.Info" Class="ma-4">Votre rang : <strong>#@rank.Rank</strong> (@rank.TotalCurrency @(currentUser?.CurrencyName ?? "Crédits"))</MudAlert>
                     }
-                    else
-                    {
-                        @if (currentUser != null && currentUser.GroupId.HasValue && groupsMembersLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
-                        {
-                             var rank = groupsMembersLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
-                             <MudAlert Severity="Severity.Info" Class="mb-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.MemberCount Membres)</MudAlert>
-                        }
 
-                        <MudText Typo="Typo.caption" Class="d-block mb-2 pr-2" Align="Align.End">@groupsMembersLeaderboard.Count groupes classés</MudText>
-                        <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup">
-                            <HeaderContent>
-                                <MudTh>Rang</MudTh>
-                                <MudTh>Groupe</MudTh>
-                                <MudTh>Membres</MudTh>
-                            </HeaderContent>
-                            <RowTemplate Context="group">
-                                <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
-                                <MudTd DataLabel="Groupe">
-                                    <div class="d-flex align-center">
-                                        @if (!string.IsNullOrEmpty(group.ImageUrl))
-                                        {
+                    <MudText Typo="Typo.caption" Class="d-block mt-2 mb-2 pr-4" Align="Align.End">@usersCurrencyLeaderboard.Count joueurs classés</MudText>
+                    <MudTable Items="@usersCurrencyLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleUser" OnRowClick="OnUserRowClick" T="UserLeaderboardEntryDto" RowClass="cursor-pointer leaderboard-row" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Rang</MudTh>
+                            <MudTh>Joueur</MudTh>
+                            <MudTh>@(currentUser?.CurrencyName ?? "Crédits")</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="user">
+                            <MudTd DataLabel="Rang">@RenderRank(user.Rank)</MudTd>
+                            <MudTd DataLabel="Joueur">
+                                <div class="d-flex align-center">
+                                    @if(!string.IsNullOrEmpty(user.FavoriteBadgeIcon) || !string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                    {
+                                         @if (!string.IsNullOrEmpty(user.FavoriteBadgeImageUrl))
+                                         {
                                              <MudAvatar Size="Size.Small" Class="mr-2">
-                                                 <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                                 <MudImage Src="@GetImageSrc(user.FavoriteBadgeImageUrl)" ObjectFit="ObjectFit.Cover" />
                                              </MudAvatar>
-                                        }
-                                        else
-                                        {
-                                            <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
-                                        }
-                                        <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
-                            </RowTemplate>
-                            <PagerContent>
-                                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
-                            </PagerContent>
-                        </MudTable>
+                                         }
+                                         else
+                                         {
+                                             <GamifyIcon IconName="@user.FavoriteBadgeIcon" Class="mr-2" Size="Size.Small" Style="@($"color:{user.FavoriteBadgeColor}")" />
+                                         }
+                                    }
+                                    @(user.Username == currentUser?.Username ? "(Vous)" : "") @user.FirstName @user.Username
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="@(currentUser?.CurrencyName ?? "Crédits")">@user.TotalCurrency</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            }
+        }
+        else if (_selectedCategory == "Groups")
+        {
+            @if (_selectedSubCategory == "XP")
+            {
+                 @if (isLoadingGroupsXp)
+                {
+                    <div class="d-flex justify-center pa-4">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                }
+                else
+                {
+                    @if (currentUser != null && currentUser.GroupId.HasValue && groupsXpLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
+                    {
+                         var rank = groupsXpLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
+                         <MudAlert Severity="Severity.Info" Class="ma-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.TotalXp XP)</MudAlert>
                     }
-                </MudTabPanel>
-            </MudTabs>
-        </MudTabPanel>
-    </MudTabs>
+
+                    <MudText Typo="Typo.caption" Class="d-block mt-2 mb-2 pr-4" Align="Align.End">@groupsXpLeaderboard.Count groupes classés</MudText>
+                    <MudTable Items="@groupsXpLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Rang</MudTh>
+                            <MudTh>Groupe</MudTh>
+                            <MudTh>XP</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="group">
+                            <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
+                            <MudTd DataLabel="Groupe">
+                                <div class="d-flex align-center">
+                                    @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                    {
+                                         <MudAvatar Size="Size.Small" Class="mr-2">
+                                             <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                         </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                    }
+                                    <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="XP Total">@group.TotalXp</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            }
+            else if (_selectedSubCategory == "Members")
+            {
+                 @if (isLoadingGroupsMembers)
+                {
+                    <div class="d-flex justify-center pa-4">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                }
+                else
+                {
+                    @if (currentUser != null && currentUser.GroupId.HasValue && groupsMembersLeaderboard.Any(g => g.GroupId == currentUser.GroupId.Value))
+                    {
+                         var rank = groupsMembersLeaderboard.First(g => g.GroupId == currentUser.GroupId.Value);
+                         <MudAlert Severity="Severity.Info" Class="ma-4">Rang de votre groupe : <strong>#@rank.Rank</strong> (@rank.MemberCount Membres)</MudAlert>
+                    }
+
+                    <MudText Typo="Typo.caption" Class="d-block mt-2 mb-2 pr-4" Align="Align.End">@groupsMembersLeaderboard.Count groupes classés</MudText>
+                    <MudTable Items="@groupsMembersLeaderboard" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.None" RowStyleFunc="@RowStyleGroup" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Rang</MudTh>
+                            <MudTh>Groupe</MudTh>
+                            <MudTh>Membres</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="group">
+                            <MudTd DataLabel="Rang">@RenderRank(group.Rank)</MudTd>
+                            <MudTd DataLabel="Groupe">
+                                <div class="d-flex align-center">
+                                    @if (!string.IsNullOrEmpty(group.ImageUrl))
+                                    {
+                                         <MudAvatar Size="Size.Small" Class="mr-2">
+                                             <MudImage Src="@GetImageSrc(group.ImageUrl)" ObjectFit="ObjectFit.Cover" Class="rounded-circle" Style="width:100%;height:100%"/>
+                                         </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <GamifyIcon IconName="@group.IconName" Class="mr-2" Size="Size.Small" Style="@(!string.IsNullOrEmpty(group.Color) ? $"color:{group.Color};" : "")" Color="@(string.IsNullOrEmpty(group.Color) ? Color.Primary : Color.Default)" />
+                                    }
+                                    <MudText Typo="Typo.body2" Style="@(group.GroupId == currentUser?.GroupId ? "font-weight:bold" : "")">@group.Name @(group.GroupId == currentUser?.GroupId ? "(Votre groupe)" : "")</MudText>
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="Membres">@group.MemberCount</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" RowsPerPageString="Lignes par page:" InfoFormat="{first_item}-{last_item} sur {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            }
+        }
+    </MudPaper> 
+
 </MudContainer>
 
 <style>
@@ -256,12 +323,37 @@
     private List<GroupLeaderboardEntryDto> groupsMembersLeaderboard = new();
 
     private UserProfileDetailsDto? currentUser;
+    
+    // State for custom tabs
+    private string _selectedCategory = "Players"; // "Players" or "Groups"
+    private string _selectedSubCategory = "XP";   // "XP", "Currency", "Members"
 
     private bool isLoadingUsersXp = true;
     private bool isLoadingUsersCurrency = true;
     private bool isLoadingGroupsXp = true;
     private bool isLoadingGroupsMembers = true;
     private bool isLoadingProfile = true;
+
+    private void SetCategory(string category)
+    {
+        _selectedCategory = category;
+        // Default sub-category when switching
+        if (_selectedCategory == "Players")
+        {
+            _selectedSubCategory = "XP";
+        }
+        else
+        {
+             _selectedSubCategory = "XP";
+        }
+        StateHasChanged();
+    }
+
+    private void SetSubCategory(string subCategory)
+    {
+        _selectedSubCategory = subCategory;
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {

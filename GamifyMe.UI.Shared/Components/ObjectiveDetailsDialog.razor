@@ -34,7 +34,7 @@
                 {
                     <div class="d-flex align-center mt-2 flex-column">
                          <MudProgressLinear Value="@((double)(Objective.ChainPosition ?? 0))" Max="@((double)(Objective.ChainLength ?? 1))" Rounded="true" Style="@($"height: 12px; width: 150px; border-radius: 6px; --mud-palette-primary: {textColor};")" Color="Color.Primary" />
-                         <MudText Typo="Typo.caption" Class="mt-1" Style="@($"color: {textColor}; font-weight: bold;")">Étape @Objective.ChainPosition sur @Objective.ChainLength</MudText>
+                         <MudText Typo="Typo.caption" Class="mt-1" Style="@($"color: {textColor}; font-weight: bold;")">Étape @((Objective.ChainPosition ?? 0) + 1) sur @Objective.ChainLength</MudText>
                     </div>
                 }
 
